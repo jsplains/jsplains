@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SnackTrade - School Snack Exchange Values</title>
+    <title>CrunchDemand by Jsplains</title>
     <style>
         :root {
             --primary: #FF9F1C;
@@ -164,23 +164,23 @@
 </head>
 <body>
     <header>
-        <h1>SnackTrade</h1>
-        <p>Fair values for school snack exchanges</p>
+        <h1>CrunchDemand</h1>
+        <p>Have you ever been ripped off while trading snacks? Or do you want to know what's a fair snack trade, and what isn't? Find out here, at CrunchDemand!</p>
     </header>
     
     <div class="container">
         <div class="filters">
             <select id="category-filter">
                 <option value="all">All Categories</option>
-                <option value="chips">Chips</option>
+                <option value="Snacks — Chips">Snacks — Chips</option>
                 <option value="candy">Candy</option>
-                <option value="chocolate">Chocolate</option>
+                <option value="Candy — Chocolate"Candy — Chocolate</option>
                 <option value="fruit">Fruit</option>
-                <option value="other">Other</option>
+                <option value="other">Snacks</option>
             </select>
             
             <select id="demand-filter">
-                <option value="all">All Demand Levels</option>
+                <option value="all">Any Demand</option>
                 <option value="high">High Demand</option>
                 <option value="medium">Medium Demand</option>
                 <option value="low">Low Demand</option>
@@ -191,7 +191,7 @@
             <button id="apply-filters">Apply</button>
         </div>
         
-        <h2 class="section-title">High Demand, Low Value (Hot Items)</h2>
+        <h2 class="section-title">Hot Items</h2>
         <div class="snack-grid" id="hot-items">
             <!-- Hot items will be inserted here by JavaScript -->
         </div>
@@ -211,40 +211,40 @@
         // Sample snack data
         const snacks = [
             { 
-                name: "Takis Fuego", 
-                category: "chips", 
+                name: "Takis, Fuego", 
+                category: "Snacks — Chips", 
                 value: 3, 
                 demand: 9, 
                 image: "takis.jpg",
-                description: "Spicy rolled corn chips. Always in high demand.",
-                equivalent: "2 packs of gummy worms"
+                description: "Spicy. Corn chips. What can I say?",
+                //2 packs of gummy worms"
             },
             { 
                 name: "Lays Classic", 
-                category: "chips", 
+                category: "Snacks — Chips", 
                 value: 5, 
                 demand: 6, 
                 image: "lays.jpg",
-                description: "Basic potato chips. Good for trading up.",
-                equivalent: "1 chocolate bar"
+                description: "Simple potato chips, good for trading up!",
+                //1 Candy — Chocolate bar"
             },
             { 
                 name: "Haribo Gummy Bears", 
                 category: "candy", 
                 value: 4, 
-                demand: 7, 
-                image: "gummy-bears.jpg",
-                description: "Classic gummy candy. Popular but not rare.",
-                equivalent: "1.5 packs of crackers"
+                demand: 3, 
+                image: "haribo-bears.jpg",
+                description: "Haribo's are a classic. Despite having being extremely common, they're still pretty tasty!",
+                //1.5 packs of crackers"
             },
             { 
-                name: "Hershey's Chocolate Bar", 
-                category: "chocolate", 
+                name: "Hershey Milk Chocolate Bar", 
+                category: "Candy — Chocolate", 
                 value: 5, 
-                demand: 8, 
-                image: "hersheys.jpg",
-                description: "Milk chocolate bar. Always tradable.",
-                equivalent: "1 bag of chips"
+                demand: 7, 
+                image: "hersheymilk.jpg",
+                description: "Milk chocolate bar. Pretty common, but always tradable.",
+                //1 bag of Snacks — Chips"
             },
             { 
                 name: "Sour Patch Kids", 
@@ -252,35 +252,35 @@
                 value: 4, 
                 demand: 8, 
                 image: "sour-patch.jpg",
-                description: "Sweet and sour gummies. High demand.",
-                equivalent: "2 fruit snacks"
+                description: "Well, they're sweet, then sour!.",
+                //2 fruit snacks"
             },
             { 
                 name: "Apple", 
                 category: "fruit", 
                 value: 2, 
-                demand: 3, 
+                demand: 1, 
                 image: "apple.jpg",
-                description: "Healthy option. Low demand.",
-                equivalent: "1 small bag of pretzels"
+                description: "Healthy option, but nobody wants these..",
+                //1 small bag of pretzels"
             },
             { 
                 name: "Oreos (single pack)", 
                 category: "other", 
                 value: 6, 
-                demand: 7, 
+                demand: 9, 
                 image: "oreos.jpg",
-                description: "Cookies with cream filling. Good value.",
-                equivalent: "1.5 packs of gummies"
+                description: "No Description",
+                //1.5 packs of gummies"
             },
             { 
                 name: "Cheetos Flamin' Hot", 
-                category: "chips", 
+                category: "Snacks — Chips", 
                 value: 4, 
-                demand: 8, 
-                image: "cheetos.jpg",
-                description: "Spicy cheese snacks. Very popular.",
-                equivalent: "2 packs of fruit snacks"
+                demand: 3, 
+                image: "flaminhotcheetos.jpg",
+                description: "Spicy cheese snacks. However, generally outclassed by Takis.",
+                //2 packs of fruit snacks"
             }
         ];
         
