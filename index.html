@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SnackTrade - School Snack Exchange Values</title>
+    <style>
+        :root {
+            --primary: #FF9F1C;
+            --secondary: #2EC4B6;
+            --dark: #011627;
+            --light: #FDFFFC;
+            --accent: #E71D36;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light);
+            color: var(--dark);
+        }
+        
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        select, input {
+            padding: 0.5rem;
+            border: 2px solid var(--secondary);
+            border-radius: 4px;
+            background-color: white;
+        }
+        
+        button {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: var(--dark);
+        }
+        
+        .snack-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+        
+        .snack-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-top: 4px solid var(--primary);
+        }
+        
+        .snack-card.high-demand {
+            border-top-color: var(--accent);
+        }
+        
+        .snack-card h3 {
+            margin-top: 0;
+            color: var(--primary);
+        }
+        
+        .snack-card.high-demand h3 {
+            color: var(--accent);
+        }
+        
+        .value-meter {
+            height: 20px;
+            background-color: #eee;
+            border-radius: 10px;
+            margin: 0.5rem 0;
+            overflow: hidden;
+        }
+        
+        .value-meter-fill {
+            height: 100%;
+            background-color: var(--secondary);
+            width: 0%;
+        }
+        
+        .demand-meter-fill {
+            height: 100%;
+            background-color: var(--accent);
+            width: 0%;
+        }
+        
+        .snack-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .trade-button {
+            background-color: var(--primary);
+            width: 100%;
+            margin-top: 1rem;
+        }
+        
+        .section-title {
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 0.5rem;
+            margin-top: 2rem;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 1rem;
+            background-color: var(--dark);
+            color: white;
+            margin-top: 2rem;
+        }
+        
+        @media (max-width: 600px) {
+            .snack-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>SnackTrade</h1>
+        <p>Fair values for school snack exchanges</p>
+    </header>
+    
+    <div class="container">
+        <div class="filters">
+            <select id="category-filter">
+                <option value="all">All Categories</option>
+                <option value="chips">Chips</option>
+                <option value="candy">Candy</option>
+                <option value="chocolate">Chocolate</option>
+                <option value="fruit">Fruit</option>
+                <option value="other">Other</option>
+            </select>
+            
+            <select id="demand-filter">
+                <option value="all">All Demand Levels</option>
+                <option value="high">High Demand</option>
+                <option value="medium">Medium Demand</option>
+                <option value="low">Low Demand</option>
+            </select>
+            
+            <input type="text" id="search" placeholder="Search snacks...">
+            
+            <button id="apply-filters">Apply</button>
+        </div>
+        
+        <h2 class="section-title">High Demand, Low Value (Hot Items)</h2>
+        <div class="snack-grid" id="hot-items">
+            <!-- Hot items will be inserted here by JavaScript -->
+        </div>
+        
+        <h2 class="section-title">All Snacks</h2>
+        <div class="snack-grid" id="all-snacks">
+            <!-- All snacks will be inserted here by JavaScript -->
+        </div>
+    </div>
+    
+    <footer>
+        <p>Snack values change daily based on trading activity in your school</p>
+        <p>Submit your trades to help keep values accurate!</p>
+    </footer>
+    
+    <script>
+        // Sample snack data
+        const snacks = [
+            { 
+                name: "Takis Fuego", 
+                category: "chips", 
+                value: 3, 
+                demand: 9, 
+                image: "takis.jpg",
+                description: "Spicy rolled corn chips. Always in high demand.",
+                equivalent: "2 packs of gummy worms"
+            },
+            { 
+                name: "Lays Classic", 
+                category: "chips", 
+                value: 5, 
+                demand: 6, 
+                image: "lays.jpg",
+                description: "Basic potato chips. Good for trading up.",
+                equivalent: "1 chocolate bar"
+            },
+            { 
+                name: "Haribo Gummy Bears", 
+                category: "candy", 
+                value: 4, 
+                demand: 7, 
+                image: "gummy-bears.jpg",
+                description: "Classic gummy candy. Popular but not rare.",
+                equivalent: "1.5 packs of crackers"
+            },
+            { 
+                name: "Hershey's Chocolate Bar", 
+                category: "chocolate", 
+                value: 5, 
+                demand: 8, 
+                image: "hersheys.jpg",
+                description: "Milk chocolate bar. Always tradable.",
+                equivalent: "1 bag of chips"
+            },
+            { 
+                name: "Sour Patch Kids", 
+                category: "candy", 
+                value: 4, 
+                demand: 8, 
+                image: "sour-patch.jpg",
+                description: "Sweet and sour gummies. High demand.",
+                equivalent: "2 fruit snacks"
+            },
+            { 
+                name: "Apple", 
+                category: "fruit", 
+                value: 2, 
+                demand: 3, 
+                image: "apple.jpg",
+                description: "Healthy option. Low demand.",
+                equivalent: "1 small bag of pretzels"
+            },
+            { 
+                name: "Oreos (single pack)", 
+                category: "other", 
+                value: 6, 
+                demand: 7, 
+                image: "oreos.jpg",
+                description: "Cookies with cream filling. Good value.",
+                equivalent: "1.5 packs of gummies"
+            },
+            { 
+                name: "Cheetos Flamin' Hot", 
+                category: "chips", 
+                value: 4, 
+                demand: 8, 
+                image: "cheetos.jpg",
+                description: "Spicy cheese snacks. Very popular.",
+                equivalent: "2 packs of fruit snacks"
+            }
+        ];
+        
+        // Function to create a snack card
+        function createSnackCard(snack) {
+            const card = document.createElement('div');
+            card.className = `snack-card ${snack.demand >= 8 ? 'high-demand' : ''}`;
+            
+            card.innerHTML = `
+                <h3>${snack.name}</h3>
+                <p>${snack.description}</p>
+                
+                <div class="snack-stats">
+                    <div class="stat">
+                        <div class="stat-value">${snack.value}/10</div>
+                        <div class="stat-label">Value</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">${snack.demand}/10</div>
+                        <div class="stat-label">Demand</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">${snack.category}</div>
+                        <div class="stat-label">Category</div>
+                    </div>
+                </div>
+                
+                <div>Trade value: <strong>${snack.equivalent}</strong></div>
+                
+                <div class="value-meter">
+                    <div class="value-meter-fill" style="width: ${snack.value * 10}%"></div>
+                </div>
+                
+                <div class="value-meter">
+                    <div class="demand-meter-fill" style="width: ${snack.demand * 10}%"></div>
+                </div>
+                
+                <button class="trade-button">Report Trade</button>
+            `;
+            
+            return card;
+        }
+        
+        // Function to display snacks
+        function displaySnacks() {
+            const allSnacksContainer = document.getElementById('all-snacks');
+            const hotItemsContainer = document.getElementById('hot-items');
+            
+            // Clear existing content
+            allSnacksContainer.innerHTML = '';
+            hotItemsContainer.innerHTML = '';
+            
+            // Get filter values
+            const categoryFilter = document.getElementById('category-filter').value;
+            const demandFilter = document.getElementById('demand-filter').value;
+            const searchTerm = document.getElementById('search').value.toLowerCase();
+            
+            // Filter snacks
+            const filteredSnacks = snacks.filter(snack => {
+                // Category filter
+                if (categoryFilter !== 'all' && snack.category !== categoryFilter) {
+                    return false;
+                }
+                
+                // Demand filter
+                if (demandFilter !== 'all') {
+                    if (demandFilter === 'high' && snack.demand < 8) return false;
+                    if (demandFilter === 'medium' && (snack.demand < 5 || snack.demand >= 8)) return false;
+                    if (demandFilter === 'low' && snack.demand >= 5) return false;
+                }
+                
+                // Search filter
+                if (searchTerm && !snack.name.toLowerCase().includes(searchTerm)) {
+                    return false;
+                }
+                
+                return true;
+            });
+            
+            // Display all filtered snacks
+            filteredSnacks.forEach(snack => {
+                allSnacksContainer.appendChild(createSnackCard(snack));
+            });
+            
+            // Display hot items (high demand, low value)
+            const hotItems = snacks.filter(snack => snack.demand >= 8 && snack.value <= 4);
+            hotItems.forEach(snack => {
+                hotItemsContainer.appendChild(createSnackCard(snack));
+            });
+        }
+        
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', () => {
+            displaySnacks();
+            
+            // Add event listener for filter button
+            document.getElementById('apply-filters').addEventListener('click', displaySnacks);
+            
+            // Also filter when pressing Enter in search box
+            document.getElementById('search').addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') {
+                    displaySnacks();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
