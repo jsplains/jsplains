@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Leaderboard | The Grandmaster Zone</title>
+    <link rel="icon" type="image/png" href="assets/diffs/High Grandmaster I.png">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="logo-link">
+            <img src="assets/logo.webp" class="nav-logo" alt="Logo">
+        </a>
+        <div class="nav-links">
+            <a href="index.html">Levels</a>
+            <a href="leaderboard.html" class="active">Leaderboard</a>
+        </div>
+    </nav>
+
+    <div id="container" style="max-width: 800px; margin: 0px auto; padding: 20px;">
+        <h1 style="text-align:center; font-weight: 800;">Leaderboard</h1>
+        <div id="loading-msg">Zoning in on the leaderboard...</div>
+        <div id="leaderboard-list"></div>
+    </div>
+
+    <div id="playerModal" class="modal" style="display:none;">
+        <div class="modal-content" style="max-width:700px;">
+            <span onclick="closePlayerModal()" class="close-btn" style="cursor:pointer; font-size:24px; float:right;">&times;</span>
+            <div id="player-modal-body"></div>
+        </div>
+    </div>
+
+    <script>
+        const csvUrl = "https://docs.google.com/spreadsheets/d/10yZLCN80B0ExwiY8E5Y5GB95NV1T5UI69vLYywtg_J0/export?format=csv&gid=1908015854";
+
+        document.getElementById("playerModal").addEventListener("click", function (e) {
+            const modalContent = this.querySelector(".modal-content");
+
+            // If the click is NOT inside the modal content, close it
+            if (!modalContent.contains(e.target)) {
+                closePlayerModal();
+            }
+        });
+
+        function getFlagElement(countryCode) {
+            if (!countryCode || countryCode.trim() === "" || countryCode.toLowerCase() === "n/a") 
+                return `<div class="flag-container no-flag"></div>`;
+            const code = countryCode.toLowerCase().trim();
+            return `<img class="flag-container" src="https://flagcdn.com/w40/${code}.png" onerror="this.outerHTML='<div class=\'flag-container no-flag\'></div>'">`;
+        }
+
+        function parsePlayerRow(row) {
+            return {
+                rank: row["Rank"] || row["rank"] || "",
+                name: row["Username"] || row["username"] || "",
+                points: parseInt((row["Points"] || "0").replace(/,/g,"")) || 0,
+                gmClears: row["Num of GM Clears"] || "",
+                mstrClears: row["Num of Mstr Clears"] || "",
+                hardest: row["Hardest Clear"] || "",
+                secondHardest: row["Second Hardest"] || "",
+                thirdHardest: row["Third Hardest"] || "",
+                country: row["Country"] || ""
+            };
+        }
+
+        async function fetchLeaderboard() {
+            try {
+                const response = await fetch(csvUrl);
+                if (!response.ok) throw new Error("Failed to fetch CSV");
+                const text = await response.text();
+                const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
+                const players = parsed.data.map(parsePlayerRow)
+                    .sort((a,b) => b.points - a.points);
+
+                window.PLAYER_DATA = players;
+                renderLeaderboard();
+            } catch (err) {
+                console.error("Fetch error:", err);
+                document.getElementById('loading-msg').innerHTML = "<span style='color:red;'>Connection Error. Check your CSV access.</span>";
+            }
+        }
+
+        function renderLeaderboard() {
+            const container = document.getElementById('leaderboard-list');
+            if (!window.PLAYER_DATA || window.PLAYER_DATA.length === 0) return;
+
+            document.getElementById('loading-msg').style.display = 'none';
+
+            container.innerHTML = window.PLAYER_DATA.map((p,i) => {
+                const rankNum = i+1;
+                let colorClass = "rank-gray";
+                if (rankNum <= 3) colorClass = "rank-purple";
+                else if (rankNum <= 10) colorClass = "rank-blue";
+                else if (rankNum <= 25) colorClass = "rank-green";
+                else if (rankNum <= 50) colorClass = "rank-yellow";
+                else if (rankNum <= 100) colorClass = "rank-red";
+
+                return `
+                <div class="level-entry ${colorClass}" onclick="showPlayerDetails('${p.name.replace(/'/g,"\\'")}')">
+                    <div class="level-rank">#${rankNum}</div>
+                    <img class="player-pfp" src="assets/players/${p.name}.png">
+                    <div class="player-info">
+                        <div class="player-name-wrapper">${getFlagElement(p.country)} <b>${p.name}</b></div>
+                        <small>${p.gmClears} GM Clears</small>
+                    </div>
+                    <div class="level-points">${p.points.toLocaleString()} pts</div>
+                </div>`;
+            }).join('');
+        }
+
+        function showPlayerDetails(name) {
+            const player = window.PLAYER_DATA.find(p => p.name === name);
+            if (!player) return;
+
+            document.getElementById('player-modal-body').innerHTML = `
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+                    <img class="player-pfp" src="assets/players/${player.name}.png">
+                    <h2 style="margin:0;">${player.name}</h2>
+                </div>
+                <p><b>Total Points:</b> ${player.points.toLocaleString()}</p>
+                <p><b>GM Clears:</b> ${player.gmClears}</p>
+                <p><b>Master Clears:</b> ${player.mstrClears}</p>
+                <h3>Top Clears</h3>
+                <ul>
+                    <li>${player.hardest}</li>
+                    <li>${player.secondHardest}</li>
+                    <li>${player.thirdHardest}</li>
+                </ul>`;
+            document.getElementById('playerModal').style.display = "block";
+            document.body.style.overflow = "hidden";
+        }
+
+        function closePlayerModal() {
+            document.getElementById('playerModal').style.display = "none";
+            document.body.style.overflow = "auto";
+        }
+
+        window.onload = fetchLeaderboard;
+    </script>
+</body>
+</html>

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>The Grandmaster Zone</title>
+    <link rel="icon" type="image/png" href="assets/diffs/High Grandmaster I.png">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+</head>
+<body>
+
+    <nav>
+        <a href="index.html" class="logo-link">
+            <img src="assets/logo.webp" alt="Logo" class="nav-logo">
+        </a>
+        <div class="nav-links">
+            <a href="index.html" class="active">Levels</a>
+            <a href="leaderboard.html">Leaderboard</a>
+        </div>
+    </nav>
+
+    <div id="main-layout">
+        <main>
+            <div id="loading-overlay">Fetching levels from the zone...</div>
+            <div id="list-view"></div>
+        </main>
+
+        <aside id="sidebar">
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLSfgjpCE6e8sHa-GcjVrD27Tcymbc0Q7w2MGdxVTtWnKi-uoXg/viewform?usp=publish-editor" target="_blank" class="submit-btn" style="margin-bottom: 25px;">Submit a Completion</a>
+            
+            <h3>Filter Skills</h3>
+            <div id="tag-filters">
+                <!-- dynamic tag buttons will be injected here -->
+            </div>
+        </aside>
+    </div>
+
+    <div id="infoModal" class="modal" style="display:none;">
+        <div class="modal-content" id="modal-content-box" 
+            style="width: 90vw; max-width: 700px; aspect-ratio: 4 / 3; position: relative; overflow-y: auto; color: #fff; display: flex; flex-direction: column;">
+            
+            <span onclick="closeModal()" class="close-btn" 
+                style="cursor:pointer; font-size:24px; position: absolute; top: 15px; right: 20px; z-index: 10; text-shadow: 0 1px 3px rgba(0,0,0,0.8); color: #fff;">
+                &times;
+            </span>
+            
+            <div id="modal-body" style="position: relative; z-index: 1; padding: 10px;">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        // ----- CONFIG -----
+        const spreadsheetId = "10yZLCN80B0ExwiY8E5Y5GB95NV1T5UI69vLYywtg_J0";
+        const sheetGids = ["0", "1720349441"]; // sheet1 first, sheet2 second
+
+        function getCsvUrl(spreadsheetId, gid) {
+            return `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}`;
+        }
+
+        // ----- UTILITIES -----
+        function parseSkills(raw) {
+            if (!raw) return [];
+            // split on newlines or commas, also remove empty tokens
+            return raw.split(/\r?\n|,/).map(s => s.trim()).filter(Boolean);
+        }
+
+        function parseStats(raw) {
+            const out = { enjoyment: "", quality: "", effort: "" };
+            if (!raw) return out;
+            // look for numbers in labels
+            const lines = raw.split(/\r?\n/);
+            lines.forEach(line => {
+                const l = line.toLowerCase();
+                const numMatch = line.match(/(-?\d+(\.\d+)?)/);
+                const num = numMatch ? numMatch[0] : "";
+                if (l.includes("enjoy") || l.includes("enjoyment")) out.enjoyment = num;
+                else if (l.includes("quality")) out.quality = num;
+                else if (l.includes("effort") || l.includes("skill/effort") || l.includes("skill")) out.effort = num;
+            });
+            return out;
+        }
+
+        function safeText(val) { return (val === undefined || val === null) ? "" : String(val); }
+
+        document.getElementById("infoModal").addEventListener("click", function (e) {
+            const modalContent = this.querySelector(".modal-content");
+
+            // If the click is NOT inside the modal content, close it
+            if (!modalContent.contains(e.target)) {
+                closeModal();
+            }
+        });
+
+        function mapRowToLevel(row) {
+            // row fields from the spreadsheet (case sensitive per CSV header)
+            const id = safeText(row["ID"] || row["id"] || row["Rank"]);
+            const name = safeText(row["Name"] || row["name"]);
+            const img = "assets/thumbs/" + safeText(row["Acronym"]).toLowerCase() + ".png";
+            const smallimg = "assets/smallthumbs/" + safeText(row["Acronym"]).toLowerCase() + ".png";
+            const author = safeText(row["Creator(s)"] || row["Creator"] || row["Author"] || row["creator(s)"] || row["creator"]);
+            const difficulty = safeText(row["Difficulty"] || "");
+            const skillsArray = parseSkills(safeText(row["Skills Needed"] || row["Skills needed"] || row["Skills"] || ""));
+            const points = safeText(row["Points"] || row["points"] || "");
+            const verifier = safeText(row["Verifier"] || "");
+            const rank = safeText(row["Rank"] || "");
+            const victors = safeText(row["Victors"] || "");
+            const stats = safeText(row["Stats"] || "");
+            const parsedStats = parseStats(stats);
+            const desc = safeText(row["Description"] || "");
+            const notes = safeText(row["Notes"] || "");
+            const resources = safeText(row["Helpful Resources"] || "");
+            const levelCode = safeText(row["Level Code"] || "");
+
+            return {
+                id: id,
+                name: name,
+                img: img,
+                smallimg: smallimg,
+                author: author,
+                rank: rank,
+                difficulty: difficulty,
+                skills: skillsArray.join(", "),
+                _skillsArray: skillsArray.map(s => s.toLowerCase()),
+                points: points,
+                verifier: verifier,
+                victors: victors,
+                stats: stats,
+                enjoyment: parsedStats.enjoyment,
+                quality: parsedStats.quality,
+                effort: parsedStats.effort,
+                desc: desc,
+                notes: notes,
+                resources: resources,
+                levelCode: levelCode
+            };
+        }
+
+        // ----- FETCH + MERGE -----
+        async function fetchSheetCsv(gid) {
+            const url = getCsvUrl(spreadsheetId, gid);
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(`Failed to fetch sheet with gid ${gid}. Status ${res.status}`);
+            const text = await res.text();
+            const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
+            return parsed.data;
+        }
+
+        // ----- APP STATE -----
+        let activeTags = [];
+        window.DATA = { levels: [], players: [] };
+
+        // ----- DYNAMIC TAG CREATION -----
+        function renderTagButtons(allTags) {
+            const container = document.getElementById("tag-filters");
+            container.innerHTML = "";
+            allTags.sort((a,b) => a.localeCompare(b));
+            allTags.forEach(tag => {
+                const btn = document.createElement("button");
+                btn.className = "tag-btn";
+                btn.type = "button";
+                btn.textContent = tag;
+                btn.dataset.tag = tag;
+                btn.addEventListener("click", () => {
+                    const t = btn.dataset.tag;
+                    const active = activeTags.includes(t);
+                    if (active) {
+                        activeTags = activeTags.filter(x => x !== t);
+                        btn.classList.remove("active-tag");
+                    } else {
+                        activeTags.push(t);
+                        btn.classList.add("active-tag");
+                    }
+                    filterLevels();
+                });
+                container.appendChild(btn);
+            });
+        }
+
+        function getStatColor(val) {
+            // Standardize input to a number out of 10
+            const num = parseFloat(String(val).split('/')[0]);
+            if (isNaN(num)) return "#333";
+            if (num <= 4.5) return "#cc0000"; // Red for low scores
+            if (num <= 7.5) return "#e6ac00"; // Yellow for mid scores
+            return "#008037"; // Green for high scores
+        }
+
+        function filterLevels() {
+            if (!window.DATA || !DATA.levels) return;
+            const filtered = DATA.levels.filter(lvl => {
+                if (activeTags.length === 0) return true;
+                return activeTags.every(t => lvl._skillsArray && lvl._skillsArray.includes(t.toLowerCase()));
+            });
+
+            document.getElementById('list-view').innerHTML = filtered.map((lvl, i) => {
+                const diffIcon = lvl.difficulty ? `<img src="assets/diffs/${lvl.difficulty.trim()}.png" class="diff-icon-small">` : '';
+                const thumb = lvl.smallimg || "assets/placeholder.png";
+                
+                // We pass the thumbnail URL as a CSS Variable (--bg-image)
+                return `
+                <div class="level-entry" onclick="showLevelDetails('${lvl.id}')" style="--bg-image: url('${thumb}')">
+                    <div class="level-rank">#${lvl.rank}</div>
+                    <div class="level-info">
+                        <div class="level-name">${lvl.name}</div>
+                        <div class="level-meta">by ${lvl.author || "Unknown"}</div>
+                        <div class="level-meta" style="color:var(--accent); font-weight:700;">${lvl.points || ""} pts</div>
+                    </div>
+                    <div class="level-difficulty-slot">${diffIcon}</div>
+                </div>`;
+            }).join('');
+        }
+
+
+        function showLevelDetails(id) {
+            const lvl = DATA.levels.find(l => String(l.id).trim() === String(id).trim());
+            if (!lvl) return;
+            const check = (val) => (val && String(val).trim() !== "") ? val : "N/A";
+            
+            const modalBox = document.getElementById('modal-content-box');
+            
+            // background-size: cover ensures the 4:3 window is always filled by the image
+            modalBox.style.background = `linear-gradient(to bottom, rgba(20, 20, 20, 0.5), rgba(15, 15, 15, 0.9)), url('${lvl.img}')`;
+            modalBox.style.backgroundSize = "cover";
+            modalBox.style.backgroundPosition = "center";
+            modalBox.style.backgroundRepeat = "no-repeat";
+
+            // Helper to create the bar HTML
+            const renderBar = (label, val) => {
+                const num = parseFloat(String(val).split('/')[0]) || 0;
+                const percent = Math.min(Math.max((num / 10) * 100, 0), 100); // Clamp between 0-100%
+                const color = getStatColor(num);
+                const displayVal = (val && String(val).trim() !== "") ? val : "N/A";
+
+                return `
+                    <div class="stat-box-container">
+                        <div class="stat-label" style="color:#bbb; font-size: 0.7rem; text-transform: uppercase; margin-bottom: 4px; text-align: center;">${label}</div>
+                        <div class="stat-bar-bg">
+                            <div class="stat-bar-fill" style="width: ${percent}%; background-color: ${color};"></div>
+                            <div class="stat-bar-text">${displayVal}</div>
+                        </div>
+                    </div>
+                `;
+            };
+
+            document.getElementById('modal-body').innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 10px;">
+                    <div>
+                        <h2 style="margin:0; text-shadow: 2px 2px 4px rgba(0,0,0,1); font-size: 1.8rem;">${lvl.name}</h2>
+                        <p style="text-shadow: 1px 1px 3px rgba(0,0,0,1); margin: 5px 0;">By <strong>${lvl.author || "Unknown"}</strong></p>
+                    </div>
+                    ${lvl.difficulty ? `<img src="assets/diffs/${lvl.difficulty.trim()}.png" style="width:60px; filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.8));">` : ""}
+                </div>
+                
+                <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-bottom: 15px;">
+                    <p style="font-size:0.95rem; color:#eee; line-height:1.4; margin:0; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">${lvl.desc || lvl.notes || "No description provided."}</p>
+                </div>
+                
+
+                <div class="stat-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px;">
+                    ${renderBar("Enjoyment", lvl.enjoyment)}
+                    ${renderBar("Quality", lvl.quality)}
+                    ${renderBar("Skill <--> Effort", lvl.effort)}
+                </div>
+
+                <h3 style="font-size:0.9rem; margin: 15px 0 8px 0; color:#fff; text-shadow: 1px 1px 2px #000;">Skills</h3>
+                <div style="display:flex; flex-wrap:wrap; gap:5px;">
+                    ${lvl.skills ? lvl.skills.split(',').map(s => `<span style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); padding:3px 8px; border-radius:4px; font-size:0.8rem;">${s.trim()}</span>`).join('') : 'N/A'}
+                </div>
+
+                <h3 style="font-size:0.9rem; margin: 15px 0 5px 0; color:#fff;">Victors</h3>
+                <div style="font-size:0.85rem; color:#ccc;">${lvl.victors ? lvl.victors.split(/\s+/).join(', ') : 'None'}</div>
+                
+                ${lvl.levelCode ? `
+                    <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <span style="font-size: 0.8rem; color: #bbb;">Level Code:</span>
+                        <div style="display:flex; gap:8px; margin-top: 5px;">
+                            <input type="text" value="${lvl.levelCode}" readonly style="background:rgba(0,0,0,0.6); color:#fff; border:1px solid #444; padding:5px; border-radius:4px; flex-grow: 1; font-family: monospace;">
+                            <button onclick="copyLevelCode('${lvl.levelCode.replace(/'/g, "\\'")}')" style="background:var(--accent); color:#fff; border:none; padding:5px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">Copy</button>
+                        </div>
+                    </div>
+                ` : ""}
+            `;
+            
+            document.getElementById('infoModal').style.display = "block";
+            document.body.style.overflow = "hidden";
+        }
+
+        function copyLevelCode(code) {
+            if (!code) return;
+
+            navigator.clipboard.writeText(code).then(() => {
+                alert("Level code copied!");
+            }).catch(() => {
+                const temp = document.createElement("textarea");
+                temp.value = code;
+                document.body.appendChild(temp);
+                temp.select();
+                document.execCommand("copy");
+                document.body.removeChild(temp);
+                alert("Level code copied!");
+            });
+        }
+
+        function closeModal() { document.getElementById('infoModal').style.display = "none"; document.body.style.overflow = "auto"; }
+
+        // ----- INIT -----
+        async function init() {
+            try {
+                document.getElementById('loading-overlay').textContent = "Loading into the zone...";
+                // fetch both sheets in order
+                const data1 = await fetchSheetCsv(sheetGids[0]);
+                const data2 = await fetchSheetCsv(sheetGids[1]);
+
+                // parse and map rows, keeping sheet1 first
+                const mapped1 = data1.map(mapRowToLevel);
+                const mapped2 = data2.map(mapRowToLevel);
+                const merged = [...mapped1, ...mapped2];
+
+                // store for UI
+                window.DATA.levels = merged;
+                window.DATA.players = []; // keep empty unless you have players data elsewhere
+
+                // build tag list from Skills
+                const tagSet = new Set();
+                merged.forEach(l => {
+                    (l._skillsArray || []).forEach(s => tagSet.add(s));
+                });
+
+                renderTagButtons(Array.from(tagSet));
+                document.getElementById('loading-overlay').style.display = 'none';
+                filterLevels();
+            } catch (err) {
+                console.error(err);
+                document.getElementById('loading-overlay').innerHTML = "<span style='color:red;'>Connection Error. Check spreadsheet sharing and CORS.</span>";
+            }
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
