@@ -26,8 +26,9 @@
         </main>
 
         <aside id="sidebar">
-            <a href="https://docs.google.com/forms/d/e/1FAIpQLSfgjpCE6e8sHa-GcjVrD27Tcymbc0Q7w2MGdxVTtWnKi-uoXg/viewform?usp=publish-editor" target="_blank" class="submit-btn" style="margin-bottom: 25px;">Submit a Completion</a>
-            
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLSfgjpCE6e8sHa-GcjVrD27Tcymbc0Q7w2MGdxVTtWnKi-uoXg/viewform?usp=header" target="_blank" class="submit-btn" style="margin-bottom: 25px;">Submit a Completion</a>
+            <a href="https://docs.google.com/spreadsheets/d/10yZLCN80B0ExwiY8E5Y5GB95NV1T5UI69vLYywtg_J0/" target="_blank" class="submit-btn" style="margin-bottom: 25px;">Link to Google Sheet</a>
+
             <h3>Filter Skills</h3>
             <div id="tag-filters">
                 <!-- dynamic tag buttons will be injected here -->
@@ -65,22 +66,6 @@
             return raw.split(/\r?\n|,/).map(s => s.trim()).filter(Boolean);
         }
 
-        function parseStats(raw) {
-            const out = { enjoyment: "", quality: "", effort: "" };
-            if (!raw) return out;
-            // look for numbers in labels
-            const lines = raw.split(/\r?\n/);
-            lines.forEach(line => {
-                const l = line.toLowerCase();
-                const numMatch = line.match(/(-?\d+(\.\d+)?)/);
-                const num = numMatch ? numMatch[0] : "";
-                if (l.includes("enjoy") || l.includes("enjoyment")) out.enjoyment = num;
-                else if (l.includes("quality")) out.quality = num;
-                else if (l.includes("effort") || l.includes("skill/effort") || l.includes("skill")) out.effort = num;
-            });
-            return out;
-        }
-
         function safeText(val) { return (val === undefined || val === null) ? "" : String(val); }
 
         document.getElementById("infoModal").addEventListener("click", function (e) {
@@ -106,7 +91,8 @@
             const rank = safeText(row["Rank"] || "");
             const victors = safeText(row["Victors"] || "");
             const stats = safeText(row["Stats"] || "");
-            const parsedStats = parseStats(stats);
+            const enjoyment = safeText(row["Enjoyment"] || "")
+            const quality = safeText(row["Quality"] || "");
             const desc = safeText(row["Description"] || "");
             const notes = safeText(row["Notes"] || "");
             const resources = safeText(row["Helpful Resources"] || "");
@@ -126,9 +112,8 @@
                 verifier: verifier,
                 victors: victors,
                 stats: stats,
-                enjoyment: parsedStats.enjoyment,
-                quality: parsedStats.quality,
-                effort: parsedStats.effort,
+                enjoyment: enjoyment,
+                quality: quality,
                 desc: desc,
                 notes: notes,
                 resources: resources,
@@ -186,6 +171,31 @@
             return "#008037"; // Green for high scores
         }
 
+        // function filterLevels() {
+        //     if (!window.DATA || !DATA.levels) return;
+        //     const filtered = DATA.levels.filter(lvl => {
+        //         if (activeTags.length === 0) return true;
+        //         return activeTags.every(t => lvl._skillsArray && lvl._skillsArray.includes(t.toLowerCase()));
+        //     });
+
+        //     document.getElementById('list-view').innerHTML = filtered.map((lvl, i) => {
+        //         const diffIcon = lvl.difficulty ? `<img src="assets/diffs/${lvl.difficulty.trim()}.png" class="diff-icon-small">` : '';
+        //         const thumb = lvl.smallimg || "assets/placeholder.png";
+                
+        //         // We pass the thumbnail URL as a CSS Variable (--bg-image)
+        //         return `
+        //         <div class="level-entry" onclick="showLevelDetails('${lvl.id}')" style="--bg-image: url('${thumb}')">
+        //             <div class="level-rank">#${lvl.rank}</div>
+        //             <div class="level-info">
+        //                 <div class="level-name">${lvl.name}</div>
+        //                 <div class="level-meta">by ${lvl.author || "Unknown"}</div>
+        //                 <div class="level-meta" style="color:var(--accent); font-weight:700;">${lvl.points || ""} pts</div>
+        //             </div>
+        //             <div class="level-difficulty-slot">${diffIcon}</div>
+        //         </div>`;
+        //     }).join('');
+        // }
+        
         function filterLevels() {
             if (!window.DATA || !DATA.levels) return;
             const filtered = DATA.levels.filter(lvl => {
@@ -194,10 +204,11 @@
             });
 
             document.getElementById('list-view').innerHTML = filtered.map((lvl, i) => {
-                const diffIcon = lvl.difficulty ? `<img src="assets/diffs/${lvl.difficulty.trim()}.png" class="diff-icon-small">` : '';
+                // Grab both icons based on their text values
+                const diffIcon = lvl.difficulty ? `<img style="padding:10px;" src="assets/diffs/${lvl.difficulty.trim()}.png" class="diff-icon-small" title="${lvl.difficulty}">` : '';
+                const qualityIcon = lvl.quality ? `<img src="assets/quality/${lvl.quality.trim()}.svg" class="diff-icon-small" title="${lvl.quality}">` : '';
                 const thumb = lvl.smallimg || "assets/placeholder.png";
                 
-                // We pass the thumbnail URL as a CSS Variable (--bg-image)
                 return `
                 <div class="level-entry" onclick="showLevelDetails('${lvl.id}')" style="--bg-image: url('${thumb}')">
                     <div class="level-rank">#${lvl.rank}</div>
@@ -206,29 +217,103 @@
                         <div class="level-meta">by ${lvl.author || "Unknown"}</div>
                         <div class="level-meta" style="color:var(--accent); font-weight:700;">${lvl.points || ""} pts</div>
                     </div>
-                    <div class="level-difficulty-slot">${diffIcon}</div>
+                    <div class="level-difficulty-slot" style="display: flex; gap: 5px; align-items: center;">
+                        ${qualityIcon}
+                        ${diffIcon}
+                    </div>
                 </div>`;
             }).join('');
         }
 
 
+        // function showLevelDetails(id) {
+        //     const lvl = DATA.levels.find(l => String(l.id).trim() === String(id).trim());
+        //     if (!lvl) return;
+        //     const check = (val) => (val && String(val).trim() !== "") ? val : "N/A";
+            
+        //     const modalBox = document.getElementById('modal-content-box');
+            
+        //     // background-size: cover ensures the 4:3 window is always filled by the image
+        //     modalBox.style.background = `linear-gradient(to bottom, rgba(20, 20, 20, 0.5), rgba(15, 15, 15, 0.9)), url('${lvl.img}')`;
+        //     modalBox.style.backgroundSize = "cover";
+        //     modalBox.style.backgroundPosition = "center";
+        //     modalBox.style.backgroundRepeat = "no-repeat";
+
+        //     // Helper to create the bar HTML
+        //     const renderBar = (label, val) => {
+        //         const num = parseFloat(String(val).split('/')[0]) || 0;
+        //         const percent = Math.min(Math.max((num / 10) * 100, 0), 100); // Clamp between 0-100%
+        //         const color = getStatColor(num);
+        //         const displayVal = (val && String(val).trim() !== "") ? val : "N/A";
+
+        //         return `
+        //             <div class="stat-box-container">
+        //                 <div class="stat-label" style="color:#bbb; font-size: 0.7rem; text-transform: uppercase; margin-bottom: 4px; text-align: center;">${label}</div>
+        //                 <div class="stat-bar-bg">
+        //                     <div class="stat-bar-fill" style="width: ${percent}%; background-color: ${color};"></div>
+        //                     <div class="stat-bar-text">${displayVal}</div>
+        //                 </div>
+        //             </div>
+        //         `;
+        //     };
+
+        //     document.getElementById('modal-body').innerHTML = `
+        //         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 10px;">
+        //             <div>
+        //                 <h2 style="margin:0; text-shadow: 2px 2px 4px rgba(0,0,0,1); font-size: 1.8rem;">${lvl.name}</h2>
+        //                 <p style="text-shadow: 1px 1px 3px rgba(0,0,0,1); margin: 5px 0;">By <strong>${lvl.author || "Unknown"}</strong></p>
+        //             </div>
+        //             ${lvl.difficulty ? `<img src="assets/diffs/${lvl.difficulty.trim()}.png" style="width:60px; filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.8));">` : ""}
+        //         </div>
+                
+        //         <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-bottom: 15px;">
+        //             <p style="font-size:0.95rem; color:#eee; line-height:1.4; margin:0; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">${lvl.desc || lvl.notes || "No description provided."}</p>
+        //         </div>
+                
+
+        //         <div class="stat-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px;">
+        //             ${renderBar("Enjoyment", lvl.enjoyment)}
+        //             ${renderBar("Quality", lvl.quality)}
+        //         </div>
+
+        //         <h3 style="font-size:0.9rem; margin: 15px 0 8px 0; color:#fff; text-shadow: 1px 1px 2px #000;">Skills</h3>
+        //         <div style="display:flex; flex-wrap:wrap; gap:5px;">
+        //             ${lvl.skills ? lvl.skills.split(',').map(s => `<span style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); padding:3px 8px; border-radius:4px; font-size:0.8rem;">${s.trim()}</span>`).join('') : 'N/A'}
+        //         </div>
+
+        //         <h3 style="font-size:0.9rem; margin: 15px 0 5px 0; color:#fff;">Victors</h3>
+        //         <div style="font-size:0.85rem; color:#ccc;">${lvl.victors ? lvl.victors.split(/\s+/).join(', ') : 'None'}</div>
+                
+        //         ${lvl.levelCode ? `
+        //             <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
+        //                 <span style="font-size: 0.8rem; color: #bbb;">Level Code:</span>
+        //                 <div style="display:flex; gap:8px; margin-top: 5px;">
+        //                     <input type="text" value="${lvl.levelCode}" readonly style="background:rgba(0,0,0,0.6); color:#fff; border:1px solid #444; padding:5px; border-radius:4px; flex-grow: 1; font-family: monospace;">
+        //                     <button onclick="copyLevelCode('${lvl.levelCode.replace(/'/g, "\\'")}')" style="background:var(--accent); color:#fff; border:none; padding:5px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">Copy</button>
+        //                 </div>
+        //             </div>
+        //         ` : ""}
+        //     `;
+            
+        //     document.getElementById('infoModal').style.display = "block";
+        //     document.body.style.overflow = "hidden";
+        // }
+
+
         function showLevelDetails(id) {
             const lvl = DATA.levels.find(l => String(l.id).trim() === String(id).trim());
             if (!lvl) return;
-            const check = (val) => (val && String(val).trim() !== "") ? val : "N/A";
             
             const modalBox = document.getElementById('modal-content-box');
             
-            // background-size: cover ensures the 4:3 window is always filled by the image
             modalBox.style.background = `linear-gradient(to bottom, rgba(20, 20, 20, 0.5), rgba(15, 15, 15, 0.9)), url('${lvl.img}')`;
             modalBox.style.backgroundSize = "cover";
             modalBox.style.backgroundPosition = "center";
             modalBox.style.backgroundRepeat = "no-repeat";
 
-            // Helper to create the bar HTML
             const renderBar = (label, val) => {
                 const num = parseFloat(String(val).split('/')[0]) || 0;
-                const percent = Math.min(Math.max((num / 10) * 100, 0), 100); // Clamp between 0-100%
+                const percent = Math.min(Math.max((num / 10) * 100, 0), 100); 
                 const color = getStatColor(num);
                 const displayVal = (val && String(val).trim() !== "") ? val : "N/A";
 
@@ -249,27 +334,32 @@
                         <h2 style="margin:0; text-shadow: 2px 2px 4px rgba(0,0,0,1); font-size: 1.8rem;">${lvl.name}</h2>
                         <p style="text-shadow: 1px 1px 3px rgba(0,0,0,1); margin: 5px 0;">By <strong>${lvl.author || "Unknown"}</strong></p>
                     </div>
-                    ${lvl.difficulty ? `<img src="assets/diffs/${lvl.difficulty.trim()}.png" style="width:60px; filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.8));">` : ""}
+                    
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        ${lvl.quality ? `<img src="assets/quality/${lvl.quality.trim()}.svg" style="width:60px; height:60px; filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.8)); padding: 10px;" title="${lvl.quality}">` : ""}
+                        ${lvl.difficulty ? `<img src="assets/diffs/${lvl.difficulty.trim()}.png" style="width:60px; filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.8));" title="${lvl.difficulty}">` : ""}
+                    </div>
                 </div>
                 
                 <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-bottom: 15px;">
                     <p style="font-size:0.95rem; color:#eee; line-height:1.4; margin:0; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">${lvl.desc || lvl.notes || "No description provided."}</p>
                 </div>
                 
-
-                <div class="stat-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px;">
-                    ${renderBar("Enjoyment", lvl.enjoyment)}
-                    ${renderBar("Quality", lvl.quality)}
-                    ${renderBar("Skill <--> Effort", lvl.effort)}
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px; align-items: start;">
+                    <div>
+                        ${renderBar("Enjoyment", lvl.enjoyment)}
+                        
+                        <h3 style="font-size:0.9rem; margin: 15px 0 5px 0; color:#fff;">Victors</h3>
+                        <div style="font-size:0.85rem; color:#ccc;">${lvl.victors ? lvl.victors.split(/\s+/).join(', ') : 'None'}</div>
+                    </div>
+                    
+                    <div class="stat-box-container">
+                        <h3 style="font-size:0.9rem; margin: 0 0 8px 0; color:#fff; text-shadow: 1px 1px 2px #000;">Skills</h3>
+                        <div style="display:flex; flex-wrap:wrap; gap:5px;">
+                            ${lvl.skills ? lvl.skills.split(',').map(s => `<span style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); padding:3px 8px; border-radius:4px; font-size:0.8rem;">${s.trim()}</span>`).join('') : 'N/A'}
+                        </div>
+                    </div>
                 </div>
-
-                <h3 style="font-size:0.9rem; margin: 15px 0 8px 0; color:#fff; text-shadow: 1px 1px 2px #000;">Skills</h3>
-                <div style="display:flex; flex-wrap:wrap; gap:5px;">
-                    ${lvl.skills ? lvl.skills.split(',').map(s => `<span style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); padding:3px 8px; border-radius:4px; font-size:0.8rem;">${s.trim()}</span>`).join('') : 'N/A'}
-                </div>
-
-                <h3 style="font-size:0.9rem; margin: 15px 0 5px 0; color:#fff;">Victors</h3>
-                <div style="font-size:0.85rem; color:#ccc;">${lvl.victors ? lvl.victors.split(/\s+/).join(', ') : 'None'}</div>
                 
                 ${lvl.levelCode ? `
                     <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
@@ -332,7 +422,7 @@
                 filterLevels();
             } catch (err) {
                 console.error(err);
-                document.getElementById('loading-overlay').innerHTML = "<span style='color:red;'>Connection Error. Check spreadsheet sharing and CORS.</span>";
+                document.getElementById('loading-overlay').innerHTML = "<span style='color:red;'>Connection Error.</span>";
             }
         }
 
