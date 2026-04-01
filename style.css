@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap');
+
 :root {
     --accent: #550eb3;
     --accent-light: rgba(89, 0, 255, 0.2);
@@ -14,8 +16,12 @@ body {
     padding-top: 55px; 
     background: var(--bg-page); 
     color: var(--text-main);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     line-height: 1.6;
+}
+
+input, button, select, textarea {
+    font-family: 'Montserrat', sans-serif;
 }
 
 /* HEADER / NAV */
@@ -27,10 +33,10 @@ nav {
     display: flex; 
     justify-content: space-between;
     align-items: center; 
-    padding: 0 80px; 
+    padding: 0 40px; 
     z-index: 2000; 
     border-bottom: 1px solid var(--border);
-    height: 55px;
+    height: 70px;
     box-sizing: border-box;
 }
 
@@ -42,7 +48,8 @@ nav {
 
 .nav-links { 
     display: flex; 
-    gap: 25px; 
+    gap: 20px; 
+    margin-left: auto;
 }
 
 nav a { 
@@ -123,9 +130,9 @@ main {
 }
 
 .level-rank { 
-    font-weight: 900; 
+    font-weight: 800; 
     width: 65px; 
-    color: #505050; 
+    color: var(--text-main); 
     font-size: 1.6rem; 
     display: flex; 
     justify-content: center; 
@@ -373,7 +380,7 @@ main {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: 'Montserrat', sans-serif;
 }
 
 .close-btn:hover {
@@ -526,21 +533,6 @@ main {
     background: var(--text-muted);
 }
 
-
-/* NAV ADJUSTMENTS FOR PAGE */
-nav {
-    padding: 0 40px; /* optional override for this page */
-    height: 70px;
-}
-
-.nav-links {
-    gap: 20px;
-    margin-left: auto;
-}
-
-/* LEVEL RANK TEXT */
-.level-rank { color: var(--text-main); font-weight: 800; }
-
 /* FLAG CONTAINER */
 .flag-container { 
     width: 24px; 
@@ -587,7 +579,7 @@ nav {
     margin-top: 50px; 
 }
 
-/* RANK COLORS DARK THEME WITH VISIBILITY */
+/* RANK COLORS DARK THEME */
 .rank-purple { background-color: rgb(107, 17, 121);}
 .rank-blue   { background-color: rgb(10, 71, 114);}
 .rank-green  { background-color: rgb(20, 121, 29);}
@@ -595,7 +587,7 @@ nav {
 .rank-red    { background-color: rgb(109, 21, 34);}
 .rank-gray   { background-color: rgb(78, 78, 78);}
 
-/* HOVER EFFECTS FOR RANKS - SUBTLE DARKENING */
+/* HOVER EFFECTS FOR RANKS */
 .level-entry.rank-purple:hover { background-color: rgb(97, 15, 110); }
 .level-entry.rank-blue:hover   { background-color: rgb(8, 64, 102); }
 .level-entry.rank-green:hover  { background-color: rgb(18, 110, 26); }
