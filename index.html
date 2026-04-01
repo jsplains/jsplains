@@ -177,12 +177,35 @@
             if (num <= 7.5) return "#e6ac00"; // Yellow for mid scores
             return "#008037"; // Green for high scores
         }
-        function filterLevels() {
+function filterLevels() {
             if (!window.DATA || !DATA.levels) return;
             const filtered = DATA.levels.filter(lvl => {
                 if (activeTags.length === 0) return true;
                 return activeTags.every(t => lvl._skillsArray && lvl._skillsArray.includes(t.toLowerCase()));
             });
+
+            document.getElementById('list-view').innerHTML = filtered.map((lvl, i) => {
+                const diffIcon = lvl.difficulty ? `<img style="padding:10px;" src="assets/diffs/${lvl.difficulty.trim()}.png" class="diff-icon-small" title="${lvl.difficulty}">` : '';
+                const qualityIcon = lvl.quality ? `<img src="assets/quality/${lvl.quality.trim()}.svg" class="diff-icon-small" title="${lvl.quality}">` : '';
+                //fallback
+                const thumb = lvl.img || "assets/thumbs/Noimageavailable.png";
+                const fallbackThumb = "assets/thumbs/Noimageavailable.png";
+                
+                return `
+                <div class="level-entry" onclick="showLevelDetails('${lvl.id}')" style="--bg-image: url('${thumb}'), url('${fallbackThumb}')">
+                    <div class="level-rank">#${lvl.rank}</div>
+                    <div class="level-info">
+                        <div class="level-name">${lvl.name}</div>
+                        <div class="level-meta">by ${lvl.author || "Unknown"}</div>
+                        <div class="level-meta" style="color:var(--accent); font-weight:700;">${lvl.points || ""} pts</div>
+                    </div>
+                    <div class="level-difficulty-slot" style="display: flex; gap: 5px; align-items: center;">
+                        ${qualityIcon}
+                        ${diffIcon}
+                    </div>
+                </div>`;
+            }).join('');
+        }
 
             document.getElementById('list-view').innerHTML = filtered.map((lvl, i) => {
                 // Grab both icons based on their text values
