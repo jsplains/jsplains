@@ -177,7 +177,7 @@
             if (num <= 7.5) return "#e6ac00"; // Yellow for mid scores
             return "#008037"; // Green for high scores
         }
-function filterLevels() {
+        function filterLevels() {
             if (!window.DATA || !DATA.levels) return;
             const filtered = DATA.levels.filter(lvl => {
                 if (activeTags.length === 0) return true;
@@ -187,7 +187,7 @@ function filterLevels() {
             document.getElementById('list-view').innerHTML = filtered.map((lvl, i) => {
                 const diffIcon = lvl.difficulty ? `<img style="padding:10px;" src="assets/diffs/${lvl.difficulty.trim()}.png" class="diff-icon-small" title="${lvl.difficulty}">` : '';
                 const qualityIcon = lvl.quality ? `<img src="assets/quality/${lvl.quality.trim()}.svg" class="diff-icon-small" title="${lvl.quality}">` : '';
-                //fallback
+                
                 const thumb = lvl.img || "assets/thumbs/Noimageavailable.png";
                 const fallbackThumb = "assets/thumbs/Noimageavailable.png";
                 
@@ -206,7 +206,6 @@ function filterLevels() {
                 </div>`;
             }).join('');
         }
-
             document.getElementById('list-view').innerHTML = filtered.map((lvl, i) => {
                 // Grab both icons based on their text values
                 const diffIcon = lvl.difficulty ? `<img style="padding:10px;" src="assets/diffs/${lvl.difficulty.trim()}.png" class="diff-icon-small" title="${lvl.difficulty}">` : '';
