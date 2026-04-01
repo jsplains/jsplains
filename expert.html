@@ -90,7 +90,6 @@
         </aside>
     </div>
 
-    <!-- Level Detail Modal -->
     <div id="infoModal" class="modal" style="display:none;">
         <div class="modal-content" id="modal-content-box"
             style="width:90vw; max-width:700px; aspect-ratio:4/3; position:relative; overflow-y:auto; color:#fff; display:flex; flex-direction:column;">
@@ -156,23 +155,26 @@
             const num = parseFloat(String(val).split('/')[0]);
             if (isNaN(num)) return "#333";
             if (num <= 4.5) return "#cc0000";
-            if (num <= 7.5) return "#e6ac00";
+            if (num <= 7.5) return "#e67e22";
             return "#008037";
         }
 
         function mapRowToLevel(row) {
             const name       = safeText(row["Name"] || row["name"]);
             const acronym    = safeText(row["Acronym"] || "");
-            const img        = "assets/thumbs/"      + acronym.toLowerCase() + ".png";
-            const smallimg   = "assets/smallthumbs/" + acronym.toLowerCase() + ".png";
+            
+            // Logic for image fallbacks if acronym is missing
+            const img        = acronym ? "assets/thumbs/" + acronym.toLowerCase() + ".png" : "assets/thumbs/Noimageavailable.png";
+            const smallimg   = acronym ? "assets/smallthumbs/" + acronym.toLowerCase() + ".png" : "assets/smallthumbs/Noimageavailable.png";
+            
             const author     = safeText(row["Creator(s)"] || row["Creator"] || row["Author"] || "");
             const difficulty = safeText(row["Difficulty"] || "");
             const skillsArray = parseSkills(safeText(row["Skills Needed"] || row["Skills needed"] || row["Skills"] || ""));
             const points     = safeText(row["Points"]      || "");
             const verifier   = safeText(row["Verifier"]    || "");
-            const victors    = safeText(row["Victors"]     || "");
+            const victors     = safeText(row["Victors"]     || "");
             const enjoyment  = safeText(row["Enjoyment"]   || "");
-            const quality    = safeText(row["Quality"]     || "");
+            const quality     = safeText(row["Quality"]     || "");
             const levelCode  = safeText(row["Level Code"]  || "");
             const desc       = safeText(row["Description"] || "");
 
@@ -279,11 +281,14 @@
         function renderEntry(lvl) {
             const diffIcon    = lvl.difficulty ? `<img style="padding:10px;" src="assets/diffs/${lvl.difficulty.trim()}.png" class="diff-icon-small" title="${lvl.difficulty}">` : '';
             const qualityIcon = lvl.quality     ? `<img src="assets/quality/${lvl.quality.trim()}.svg" class="diff-icon-small" title="${lvl.quality}">` : '';
-            const thumb       = lvl.smallimg || "assets/placeholder.png";
+            
+            // Fallback logic for thumbnails
+            const thumb       = lvl.smallimg || "assets/smallthumbs/Noimageavailable.png";
+            const fallbackThumb = "assets/smallthumbs/Noimageavailable.png";
 
             return `
-            <div class="level-entry expert-entry" onclick="showLevelDetails('${CSS.escape(lvl.id)}')" style="--bg-image: url('${thumb}')">
-                <img class="level-thumb" src="${thumb}" alt="${lvl.name}" onerror="this.style.display='none'">
+            <div class="level-entry expert-entry" onclick="showLevelDetails('${CSS.escape(lvl.id)}')" style="--bg-image: url('${thumb}'), url('${fallbackThumb}')">
+                <img class="level-thumb" src="${thumb}" alt="${lvl.name}" onerror="this.src='${fallbackThumb}'">
                 <div class="level-info" style="padding: 0 12px;">
                     <div class="level-name">${lvl.name}</div>
                     <div class="level-meta">by ${lvl.author || "Unknown"}</div>
@@ -306,7 +311,10 @@
             if (!lvl) return;
 
             const modalBox = document.getElementById("modal-content-box");
-            modalBox.style.background = `linear-gradient(to bottom, rgba(20,20,20,0.5), rgba(15,15,15,0.9)), url('${lvl.img}')`;
+            const fallbackLarge = "assets/thumbs/Noimageavailable.png";
+
+            // Layering backgrounds: Primary image first, Fallback second.
+            modalBox.style.background = `linear-gradient(to bottom, rgba(20,20,20,0.5), rgba(15,15,15,0.9)), url('${lvl.img}'), url('${fallbackLarge}')`;
             modalBox.style.backgroundSize = "cover";
             modalBox.style.backgroundPosition = "center";
             modalBox.style.backgroundRepeat = "no-repeat";
