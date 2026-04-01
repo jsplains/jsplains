@@ -155,21 +155,23 @@
                 return activeTags.every(t => lvl._skillsArray.includes(t.toLowerCase()));
             });
 
-            const fallback = "assets/thumbs/Noimageavailable.png";
+            // Fallback if no image is found
+            const fallbackSmall = "assets/smallthumbs/Noimageavailable.png"; 
 
             document.getElementById('list-view').innerHTML = filtered.map(lvl => {
                 const diffIcon = lvl.difficulty ? `<img src="assets/diffs/${lvl.difficulty.trim()}.png" class="diff-icon-small">` : '';
                 const qIcon = lvl.quality ? `<img src="assets/quality/${lvl.quality.trim()}.svg" class="diff-icon-small">` : '';
         
-                // Define the high-quality thumbnail path
-                const thumb = lvl.img || fallback;
+                // smallthumb
+                const acronym = lvl.acronym || "";
+                const smallThumb = acronym ? `assets/smallthumbs/${acronym}.png` : fallbackSmall;
 
                 return `
-                <div class="level-entry" onclick="showLevelDetails('${lvl.id}')" style="--bg-image: url('${thumb}'), url('${fallback}')">
-                    <img class="level-thumb" src="${thumb}" onerror="this.src='${fallback}'" alt="${lvl.name}">
+                <div class="level-entry" onclick="showLevelDetails('${lvl.id}')" style="--bg-image: url('${smallThumb}'), url('${fallbackSmall}')">
+                    <img class="level-thumb" src="${smallThumb}" onerror="this.src='${fallbackSmall}'" alt="${lvl.name}">
             
                     <div class="level-rank">#${lvl.rank}</div>
-                    
+                
                     <div class="level-info">
                         <div class="level-name">${lvl.name}</div>
                         <div class="level-meta">by ${lvl.author}</div>
