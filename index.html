@@ -14,7 +14,8 @@
             <img src="assets/logo.webp" alt="Logo" class="nav-logo">
         </a>
         <div class="nav-links">
-            <a href="/" class="active">Levels</a>
+            <a href="/" class="active">Grandmaster Zone</a>
+            <a href="/expert">Expert Zone</a>
             <a href="/leaderboard">Leaderboard</a>
         </div>
     </nav>
@@ -233,7 +234,7 @@
             document.getElementById('modal-body').innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 10px;">
                     <div>
-                        <h2 style="margin:0; text-shadow: 2px 2px 4px rgba(0,0,0,1); font-size: 1.8rem;">${lvl.name} <span style="font-size: 1.5rem; color: #999; font-weight: normal;">(Id: ${lvl.id})</span></h2>
+                        <h2 style="margin:0; text-shadow: 2px 2px 4px rgba(0,0,0,1); font-size: 1.8rem;">${lvl.name} <span style="font-size: 1.5rem; color: #999; font-weight: normal;">(Level ID: ${lvl.id})</span></h2>
                         <p style="text-shadow: 1px 1px 3px rgba(0,0,0,1); margin: 5px 0;">By <strong>${lvl.author || "Unknown"}</strong></p>
                     </div>
                     
