@@ -32,8 +32,7 @@
 
             <h3>Filter Skills</h3>
             <div id="tag-filters">
-                <!-- dynamic tag buttons will be injected here -->
-            </div>
+                </div>
         </aside>
     </div>
 
@@ -85,8 +84,12 @@
             // row fields from the spreadsheet (case sensitive per CSV header)
             const id = safeText(row["ID"] || row["id"] || row["Rank"]);
             const name = safeText(row["Name"] || row["name"]);
-            const img = "assets/thumbs/" + safeText(row["Acronym"]).toLowerCase() + ".png";
-            const smallimg = "assets/smallthumbs/" + safeText(row["Acronym"]).toLowerCase() + ".png";
+            
+            // more fallback
+            const acronym = safeText(row["Acronym"]).toLowerCase();
+            const img = acronym ? "assets/thumbs/" + acronym + ".png" : "assets/thumbs/Noimageavailable.png";
+            const smallimg = acronym ? "assets/smallthumbs/" + acronym + ".png" : "assets/smallthumbs/Noimageavailable.png";
+            
             const author = safeText(row["Creator(s)"] || row["Creator"] || row["Author"] || row["creator(s)"] || row["creator"]);
             const difficulty = safeText(row["Difficulty"] || "");
             const skillsArray = parseSkills(safeText(row["Skills Needed"] || row["Skills needed"] || row["Skills"] || ""));
@@ -185,10 +188,13 @@
                 // Grab both icons based on their text values
                 const diffIcon = lvl.difficulty ? `<img style="padding:10px;" src="assets/diffs/${lvl.difficulty.trim()}.png" class="diff-icon-small" title="${lvl.difficulty}">` : '';
                 const qualityIcon = lvl.quality ? `<img src="assets/quality/${lvl.quality.trim()}.svg" class="diff-icon-small" title="${lvl.quality}">` : '';
-                const thumb = lvl.smallimg || "assets/placeholder.png";
+                
+                // Two backgrounds. If the first fails, the second shows.
+                const thumb = lvl.smallimg || "assets/smallthumbs/Noimageavailable.png";
+                const fallbackThumb = "assets/smallthumbs/Noimageavailable.png";
                 
                 return `
-                <div class="level-entry" onclick="showLevelDetails('${lvl.id}')" style="--bg-image: url('${thumb}')">
+                <div class="level-entry" onclick="showLevelDetails('${lvl.id}')" style="--bg-image: url('${thumb}'), url('${fallbackThumb}')">
                     <div class="level-rank">#${lvl.rank}</div>
                     <div class="level-info">
                         <div class="level-name">${lvl.name}</div>
@@ -208,8 +214,10 @@
             if (!lvl) return;
             
             const modalBox = document.getElementById('modal-content-box');
+            const fallbackLarge = "assets/thumbs/Noimageavailable.png";
             
-            modalBox.style.background = `linear-gradient(to bottom, rgba(20, 20, 20, 0.5), rgba(15, 15, 15, 0.9)), url('${lvl.img}')`;
+            // Fallback stuff
+            modalBox.style.background = `linear-gradient(to bottom, rgba(20, 20, 20, 0.5), rgba(15, 15, 15, 0.9)), url('${lvl.img}'), url('${fallbackLarge}')`;
             modalBox.style.backgroundSize = "cover";
             modalBox.style.backgroundPosition = "center";
             modalBox.style.backgroundRepeat = "no-repeat";
