@@ -309,7 +309,6 @@
         <div id="leaderboard-list"></div>
     </div>
 
-    <!-- Player Modal -->
     <div id="playerModal" class="modal" style="display:none;">
         <div class="modal-content" style="max-width:780px;">
             <span onclick="closePlayerModal()" class="close-btn" style="cursor:pointer; font-size:24px; float:right;">&times;</span>
@@ -390,12 +389,10 @@
             const name    = safeText(row["Name"] || row["name"]);
             const acronym = safeText(row["Acronym"]).toLowerCase();
             const diff    = safeText(row["Difficulty"] || "");
-            // Expert zone uses no Rank column; Num is an internal sequence we don't show
             const rank    = safeText(row["Rank"] || "");
             const pts     = safeText(row["Points"] || row["points"] || "");
             const skills  = parseSkills(safeText(row["Skills Needed"] || row["Skills needed"] || row["Skills"] || ""));
             const victors = parseVictors(safeText(row["Victors"] || ""));
-            // Expert sheet stores image path in "Image" column; others derive it from acronym
             const explicitImg = safeText(row["Image"] || "");
             const smallimg = explicitImg || (acronym ? `assets/smallthumbs/${acronym}.png` : "");
             const fullimg  = acronym ? `assets/thumbs/${acronym}.png` : "";
@@ -407,7 +404,7 @@
                 fullimg,
                 diffimg:    diff ? `assets/diffs/${diff.trim()}.png` : "",
                 difficulty: diff,
-                rank,       // empty string for expert levels — no badge will render
+                rank,
                 points: pts,
                 skills,
                 victors
@@ -427,7 +424,7 @@
                 const allLevels = [...lvlData1, ...lvlData2, ...lvlData3].map(parseLevelRow);
                 window.ALL_LEVELS = allLevels;
 
-                // Global skill rates (fraction of all levels that require this skill)
+                // Global skill rates
                 const skillCounts = {};
                 allLevels.forEach(lvl => lvl.skills.forEach(s => { if (s) skillCounts[s] = (skillCounts[s] || 0) + 1; }));
                 const total = allLevels.length || 1;
@@ -457,8 +454,8 @@
                 display.sort((a, b) => getTopNumber(a.hardest) - getTopNumber(b.hardest));
             } else if (sortBy === 'totalclears') {
                 display.sort((a, b) => {
-                    const clearsA = window.ALL_LEVELS.filter(l => l.victors.some(v => v.toLowerCase() === a.name.toLowerCase())).length;
-                    const clearsB = window.ALL_LEVELS.filter(l => l.victors.some(v => v.toLowerCase() === b.name.toLowerCase())).length;
+                    const clearsA = getPlayerClears(a.name).length;
+                    const clearsB = getPlayerClears(b.name).length;
                     return clearsB - clearsA;
                 });
             }
@@ -472,7 +469,6 @@
                 else if (globalRank <=  50) colorClass = "rank-yellow";
                 else if (globalRank <= 100) colorClass = "rank-red";
 
-                // Calculate clears dynamically here instead of relying on CSV columns
                 const clears = getPlayerClears(p.name);
                 const gmCount = clears.filter(l => getDiffGroup(l.difficulty) === "gm").length;
                 const mstrCount = clears.filter(l => getDiffGroup(l.difficulty) === "master").length;
@@ -507,7 +503,6 @@
             );
         }
 
-        // Proportional skills: ratio of player's rate vs global rate, sorted desc
         function buildSkillsProfile(clears) {
             if (!clears.length) return [];
             const playerCounts = {};
@@ -520,7 +515,7 @@
                     const globalRate = window.GLOBAL_SKILL_RATES[skill] || 0.001;
                     return { skill, ratio: playerRate / globalRate, count };
                 })
-                .sort((a, b) => b.ratio - a.ratio); // Removed the slice here
+                .sort((a, b) => b.ratio - a.ratio);
         }
 
         function hardestClearCard(clearText) {
@@ -569,14 +564,14 @@
             const filtered = filter === "all" ? clears : clears.filter(lvl => getDiffGroup(lvl.difficulty) === filter);
             const grid  = document.getElementById('pm-clears-grid');
             const count = document.getElementById('pm-clears-count');
-            if (grid)  grid.innerHTML  = renderClearsGrid(clears, filter);
+            if (grid)   grid.innerHTML   = renderClearsGrid(clears, filter);
             if (count) count.textContent = `${filtered.length} clear${filtered.length !== 1 ? 's' : ''}`;
         }
 
         window.toggleSkills = function(btn) {
             const container = document.getElementById('expanded-skills');
             if (container.style.display === 'none') {
-                container.style.display = 'flex'; // Uses flex to match the other skills container
+                container.style.display = 'flex';
                 btn.textContent = 'Show Less';
             } else {
                 container.style.display = 'none';
@@ -598,12 +593,10 @@
             currentClearsFilter          = "all";
             window._currentModalClears   = clears;
 
-            // Hardest clears — 3 image cards
             const hardestCards = [player.hardest, player.secondHardest, player.thirdHardest]
                 .map(c => hardestClearCard(c || ""))
                 .join('');
 
-            // Skills profile bars logic
             const maxRatio = skillProfile.length ? skillProfile[0].ratio : 1;
             const renderSkillRow = ({ skill, ratio }) => {
                 const barPct = Math.min((ratio / Math.max(maxRatio, 1)) * 100, 100).toFixed(1);
@@ -622,13 +615,10 @@
 
             let skillsHtml = "";
             if (skillProfile.length > 0) {
-                // Grab top 7 and anything remaining
                 const top7Html = skillProfile.slice(0, 7).map(renderSkillRow).join('');
                 const restHtml = skillProfile.slice(7).map(renderSkillRow).join('');
-
                 skillsHtml = `<div class="skills-summary">${top7Html}</div>`;
                 if (restHtml) {
-                    // I reused your .clears-filter-btn class so the button matches your theme!
                     skillsHtml += `
                     <div id="expanded-skills" class="skills-summary" style="display:none; margin-top:6px;">
                         ${restHtml}
@@ -640,7 +630,6 @@
                 skillsHtml = `<div style="color:#888;font-size:0.85rem;">No skill data available.</div>`;
             }
 
-            // Modal HTML injection
             document.getElementById('player-modal-body').innerHTML = `
                 <div class="player-modal-header">
                     <img class="player-pfp" style="width:60px;height:60px;"
@@ -683,10 +672,7 @@
                         — how over-represented each skill is in their clears vs. the list average
                     </span>
                 </p>
-                ${clears.length === 0
-                    ? `<div style="color:#888;font-size:0.85rem;">No tracked clears found.</div>`
-                    : skillsHtml
-                }
+                ${clears.length === 0 ? `<div style="color:#888;font-size:0.85rem;">No tracked clears found.</div>` : skillsHtml}
 
                 <p class="modal-section-title">All Clears</p>
                 <div class="clears-filter-row">
@@ -699,10 +685,7 @@
                 </div>
 
                 ${clears.length === 0
-                    ? `<div style="color:#888;font-size:0.9rem;padding:20px;text-align:center;">
-                        No levels found with this player listed as a victor.<br>
-                        <span style="font-size:0.8rem;">Clears are matched from the Victors column on both level sheets.</span>
-                    </div>`
+                    ? `<div style="color:#888;font-size:0.9rem;padding:20px;text-align:center;">No levels found.</div>`
                     : `<div class="clears-grid" id="pm-clears-grid">${renderClearsGrid(clears, 'all')}</div>`
                 }
             `;
