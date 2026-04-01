@@ -23,13 +23,17 @@
 
     <div id="main-layout">
         <main>
-            <div id="loading-overlay">Loading into the zone...</div>
+            <div id="loading-overlay">Fetching levels from the zone...</div>
             <div id="list-view"></div>
         </main>
 
         <aside id="sidebar">
-            <a href="https://docs.google.com/forms/d/e/1FAIpQLSfgjpCE6e8sHa-GcjVrD27Tcymbc0Q7w2MGdxVTtWnKi-uoXg/viewform?usp=header" target="_blank" class="submit-btn" style="margin-bottom: 25px;">Submit a Completion</a>
-            <a href="https://docs.google.com/spreadsheets/d/10yZLCN80B0ExwiY8E5Y5GB95NV1T5UI69vLYywtg_J0/" target="_blank" class="submit-btn" style="margin-bottom: 25px;">Link to Google Sheet</a>
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLSfgjpCE6e8sHa-GcjVrD27Tcymbc0Q7w2MGdxVTtWnKi-uoXg/viewform?usp=header" target="_blank" class="submit-btn" style="margin-bottom: 25px;">
+                Submit a Completion
+            </a>
+            <a href="https://docs.google.com/spreadsheets/d/10yZLCN80B0ExwiY8E5Y5GB95NV1T5UI69vLYywtg_J0/" target="_blank" class="submit-btn" style="margin-bottom: 25px;">
+                Link to Google Sheet
+            </a>
 
             <h3>Filter Skills</h3>
             <div id="tag-filters"></div>
@@ -38,14 +42,15 @@
 
     <div id="infoModal" class="modal" style="display:none;">
         <div class="modal-content" id="modal-content-box" 
-            style="width: 90vw; max-width: 700px; aspect-ratio: 4 / 3; position: relative; overflow-y: auto; color: #fff; display: flex; flex-direction: column;">
+            style="width: 90vw; max-width: 700px; aspect-ratio: 4 / 3; position: relative; overflow-y: auto; color: #fff; display: flex; flex-direction: column; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
             
             <span onclick="closeModal()" class="close-btn" 
-                style="cursor:pointer; font-size:24px; position: absolute; top: 15px; right: 20px; z-index: 10; text-shadow: 0 1px 3px rgba(0,0,0,0.8); color: #fff;">
+                style="cursor:pointer; font-size:28px; position: absolute; top: 15px; right: 20px; z-index: 10; text-shadow: 0 1px 4px rgba(0,0,0,0.8); color: #fff;">
                 &times;
             </span>
             
-            <div id="modal-body" style="position: relative; z-index: 1; padding: 10px;"></div>
+            <div id="modal-body" style="position: relative; z-index: 1; padding: 20px; flex-grow: 1;">
+                </div>
         </div>
     </div>
 
@@ -53,7 +58,10 @@
     <script src="levelPopup.js"></script>
 
     <script>
-        // ----- CONFIG -----
+        /**
+         * CONFIGURATION
+         * IMPORTANT!!!!!!!!!!::: Update these GIDs if your spreadsheet tabs change.
+         */
         const spreadsheetId = "10yZLCN80B0ExwiY8E5Y5GB95NV1T5UI69vLYywtg_J0";
         const sheetGids = ["0", "1720349441"]; 
 
@@ -61,17 +69,32 @@
             return `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}`;
         }
 
-        // ----- UTILITIES -----
+        /**
+         * UTILITIES & PARSING
+         */
         function parseSkills(raw) {
             if (!raw) return [];
+            // Splits by newline or comma and cleans up whitespace
             return raw.split(/\r?\n|,/).map(s => s.trim()).filter(Boolean);
         }
 
         function safeText(val) { 
-            return (val === undefined || val === null) ? "" : String(val); 
+            return (val === undefined || val === null) ? "" : String(val).trim(); 
         }
 
-        // Close modal when clicking outside content
+        /**
+         * STAT COLOR LOGIC
+         * Returns hex colors based on numerical ratings (1-10) 
+         */
+        function getStatColor(val) {
+            const num = parseFloat(String(val).split('/')[0]);
+            if (isNaN(num)) return "#333";
+            if (num <= 4.5) return "#cc0000"; // bad enjoyment
+            if (num <= 7.5) return "#e6ac00"; // mid
+            return "#008037"; // good
+        }
+
+        // Close modal when clicking the dark background
         document.getElementById("infoModal").addEventListener("click", function (e) {
             const modalContent = this.querySelector(".modal-content");
             if (!modalContent.contains(e.target)) {
@@ -79,179 +102,168 @@
             }
         });
 
+        /**
+         * DATA MAPPING
+         * Converts raw CSV rows into clean Level objects
+         */
         function mapRowToLevel(row) {
-            const id = safeText(row["ID"] || row["id"] || row["Rank"]);
-            const name = safeText(row["Name"] || row["name"]);
-            const acronym = safeText(row["Acronym"] || "").toLowerCase();
-            
-            // Primary High-Quality Image
-            const img = acronym ? "assets/thumbs/" + acronym + ".png" : "assets/thumbs/Noimageavailable.png";
+            const acronym = safeText(row["Acronym"]).toLowerCase();
+            const rawSkills = safeText(row["Skills Needed"] || row["Skills"] || "");
+            const skillsArray = parseSkills(rawSkills);
             
             return {
-                id: id,
-                name: name,
-                img: img,
-                author: safeText(row["Creator(s)"] || row["Creator"] || row["Author"] || "Unknown"),
-                rank: safeText(row["Rank"] || ""),
-                difficulty: safeText(row["Difficulty"] || ""),
-                skills: parseSkills(safeText(row["Skills Needed"] || row["Skills"] || "")).join(", "),
-                _skillsArray: parseSkills(safeText(row["Skills Needed"] || row["Skills"] || "")).map(s => s.toLowerCase()),
-                points: safeText(row["Points"] || ""),
-                victors: safeText(row["Victors"] || ""),
-                enjoyment: safeText(row["Enjoyment"] || ""),
-                quality: safeText(row["Quality"] || ""),
-                desc: safeText(row["Description"] || row["Notes"] || "No description provided."),
-                levelCode: safeText(row["Level Code"] || "")
+                id: safeText(row["ID"] || row["Rank"]),
+                name: safeText(row["Name"]),
+                // High Quality Thumbnail for exz effect
+                img: acronym ? "assets/thumbs/" + acronym + ".png" : "assets/thumbs/Noimageavailable.png",
+                // Background Thumbnail (Lower res/blurred w smallthumb)
+                smallimg: acronym ? "assets/smallthumbs/" + acronym + ".png" : "assets/smallthumbs/Noimageavailable.png",
+                author: safeText(row["Creator(s)"] || row["Author"] || "Unknown"),
+                rank: safeText(row["Rank"]),
+                difficulty: safeText(row["Difficulty"]),
+                points: safeText(row["Points"]),
+                verifier: safeText(row["Verifier"]),
+                victors: safeText(row["Victors"]),
+                enjoyment: safeText(row["Enjoyment"]),
+                quality: safeText(row["Quality"]),
+                desc: safeText(row["Description"] || row["Notes"]),
+                levelCode: safeText(row["Level Code"]),
+                skills: skillsArray.join(", "),
+                _skillsArray: skillsArray.map(s => s.toLowerCase())
             };
         }
 
-        async function fetchSheetCsv(gid) {
-            const url = getCsvUrl(spreadsheetId, gid);
-            const res = await fetch(url);
-            if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
-            const text = await res.text();
-            const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
-            return parsed.data;
-        }
-
-        // ----- APP STATE -----
+        /**
+         * GLOBAL STATE
+         */
         let activeTags = [];
         window.DATA = { levels: [] };
 
-        function renderTagButtons(allTags) {
-            const container = document.getElementById("tag-filters");
-            container.innerHTML = "";
-            allTags.sort().forEach(tag => {
-                const btn = document.createElement("button");
-                btn.className = "tag-btn";
-                btn.textContent = tag;
-                btn.onclick = () => {
-                    if (activeTags.includes(tag)) {
-                        activeTags = activeTags.filter(x => x !== tag);
-                        btn.classList.remove("active-tag");
-                    } else {
-                        activeTags.push(tag);
-                        btn.classList.add("active-tag");
-                    }
-                    filterLevels();
-                };
-                container.appendChild(btn);
-            });
-        }
-
-        function getStatColor(val) {
-            const num = parseFloat(String(val).split('/')[0]);
-            if (isNaN(num)) return "#333";
-            if (num <= 4.5) return "#cc0000";
-            if (num <= 7.5) return "#e6ac00";
-            return "#008037";
-        }
-
-        // ----- LIST RENDERER (HQ UPDATE) -----
+        /**
+         * RENDER LIST VIEW (PLS WOKR ISTG)
+  
+         */
         function filterLevels() {
             if (!window.DATA.levels) return;
-            const filtered = DATA.levels.filter(lvl => {
+
+            const filtered = window.DATA.levels.filter(lvl => {
                 if (activeTags.length === 0) return true;
                 return activeTags.every(t => lvl._skillsArray.includes(t.toLowerCase()));
             });
 
-            const fallback = "assets/thumbs/Noimageavailable.png";
-
-            document.getElementById('list-view').innerHTML = filtered.map(lvl => {
-                const diffIcon = lvl.difficulty ? `<img style="padding:10px;" src="assets/diffs/${lvl.difficulty.trim()}.png" class="diff-icon-small">` : '';
-                const qIcon = lvl.quality ? `<img src="assets/quality/${lvl.quality.trim()}.svg" class="diff-icon-small">` : '';
+            const listView = document.getElementById('list-view');
+            listView.innerHTML = filtered.map(lvl => {
+                const diffIcon = lvl.difficulty ? `<img style="padding:10px;" src="assets/diffs/${lvl.difficulty.trim()}.png" class="diff-icon-small" title="${lvl.difficulty}">` : '';
+                const qualityIcon = lvl.quality ? `<img src="assets/quality/${lvl.quality.trim()}.svg" class="diff-icon-small" title="${lvl.quality}">` : '';
                 
-                // Using HQ img for the list entries now
-                const thumb = lvl.img || fallback;
-
                 return `
-                <div class="level-entry" onclick="showLevelDetails('${lvl.id}')" style="--bg-image: url('${thumb}'), url('${fallback}')">
+                <div class="level-entry" onclick="showLevelDetails('${lvl.id}')" style="--bg-image: url('${lvl.smallimg}'), url('assets/thumbs/Noimageavailable.png')">
                     <div class="level-rank">#${lvl.rank}</div>
+                    
+                    <img src="${lvl.img}" class="level-thumb-inline" alt="${lvl.name}" onerror="this.src='assets/thumbs/Noimageavailable.png'">
+
                     <div class="level-info">
                         <div class="level-name">${lvl.name}</div>
                         <div class="level-meta">by ${lvl.author}</div>
                         <div class="level-meta" style="color:var(--accent); font-weight:700;">${lvl.points} pts</div>
                     </div>
-                    <div class="level-difficulty-slot" style="display:flex; gap:5px; align-items:center;">
-                        ${qIcon} ${diffIcon}
+
+                    <div class="level-difficulty-slot" style="display: flex; gap: 5px; align-items: center;">
+                        ${qualityIcon}
+                        ${diffIcon}
                     </div>
                 </div>`;
             }).join('');
         }
 
+        /**
+         * SHOW MODAL DETAILS
+         */
         function showLevelDetails(id) {
-            const lvl = DATA.levels.find(l => String(l.id) === String(id));
+            const lvl = window.DATA.levels.find(l => String(l.id) === String(id));
             if (!lvl) return;
             
             const modalBox = document.getElementById('modal-content-box');
-            const fallback = "assets/thumbs/Noimageavailable.png";
-            
-            modalBox.style.background = `linear-gradient(to bottom, rgba(20,20,20,0.6), rgba(15,15,15,0.95)), url('${lvl.img}'), url('${fallback}')`;
+            // HQ Image used for modal background
+            modalBox.style.background = `linear-gradient(to bottom, rgba(20, 20, 20, 0.6), rgba(15, 15, 15, 0.95)), url('${lvl.img}'), url('assets/thumbs/Noimageavailable.png')`;
             modalBox.style.backgroundSize = "cover";
             modalBox.style.backgroundPosition = "center";
 
+            // Helper to render the enjoyment/quality progress bars
             const renderBar = (label, val) => {
                 const num = parseFloat(String(val).split('/')[0]) || 0;
+                const fillWidth = Math.min(Math.max((num / 10) * 100, 0), 100);
                 return `
-                    <div class="stat-box-container">
-                        <div class="stat-label" style="color:#bbb; font-size:0.7rem; text-transform:uppercase; margin-bottom:4px; text-align:center;">${label}</div>
-                        <div class="stat-bar-bg">
-                            <div class="stat-bar-fill" style="width:${num*10}%; background:${getStatColor(num)};"></div>
-                            <div class="stat-bar-text">${val || 'N/A'}</div>
+                    <div class="stat-box-container" style="margin-bottom: 10px;">
+                        <div class="stat-label" style="color:#bbb; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 4px; text-align: center;">${label}</div>
+                        <div class="stat-bar-bg" style="height: 20px; background: rgba(255,255,255,0.1); border-radius: 10px; position: relative; overflow: hidden;">
+                            <div class="stat-bar-fill" style="width: ${fillWidth}%; height: 100%; background-color: ${getStatColor(num)}; transition: width 0.5s ease;"></div>
+                            <div class="stat-bar-text" style="position: absolute; width: 100%; text-align: center; top: 0; font-size: 0.8rem; font-weight: bold; line-height: 20px;">${val || "N/A"}</div>
                         </div>
                     </div>`;
             };
 
+            // Formatting victors (comma separated)
+            const victorList = lvl.victors ? lvl.victors.split(/\s+/).join(', ') : 'No recorded victors';
+
             document.getElementById('modal-body').innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 15px;">
                     <div>
-                        <h2 style="margin:0; text-shadow:2px 2px 4px #000;">${lvl.name} <span style="font-size:1.2rem; color:#888;">(ID: ${lvl.id})</span></h2>
-                        <p style="margin:5px 0;">By <strong>${lvl.author}</strong></p>
+                        <h2 style="margin:0; text-shadow: 2px 2px 4px #000; font-size: 2rem;">${lvl.name} <span style="font-size: 1.2rem; color: #aaa;">(#${lvl.rank})</span></h2>
+                        <p style="margin: 5px 0; font-size: 1.1rem;">By <strong>${lvl.author}</strong></p>
                     </div>
-                    <div style="display:flex; gap:10px; align-items:center;">
-                        ${lvl.quality ? `<img src="assets/quality/${lvl.quality.trim()}.svg" style="width:55px;">` : ""}
-                        ${lvl.difficulty ? `<img src="assets/diffs/${lvl.difficulty.trim()}.png" style="width:55px;">` : ""}
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        ${lvl.quality ? `<img src="assets/quality/${lvl.quality.trim()}.svg" style="width:55px; filter: drop-shadow(0px 4px 5px #000);">` : ""}
+                        ${lvl.difficulty ? `<img src="assets/diffs/${lvl.difficulty.trim()}.png" style="width:55px; filter: drop-shadow(0px 4px 5px #000);">` : ""}
                     </div>
                 </div>
-                <div style="background:rgba(0,0,0,0.4); padding:12px; border-radius:8px; margin-bottom:15px;">
-                    <p style="margin:0; font-size:0.95rem; line-height:1.4;">${lvl.desc}</p>
+                
+                <div style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--accent);">
+                    <p style="font-size:1rem; color:#f0f0f0; line-height:1.5; margin:0;">${lvl.desc || "The Grandmasters have left no notes for this level."}</p>
                 </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px;">
                     <div>
                         ${renderBar("Enjoyment", lvl.enjoyment)}
-                        <h3 style="font-size:0.9rem; margin:15px 0 5px 0; color:#fff;">Victors</h3>
-                        <div style="font-size:0.85rem; color:#ccc;">${lvl.victors || 'None'}</div>
+                        <h3 style="font-size:1rem; margin: 15px 0 8px 0; color:#fff; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">Victors</h3>
+                        <div style="font-size:0.9rem; color:#ddd; max-height: 100px; overflow-y: auto;">${victorList}</div>
                     </div>
                     <div>
-                        <h3 style="font-size:0.9rem; margin:0 0 8px 0; color:#fff;">Skills</h3>
-                        <div style="display:flex; flex-wrap:wrap; gap:5px;">
-                            ${lvl.skills ? lvl.skills.split(',').map(s => `<span style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); padding:3px 8px; border-radius:4px; font-size:0.8rem;">${s.trim()}</span>`).join('') : 'N/A'}
+                        <h3 style="font-size:1rem; margin: 0 0 10px 0; color:#fff; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">Skills Needed</h3>
+                        <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                            ${lvl.skills ? lvl.skills.split(',').map(s => `<span style="background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.2); padding:4px 10px; border-radius:6px; font-size:0.85rem; color: #fff;">${s.trim()}</span>`).join('') : '<span style="color:#888;">None listed</span>'}
                         </div>
                     </div>
                 </div>
+                
                 ${lvl.levelCode ? `
-                    <div style="margin-top:15px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.1);">
-                        <span style="font-size:0.8rem; color:#bbb;">Level Code:</span>
-                        <div style="display:flex; gap:8px; margin-top:5px;">
-                            <input type="text" value="${lvl.levelCode}" readonly style="background:rgba(0,0,0,0.6); color:#fff; border:1px solid #444; padding:5px; border-radius:4px; flex-grow:1; font-family:monospace;">
-                            <button onclick="copyLevelCode(this, '${lvl.levelCode.replace(/'/g, "\\'")}')" style="background:var(--accent); color:#fff; border:none; padding:5px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">Copy</button>
-                            <button onclick="LevelPopup.show('${lvl.levelCode}')" style="background:var(--accent); color:#fff; border:none; padding:5px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">Preview</button>
+                    <div style="margin-top: 25px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <span style="font-size: 0.85rem; color: #bbb; display: block; margin-bottom: 8px;">Level ID / Code:</span>
+                        <div style="display:flex; gap:10px;">
+                            <input type="text" value="${lvl.levelCode}" readonly style="background:rgba(0,0,0,0.5); color:#fff; border:1px solid #555; padding:8px 12px; border-radius:6px; flex-grow: 1; font-family: 'Courier New', monospace; font-size: 1rem;">
+                            <button onclick="copyLevelCode(this, '${lvl.levelCode.replace(/'/g, "\\'")}')" style="background:var(--accent); color:#fff; border:none; padding:8px 15px; border-radius:6px; cursor:pointer; font-weight:bold; transition: 0.2s;">Copy</button>
+                            <button onclick="LevelPopup.show('${lvl.levelCode}')" style="background:#444; color:#fff; border:none; padding:8px 15px; border-radius:6px; cursor:pointer; font-weight:bold; transition: 0.2s;">Preview</button>
                         </div>
-                    </div>` : ""}
+                    </div>
+                ` : ""}
             `;
-
+            
             document.getElementById('infoModal').style.display = "block";
             document.body.style.overflow = "hidden";
         }
 
+        /**
+         * HELPER FUNCTIONS
+         */
         function copyLevelCode(btn, code) {
-            if (!code) return;
-            const orig = btn.textContent;
             navigator.clipboard.writeText(code).then(() => {
+                const origText = btn.textContent;
                 btn.textContent = "Copied!";
-                setTimeout(() => btn.textContent = orig, 1500);
-            }).catch(err => {
-                console.error("Copy failed", err);
+                btn.style.background = "#28a745"; // Green success
+                setTimeout(() => {
+                    btn.textContent = origText;
+                    btn.style.background = "var(--accent)";
+                }, 2000);
             });
         }
 
@@ -260,23 +272,52 @@
             document.body.style.overflow = "auto"; 
         }
 
+        /**
+         * INITIALIZATION
+         */
         async function init() {
             try {
-                const data1 = await fetchSheetCsv(sheetGids[0]);
-                const data2 = await fetchSheetCsv(sheetGids[1]);
+                // Fetch all defined sheet GIDs
+                const fetchPromises = sheetGids.map(gid => fetch(getCsvUrl(spreadsheetId, gid)).then(r => r.text()));
+                const csvTexts = await Promise.all(fetchPromises);
 
-                const merged = [...data1.map(mapRowToLevel), ...data2.map(mapRowToLevel)];
-                window.DATA.levels = merged;
+                // Parse and Merge Data
+                csvTexts.forEach(text => {
+                    const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
+                    const mapped = parsed.data.map(mapRowToLevel);
+                    window.DATA.levels.push(...mapped);
+                });
 
+                // Generate Dynamic Tag Filters
                 const tagSet = new Set();
-                merged.forEach(l => (l._skillsArray || []).forEach(s => tagSet.add(s)));
+                window.DATA.levels.forEach(l => l._skillsArray.forEach(s => tagSet.add(s)));
+                
+                const filterContainer = document.getElementById("tag-filters");
+                Array.from(tagSet).sort().forEach(tag => {
+                    const btn = document.createElement("button");
+                    btn.className = "tag-btn";
+                    btn.textContent = tag;
+                    btn.onclick = () => {
+                        btn.classList.toggle("active-tag");
+                        if (activeTags.includes(tag)) {
+                            activeTags = activeTags.filter(t => t !== tag);
+                        } else {
+                            activeTags.push(tag);
+                        }
+                        filterLevels();
+                    };
+                    filterContainer.appendChild(btn);
+                });
 
-                renderTagButtons(Array.from(tagSet));
+                // Hide Loading and Display List
                 document.getElementById('loading-overlay').style.display = 'none';
                 filterLevels();
+                console.log("Zone initialized with " + window.DATA.levels.length + " levels.");
+
             } catch (err) {
-                console.error(err);
-                document.getElementById('loading-overlay').innerHTML = "<span style='color:red;'>Connection Error. Please check spreadsheet visibility.</span>";
+                console.error("Initialization failed:", err);
+                document.getElementById('loading-overlay').innerHTML = 
+                    "<div style='color:#ff4d4d; font-weight:bold;'>CONNECTION ERROR<br><span style='font-size:0.8rem; font-weight:normal;'>Check console (F12) for details.</span></div>";
             }
         }
 
