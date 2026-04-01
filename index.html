@@ -158,22 +158,27 @@
             const fallback = "assets/thumbs/Noimageavailable.png";
 
             document.getElementById('list-view').innerHTML = filtered.map(lvl => {
-                const diffIcon = lvl.difficulty ? `<img style="padding:10px;" src="assets/diffs/${lvl.difficulty.trim()}.png" class="diff-icon-small">` : '';
+                const diffIcon = lvl.difficulty ? `<img src="assets/diffs/${lvl.difficulty.trim()}.png" class="diff-icon-small">` : '';
                 const qIcon = lvl.quality ? `<img src="assets/quality/${lvl.quality.trim()}.svg" class="diff-icon-small">` : '';
-                
-                // Using HQ img for the list entries now
+        
+                // Define the high-quality thumbnail path
                 const thumb = lvl.img || fallback;
 
                 return `
                 <div class="level-entry" onclick="showLevelDetails('${lvl.id}')" style="--bg-image: url('${thumb}'), url('${fallback}')">
+                    <img class="level-thumb" src="${thumb}" onerror="this.src='${fallback}'" alt="${lvl.name}">
+            
                     <div class="level-rank">#${lvl.rank}</div>
+                    
                     <div class="level-info">
                         <div class="level-name">${lvl.name}</div>
                         <div class="level-meta">by ${lvl.author}</div>
                         <div class="level-meta" style="color:var(--accent); font-weight:700;">${lvl.points} pts</div>
                     </div>
+
                     <div class="level-difficulty-slot" style="display:flex; gap:5px; align-items:center;">
-                        ${qIcon} ${diffIcon}
+                        ${qIcon} 
+                        ${diffIcon}
                     </div>
                 </div>`;
             }).join('');
