@@ -85,7 +85,7 @@
             const img = acronym ? "assets/thumbs/" + acronym + ".png" : "assets/thumbs/Noimageavailable.png";
             
             return {
-                id: id,
+                id: safeText(row["ID (M82)"] || "N/A"),
                 name: name,
                 img: img,
                 author: safeText(row["Creator(s)"] || row["Creator"] || row["Author"] || "Unknown"),
