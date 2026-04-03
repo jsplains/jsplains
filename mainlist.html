@@ -53,7 +53,6 @@
     <script src="levelPopup.js"></script>
 
     <script>
-        // ----- CONFIG -----
         const spreadsheetId = "10yZLCN80B0ExwiY8E5Y5GB95NV1T5UI69vLYywtg_J0";
         const sheetGids = ["0", "1720349441"]; 
 
@@ -61,7 +60,6 @@
             return `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}`;
         }
 
-        // ----- UTILITIES -----
         function parseSkills(raw) {
             if (!raw) return [];
             return raw.split(/\r?\n|,/).map(s => s.trim()).filter(Boolean);
@@ -79,13 +77,15 @@
         });
 
         function mapRowToLevel(row) {
-            const id = safeText(row["ID"] || row["id"] || row["Rank"]);
             const name = safeText(row["Name"] || row["name"]);
             const acronym = safeText(row["Acronym"] || "").toLowerCase();
             const img = acronym ? "assets/thumbs/" + acronym + ".png" : "assets/thumbs/Noimageavailable.png";
+            const m82id = safeText(row["ID (M82)"] || "N/A");
             
             return {
-                id: safeText(row["ID (M82)"] || "N/A"),
+                // Keep Internal ID for lookups, but we'll use m82id for display
+                id: m82id,
+                m82id: m82id,
                 name: name,
                 img: img,
                 author: safeText(row["Creator(s)"] || row["Creator"] || row["Author"] || "Unknown"),
@@ -193,12 +193,11 @@
                     </div>`;
             };
 
-            const authorName = lvl.author.toLowerCase().trim();
-            const rawVictors = lvl.victors ? lvl.victors.split(/[ ,]+/).map(v => v.trim()).filter(v => v !== "" && v.toLowerCase() !== "none") : [];
-            const sortedVictors = rawVictors.sort((a, b) => (b.toLowerCase() === authorName) - (a.toLowerCase() === authorName));
+            // --- VICTOR LOGIC ---
+            const finalDisplayList = lvl.victors ? lvl.victors.split(/[ ,]+/).map(v => v.trim()).filter(v => v !== "" && v.toLowerCase() !== "none") : [];
 
-            const victorsHtml = sortedVictors.length > 0 ? sortedVictors.map(v => {
-                const isVerifier = v.toLowerCase() === authorName;
+            const victorsHtml = finalDisplayList.length > 0 ? finalDisplayList.map((v, index) => {
+                const isVerifier = (index === 0);
                 return `
                     <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; gap:12px; margin-bottom:10px;">
                         <img src="assets/players/${v}.png" onerror="this.src='assets/players/default.png'" style="width:35px; height:35px; border-radius:4px; object-fit:cover; border:1px solid rgba(255,255,255,0.2);">
@@ -212,7 +211,7 @@
             document.getElementById('modal-body').innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:15px;">
                     <div>
-                        <h2 style="margin:0; font-size:2rem; text-shadow:2px 2px 4px #000;">${lvl.name} <span style="font-size:1.1rem; color:#888; font-weight:normal;">#${lvl.rank}</span></h2>
+                        <h2 style="margin:0; font-size:2rem; text-shadow:2px 2px 4px #000;">${lvl.name} <span style="font-size:1.1rem; color:#888; font-weight:normal;">(${lvl.m82id})</span></h2>
                         <p style="margin:5px 0; color:#ccc;">Created by <strong style="color:#fff;">${lvl.author}</strong></p>
                     </div>
                     <div style="display:flex; gap:15px; align-items:center;">
