@@ -53,6 +53,7 @@
     <script src="levelPopup.js"></script>
 
     <script>
+        // ----- CONFIG -----
         const spreadsheetId = "10yZLCN80B0ExwiY8E5Y5GB95NV1T5UI69vLYywtg_J0";
         const sheetGids = ["0", "1720349441"]; 
 
@@ -60,6 +61,7 @@
             return `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}`;
         }
 
+        // ----- UTILITIES -----
         function parseSkills(raw) {
             if (!raw) return [];
             return raw.split(/\r?\n|,/).map(s => s.trim()).filter(Boolean);
@@ -83,7 +85,6 @@
             const m82id = safeText(row["ID (M82)"] || "N/A");
             
             return {
-                // Keep Internal ID for lookups, but we'll use m82id for display
                 id: m82id,
                 m82id: m82id,
                 name: name,
@@ -94,6 +95,7 @@
                 skills: parseSkills(safeText(row["Skills Needed"] || row["Skills"] || "")).join(", "),
                 _skillsArray: parseSkills(safeText(row["Skills Needed"] || row["Skills"] || "")).map(s => s.toLowerCase()),
                 points: safeText(row["Points"] || ""),
+                verifier: safeText(row["Verifier"] || ""),
                 victors: safeText(row["Victors"] || ""),
                 enjoyment: safeText(row["Enjoyment"] || ""),
                 quality: safeText(row["Quality"] || ""),
@@ -181,6 +183,38 @@
             modalBox.style.backgroundSize = "cover";
             modalBox.style.backgroundPosition = "center";
 
+            // --- VICTOR & VERIFIER LOGIC ---
+            const verifierName = lvl.verifier.trim();
+            const otherVictors = lvl.victors ? lvl.victors.split(/[ ,]+/)
+                .map(v => v.trim())
+                .filter(v => v !== "" && v.toLowerCase() !== "none" && v.toLowerCase() !== verifierName.toLowerCase()) 
+                : [];
+
+            let victorsHtml = '';
+
+            if (verifierName && verifierName.toLowerCase() !== "none") {
+                victorsHtml += `
+                    <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; gap:12px; margin-bottom:10px;">
+                        <img src="assets/players/${verifierName}.png" onerror="this.src='assets/players/default.png'" style="width:35px; height:35px; border-radius:4px; object-fit:cover; border:1px solid rgba(255,255,255,0.2);">
+                        <div style="overflow:hidden;">
+                            <div style="font-weight:bold; font-size:0.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${verifierName}</div>
+                            <div style="font-size:0.6rem; color:var(--accent); text-transform:uppercase; font-weight:800; margin-top:1px;">Verifier</div>
+                        </div>
+                    </div>`;
+            }
+
+            otherVictors.forEach(v => {
+                victorsHtml += `
+                    <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; gap:12px; margin-bottom:10px;">
+                        <img src="assets/players/${v}.png" onerror="this.src='assets/players/default.png'" style="width:35px; height:35px; border-radius:4px; object-fit:cover; border:1px solid rgba(255,255,255,0.2);">
+                        <div style="overflow:hidden;">
+                            <div style="font-weight:bold; font-size:0.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${v}</div>
+                        </div>
+                    </div>`;
+            });
+
+            if (!victorsHtml) victorsHtml = '<div style="color:#666; text-align:center; margin-top:20px;">No victors recorded</div>';
+
             const renderBar = (label, val) => {
                 const num = parseFloat(String(val).split('/')[0]) || 0;
                 return `
@@ -192,21 +226,6 @@
                         </div>
                     </div>`;
             };
-
-            // --- VICTOR LOGIC ---
-            const finalDisplayList = lvl.victors ? lvl.victors.split(/[ ,]+/).map(v => v.trim()).filter(v => v !== "" && v.toLowerCase() !== "none") : [];
-
-            const victorsHtml = finalDisplayList.length > 0 ? finalDisplayList.map((v, index) => {
-                const isVerifier = (index === 0);
-                return `
-                    <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; gap:12px; margin-bottom:10px;">
-                        <img src="assets/players/${v}.png" onerror="this.src='assets/players/default.png'" style="width:35px; height:35px; border-radius:4px; object-fit:cover; border:1px solid rgba(255,255,255,0.2);">
-                        <div style="overflow:hidden;">
-                            <div style="font-weight:bold; font-size:0.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${v}</div>
-                            ${isVerifier ? `<div style="font-size:0.6rem; color:var(--accent); text-transform:uppercase; font-weight:800; margin-top:1px;">Verifier</div>` : ''}
-                        </div>
-                    </div>`;
-            }).join('') : '<div style="color:#666; text-align:center; margin-top:20px;">No victors recorded</div>';
 
             document.getElementById('modal-body').innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:15px;">
@@ -258,7 +277,6 @@
                             ${victorsHtml}
                         </div>
                     </div>
-
                 </div>
             `;
 
