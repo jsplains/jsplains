@@ -38,14 +38,14 @@
 
     <div id="infoModal" class="modal" style="display:none;">
         <div class="modal-content" id="modal-content-box" 
-            style="width: 90vw; max-width: 700px; aspect-ratio: 4 / 3; position: relative; overflow-y: auto; color: #fff; display: flex; flex-direction: column;">
+            style="width: 95vw; max-width: 900px; min-height: 500px; position: relative; overflow-y: auto; color: #fff; display: flex; flex-direction: column;">
             
             <span onclick="closeModal()" class="close-btn" 
                 style="cursor:pointer; font-size:24px; position: absolute; top: 15px; right: 20px; z-index: 10; text-shadow: 0 1px 3px rgba(0,0,0,0.8); color: #fff;">
                 &times;
             </span>
             
-            <div id="modal-body" style="position: relative; z-index: 1; padding: 10px;"></div>
+            <div id="modal-body" style="position: relative; z-index: 1; padding: 20px; height: 100%; display: flex; flex-direction: column; flex-grow: 1;"></div>
         </div>
     </div>
 
@@ -71,7 +71,6 @@
             return (val === undefined || val === null) ? "" : String(val); 
         }
 
-        // Close modal when clicking outside content
         document.getElementById("infoModal").addEventListener("click", function (e) {
             const modalContent = this.querySelector(".modal-content");
             if (!modalContent.contains(e.target)) {
@@ -83,8 +82,6 @@
             const id = safeText(row["ID"] || row["id"] || row["Rank"]);
             const name = safeText(row["Name"] || row["name"]);
             const acronym = safeText(row["Acronym"] || "").toLowerCase();
-            
-            // Primary High-Quality Image
             const img = acronym ? "assets/thumbs/" + acronym + ".png" : "assets/thumbs/Noimageavailable.png";
             
             return {
@@ -114,7 +111,6 @@
             return parsed.data;
         }
 
-        // ----- APP STATE -----
         let activeTags = [];
         window.DATA = { levels: [] };
 
@@ -147,38 +143,28 @@
             return "#008037";
         }
 
-        // ----- LIST RENDERER (HQ UPDATE) -----
         function filterLevels() {
             if (!window.DATA.levels) return;
             const filtered = DATA.levels.filter(lvl => {
                 if (activeTags.length === 0) return true;
                 return activeTags.every(t => lvl._skillsArray.includes(t.toLowerCase()));
             });
-
             const fallback = "assets/thumbs/Noimageavailable.png";
-
             document.getElementById('list-view').innerHTML = filtered.map(lvl => {
                 const diffIcon = lvl.difficulty ? `<img src="assets/diffs/${lvl.difficulty.trim()}.png" class="diff-icon-small">` : '';
                 const qIcon = lvl.quality ? `<img src="assets/quality/${lvl.quality.trim()}.svg" class="diff-icon-small">` : '';
-        
-                // Define the high-quality thumbnail path
                 const thumb = lvl.img || fallback;
-
                 return `
                 <div class="level-entry" onclick="showLevelDetails('${lvl.id}')" style="--bg-image: url('${thumb}'), url('${fallback}')">
                     <img class="level-thumb" src="${thumb}" onerror="this.src='${fallback}'" alt="${lvl.name}">
-            
                     <div class="level-rank">#${lvl.rank}</div>
-                    
                     <div class="level-info">
                         <div class="level-name">${lvl.name}</div>
                         <div class="level-meta">by ${lvl.author}</div>
                         <div class="level-meta" style="color:var(--accent); font-weight:700;">${lvl.points} pts</div>
                     </div>
-
                     <div class="level-difficulty-slot" style="display:flex; gap:5px; align-items:center;">
-                        ${qIcon} 
-                        ${diffIcon}
+                        ${qIcon} ${diffIcon}
                     </div>
                 </div>`;
             }).join('');
@@ -191,58 +177,90 @@
             const modalBox = document.getElementById('modal-content-box');
             const fallback = "assets/thumbs/Noimageavailable.png";
             
-            modalBox.style.background = `linear-gradient(to bottom, rgba(20,20,20,0.6), rgba(15,15,15,0.95)), url('${lvl.img}'), url('${fallback}')`;
+            modalBox.style.background = `linear-gradient(to bottom, rgba(20,20,20,0.8), rgba(15,15,15,0.98)), url('${lvl.img}'), url('${fallback}')`;
             modalBox.style.backgroundSize = "cover";
             modalBox.style.backgroundPosition = "center";
 
             const renderBar = (label, val) => {
                 const num = parseFloat(String(val).split('/')[0]) || 0;
                 return `
-                    <div class="stat-box-container">
+                    <div class="stat-box-container" style="margin-bottom:15px;">
                         <div class="stat-label" style="color:#bbb; font-size:0.7rem; text-transform:uppercase; margin-bottom:4px; text-align:center;">${label}</div>
-                        <div class="stat-bar-bg">
-                            <div class="stat-bar-fill" style="width:${num*10}%; background:${getStatColor(num)};"></div>
-                            <div class="stat-bar-text">${val || 'N/A'}</div>
+                        <div class="stat-bar-bg" style="background:rgba(255,255,255,0.1); height:20px; border-radius:10px; position:relative; overflow:hidden;">
+                            <div class="stat-bar-fill" style="width:${num*10}%; background:${getStatColor(num)}; height:100%;"></div>
+                            <div class="stat-bar-text" style="position:absolute; width:100%; text-align:center; top:0; font-size:0.75rem; line-height:20px; font-weight:bold;">${val || 'N/A'}</div>
                         </div>
                     </div>`;
             };
 
+            const authorName = lvl.author.toLowerCase().trim();
+            const rawVictors = lvl.victors ? lvl.victors.split(/[ ,]+/).map(v => v.trim()).filter(v => v !== "" && v.toLowerCase() !== "none") : [];
+            const sortedVictors = rawVictors.sort((a, b) => (b.toLowerCase() === authorName) - (a.toLowerCase() === authorName));
+
+            const victorsHtml = sortedVictors.length > 0 ? sortedVictors.map(v => {
+                const isVerifier = v.toLowerCase() === authorName;
+                return `
+                    <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; gap:12px; margin-bottom:10px;">
+                        <img src="assets/players/${v}.png" onerror="this.src='assets/players/default.png'" style="width:35px; height:35px; border-radius:4px; object-fit:cover; border:1px solid rgba(255,255,255,0.2);">
+                        <div style="overflow:hidden;">
+                            <div style="font-weight:bold; font-size:0.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${v}</div>
+                            ${isVerifier ? `<div style="font-size:0.6rem; color:var(--accent); text-transform:uppercase; font-weight:800; margin-top:1px;">Verifier</div>` : ''}
+                        </div>
+                    </div>`;
+            }).join('') : '<div style="color:#666; text-align:center; margin-top:20px;">No victors recorded</div>';
+
             document.getElementById('modal-body').innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:15px;">
                     <div>
-                        <h2 style="margin:0; text-shadow:2px 2px 4px #000;">${lvl.name} <span style="font-size:1.2rem; color:#888;">(ID: ${lvl.id})</span></h2>
-                        <p style="margin:5px 0;">By <strong>${lvl.author}</strong></p>
+                        <h2 style="margin:0; font-size:2rem; text-shadow:2px 2px 4px #000;">${lvl.name} <span style="font-size:1.1rem; color:#888; font-weight:normal;">#${lvl.rank}</span></h2>
+                        <p style="margin:5px 0; color:#ccc;">Created by <strong style="color:#fff;">${lvl.author}</strong></p>
                     </div>
-                    <div style="display:flex; gap:10px; align-items:center;">
-                        ${lvl.quality ? `<img src="assets/quality/${lvl.quality.trim()}.svg" style="width:55px;">` : ""}
-                        ${lvl.difficulty ? `<img src="assets/diffs/${lvl.difficulty.trim()}.png" style="width:55px;">` : ""}
+                    <div style="display:flex; gap:15px; align-items:center;">
+                        ${lvl.quality ? `<img src="assets/quality/${lvl.quality.trim()}.svg" style="width:60px;" title="Quality">` : ""}
+                        ${lvl.difficulty ? `<img src="assets/diffs/${lvl.difficulty.trim()}.png" style="width:60px;" title="Difficulty">` : ""}
                     </div>
                 </div>
-                <div style="background:rgba(0,0,0,0.4); padding:12px; border-radius:8px; margin-bottom:15px;">
-                    <p style="margin:0; font-size:0.95rem; line-height:1.4;">${lvl.desc}</p>
-                </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
-                    <div>
-                        ${renderBar("Enjoyment", lvl.enjoyment)}
-                        <h3 style="font-size:0.9rem; margin:15px 0 5px 0; color:#fff;">Victors</h3>
-                        <div style="font-size:0.85rem; color:#ccc;">${lvl.victors || 'None'}</div>
-                    </div>
-                    <div>
-                        <h3 style="font-size:0.9rem; margin:0 0 8px 0; color:#fff;">Skills</h3>
-                        <div style="display:flex; flex-wrap:wrap; gap:5px;">
-                            ${lvl.skills ? lvl.skills.split(',').map(s => `<span style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); padding:3px 8px; border-radius:4px; font-size:0.8rem;">${s.trim()}</span>`).join('') : 'N/A'}
+
+                <div style="display:grid; grid-template-columns: 1fr 280px; gap:30px; flex-grow:1; overflow:hidden;">
+                    
+                    <div style="overflow-y:auto; padding-right:10px;">
+                        <div style="background:rgba(0,0,0,0.3); padding:15px; border-radius:10px; border:1px solid rgba(255,255,255,0.05); margin-bottom:20px;">
+                            <h3 style="font-size:0.8rem; text-transform:uppercase; color:#888; margin:0 0 10px 0;">Description</h3>
+                            <p style="margin:0; font-size:0.95rem; line-height:1.5; color:#eee;">${lvl.desc}</p>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+                            <div>
+                                ${renderBar("Enjoyment", lvl.enjoyment)}
+                                <h3 style="font-size:0.8rem; text-transform:uppercase; color:#888; margin:20px 0 10px 0;">Required Skills</h3>
+                                <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                                    ${lvl.skills ? lvl.skills.split(',').map(s => `<span style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); padding:4px 10px; border-radius:6px; font-size:0.75rem;">${s.trim()}</span>`).join('') : 'N/A'}
+                                </div>
+                            </div>
+                            <div style="display:flex; flex-direction:column; justify-content:flex-end;">
+                                ${lvl.levelCode ? `
+                                <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);">
+                                    <span style="font-size:0.7rem; color:#888; text-transform:uppercase;">Level Code</span>
+                                    <div style="display:flex; gap:8px; margin-top:8px;">
+                                        <input type="text" value="${lvl.levelCode}" readonly style="background:rgba(0,0,0,0.5); color:#fff; border:1px solid #444; padding:6px; border-radius:4px; flex-grow:1; font-family:monospace; font-size:0.85rem;">
+                                        <button onclick="copyLevelCode(this, '${lvl.levelCode.replace(/'/g, "\\'")}')" style="background:var(--accent); color:#fff; border:none; padding:0 12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.8rem;">Copy</button>
+                                        <button onclick="LevelPopup.show('${lvl.levelCode}')" style="background:var(--accent); color:#fff; border:none; padding:0 12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.8rem;">Preview</button>
+                                    </div>
+                                </div>` : ""}
+                            </div>
                         </div>
                     </div>
-                </div>
-                ${lvl.levelCode ? `
-                    <div style="margin-top:15px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.1);">
-                        <span style="font-size:0.8rem; color:#bbb;">Level Code:</span>
-                        <div style="display:flex; gap:8px; margin-top:5px;">
-                            <input type="text" value="${lvl.levelCode}" readonly style="background:rgba(0,0,0,0.6); color:#fff; border:1px solid #444; padding:5px; border-radius:4px; flex-grow:1; font-family:monospace;">
-                            <button onclick="copyLevelCode(this, '${lvl.levelCode.replace(/'/g, "\\'")}')" style="background:var(--accent); color:#fff; border:none; padding:5px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">Copy</button>
-                            <button onclick="LevelPopup.show('${lvl.levelCode}')" style="background:var(--accent); color:#fff; border:none; padding:5px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">Preview</button>
+
+                    <div style="background:rgba(255,255,255,0.03); border-radius:12px; border:1px solid rgba(255,255,255,0.1); display:flex; flex-direction:column; height:320px; overflow:hidden;">
+                        <div style="padding:15px; border-bottom:1px solid rgba(255,255,255,0.1);">
+                            <h3 style="font-size:0.8rem; text-transform:uppercase; color:#888; margin:0; letter-spacing:1px;">Victors</h3>
                         </div>
-                    </div>` : ""}
+                        <div style="flex-grow:1; overflow-y:auto; padding:15px; scrollbar-width: thin;">
+                            ${victorsHtml}
+                        </div>
+                    </div>
+
+                </div>
             `;
 
             document.getElementById('infoModal').style.display = "block";
@@ -255,8 +273,6 @@
             navigator.clipboard.writeText(code).then(() => {
                 btn.textContent = "Copied!";
                 setTimeout(() => btn.textContent = orig, 1500);
-            }).catch(err => {
-                console.error("Copy failed", err);
             });
         }
 
@@ -269,22 +285,18 @@
             try {
                 const data1 = await fetchSheetCsv(sheetGids[0]);
                 const data2 = await fetchSheetCsv(sheetGids[1]);
-
                 const merged = [...data1.map(mapRowToLevel), ...data2.map(mapRowToLevel)];
                 window.DATA.levels = merged;
-
                 const tagSet = new Set();
                 merged.forEach(l => (l._skillsArray || []).forEach(s => tagSet.add(s)));
-
                 renderTagButtons(Array.from(tagSet));
                 document.getElementById('loading-overlay').style.display = 'none';
                 filterLevels();
             } catch (err) {
                 console.error(err);
-                document.getElementById('loading-overlay').innerHTML = "<span style='color:red;'>Connection Error. Please check spreadsheet visibility.</span>";
+                document.getElementById('loading-overlay').innerHTML = "<span style='color:red;'>Connection Error.</span>";
             }
         }
-
         window.onload = init;
     </script>
 </body>
