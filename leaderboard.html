@@ -9,9 +9,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <style>
-        /* Base Layout & Spacing */
-        body { margin: 0; padding: 0; overflow: hidden; background: var(--bg-page); }
-
+        /* Layout Fixes */
+        body { margin: 0; padding: 0; overflow: hidden; background: var(--bg-page); font-family: 'Inter', sans-serif; }
 
         .main-wrapper { 
             display: flex; 
@@ -63,30 +62,37 @@
 
         #leaderboard-list { flex: 1; overflow-y: auto; padding: 10px; }
 
-        /* Sidebar Entry Styling */
-        #leaderboard-list .level-entry {
+        /* Sidebar Item Styling */
+        .level-entry {
+            display: flex;
+            align-items: center;
             margin-bottom: 8px;
-            padding: 10px;
-            background: rgba(15, 23, 42, 0.3);
+            padding: 12px;
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 6px;
             border-left: 4px solid #888;
+            transition: 0.2s ease;
+            cursor: pointer;
         }
 
-        #leaderboard-list .level-entry.selected {
-            border-color: var(--accent);
-            background: var(--accent-light);
-        }
+        .level-entry:hover { background: rgba(255, 255, 255, 0.05); transform: translateX(4px); }
+        .level-entry.selected { border-color: var(--accent) !important; background: var(--accent-light); }
 
-        .level-rank { 
-            width: 45px; 
-            font-size: 1.1rem !important; 
-            color: var(--text-main); 
-            justify-content: flex-start !important;
-        }
+        /* Ranking Colors */
+        .rank-purple { border-left-color: #a155ff !important; }
+        .rank-blue   { border-left-color: #5587ff !important; }
+        .rank-green  { border-left-color: #55ff77 !important; }
+        .rank-yellow { border-left-color: #f9ff55 !important; }
+        .rank-red    { border-left-color: #ff5555 !important; }
+        .rank-gray   { border-left-color: #888888 !important; }
 
-        .player-pfp { width: 38px; height: 38px; border-radius: 6px; margin-right: 12px; object-fit: cover; }
-        .level-points { font-weight: 800; color: var(--accent); font-size: 0.9rem; margin-left: auto; }
+        .level-rank { width: 45px; font-weight: 900; color: var(--text-main); font-size: 1.1rem; }
+        .player-pfp { width: 40px; height: 40px; border-radius: 8px; margin-right: 12px; object-fit: cover; border: 1px solid var(--border); }
+        .player-info { flex: 1; display: flex; flex-direction: column; }
+        .player-name-wrapper { display: flex; align-items: center; gap: 6px; }
+        .level-points { font-weight: 900; color: var(--accent); font-size: 1rem; }
 
-        /* Profile Details Column */
+        /* Details Column */
         .details-column { 
             flex: 1; 
             background: var(--bg-card); 
@@ -97,40 +103,38 @@
             box-shadow: var(--shadow);
         }
 
-        .pstat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 20px 0; }
-        .pstat { background: var(--bg-page); border: 1px solid var(--border); border-radius: 10px; padding: 12px; text-align: center; }
-        .pstat-val { font-size: 1.3rem; font-weight: 900; color: var(--text-main); display: block; }
-        .pstat-label { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
+        .pstat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 25px 0; }
+        .pstat { background: var(--bg-page); border: 1px solid var(--border); border-radius: 12px; padding: 15px; text-align: center; }
+        .pstat-val { font-size: 1.5rem; font-weight: 900; color: var(--text-main); display: block; }
+        .pstat-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px; }
 
-        /* Cards & Skill Bars */
+        /* Hardest Clear Banner */
         .hc-card { 
-            position: relative; 
-            border-radius: 12px; 
-            overflow: hidden; 
-            border: 1px solid var(--border); 
-            width: 100%;
-            aspect-ratio: 21 / 9;
-            background: #000; 
+            position: relative; border-radius: 14px; overflow: hidden; 
+            border: 1px solid var(--border); width: 100%; aspect-ratio: 21 / 9; background: #000; 
         }
-        .hc-thumb { width: 100%; height: 100%; object-fit: cover; opacity: 0.5; }
+        .hc-thumb { width: 100%; height: 100%; object-fit: cover; opacity: 0.75; }
         .hc-overlay { 
-            position: absolute; inset: 0; padding: 20px;
-            background: linear-gradient(0deg, var(--bg-page) 5%, transparent 100%); 
+            position: absolute; inset: 0; padding: 25px;
+            background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, transparent 70%); 
             display: flex; flex-direction: column; justify-content: flex-end; 
         }
 
-        .skill-bar-bg { background: var(--bg-page); height: 12px; border-radius: 6px; border: 1px solid var(--border); overflow: hidden; margin: 6px 0 12px 0; }
-        .skill-bar-fill { height: 100%; transition: width 0.6s ease; }
+        /* Skill Profile */
+        .skill-bar-bg { background: var(--bg-page); height: 14px; border-radius: 7px; border: 1px solid var(--border); overflow: hidden; margin: 8px 0 15px 0; }
+        .skill-bar-fill { height: 100%; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
 
-        .section-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); margin: 35px 0 15px 0; border-bottom: 1px solid var(--border); padding-bottom: 8px; font-weight: 800; }
+        .section-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin: 40px 0 20px 0; border-bottom: 1px solid var(--border); padding-bottom: 10px; font-weight: 900; }
         
-        .clears-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); gap: 10px; }
-        .clear-card { position: relative; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); aspect-ratio: 1; background: var(--bg-page); }
-        .cc-label { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.8); font-size: 0.6rem; padding: 6px 2px; text-align: center; color: #fff; font-weight: 700; }
+        /* Grid */
+        .clears-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; }
+        .clear-card { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); aspect-ratio: 1; background: var(--bg-page); transition: 0.2s; }
+        .clear-card:hover { transform: scale(1.05); z-index: 2; border-color: var(--accent); }
+        .cc-label { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.85); font-size: 0.65rem; padding: 8px 4px; text-align: center; color: #fff; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         .clears-filter-btn {
             background: var(--bg-page); border: 1px solid var(--border); color: var(--text-muted); 
-            padding: 7px 16px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 700; transition: 0.2s;
+            padding: 8px 20px; border-radius: 10px; cursor: pointer; font-size: 0.85rem; font-weight: 800; transition: 0.2s;
         }
         .clears-filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
     </style>
@@ -155,7 +159,7 @@
                     <option value="difficulty">Hardest</option>
                     <option value="totalclears">Clears</option>
                 </select>
-                <input type="text" id="player-search" class="search-bar" placeholder="Search victors..." oninput="renderLeaderboard()">
+                <input type="text" id="player-search" class="search-bar" placeholder="Search players..." oninput="renderLeaderboard()">
                 <i class="fa-solid fa-magnifying-glass" style="color: var(--text-muted)"></i>
             </div>
         </div>
@@ -164,8 +168,8 @@
 
     <div class="details-column" id="player-profile-view">
         <div style="height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; color: var(--text-muted);">
-            <i class="fa-solid fa-medal" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.1;"></i>
-            <h3>Select a victor to view profile</h3>
+            <i class="fa-solid fa-medal" style="font-size: 4rem; margin-bottom: 20px; opacity: 0.05;"></i>
+            <h3 style="letter-spacing: 1px; font-weight: 300;">Select a player to view their profile</h3>
         </div>
     </div>
 </div>
@@ -184,7 +188,6 @@
     async function init() {
         try {
             const [lb, l1, l2, l3] = await Promise.all([fetchCsv(LB_GID), fetchCsv(LEVEL_GIDS[0]), fetchCsv(LEVEL_GIDS[1]), fetchCsv(LEVEL_GIDS[2])]);
-            
             window.ALL_LEVELS = [...l1, ...l2, ...l3].map(row => ({
                 name: (row["Name"] || "").trim(),
                 acronym: (row["Acronym"] || "").toLowerCase(),
@@ -192,21 +195,18 @@
                 skills: (row["Skills Needed"] || row["Skills"] || "").split(/,|\n/).map(s=>s.trim()).filter(Boolean),
                 victors: (row["Victors"] || "").split(/\s+/).filter(Boolean)
             }));
-
             const counts = {};
             window.ALL_LEVELS.forEach(l => l.skills.forEach(s => counts[s] = (counts[s] || 0) + 1));
             window.GLOBAL_SKILL_RATES = Object.fromEntries(Object.entries(counts).map(([s, c]) => [s, c / window.ALL_LEVELS.length]));
-
             window.PLAYER_DATA = lb.map(row => ({
                 name: (row["Username"] || "").trim(),
                 points: parseInt((row["Points"] || "0").replace(/,/g, "")) || 0,
                 hardest: (row["Hardest Clear (Master+)"] || "None").trim(),
                 country: (row["Country"] || "").trim().toLowerCase()
             })).sort((a,b) => b.points - a.points);
-
             renderLeaderboard();
             if(window.PLAYER_DATA.length > 0) selectPlayer(window.PLAYER_DATA[0].name);
-        } catch(e) { console.error("Leaderboard error:", e); }
+        } catch(e) { console.error(e); }
     }
 
     async function fetchCsv(gid) {
@@ -215,10 +215,7 @@
         return Papa.parse(text, { header: true, skipEmptyLines: true }).data;
     }
 
-    function getClears(name) {
-        return window.ALL_LEVELS.filter(l => l.victors.some(v => v.toLowerCase() === name.toLowerCase()));
-    }
-
+    function getClears(name) { return window.ALL_LEVELS.filter(l => l.victors.some(v => v.toLowerCase() === name.toLowerCase())); }
     function getTopNumber(text) {
         if (!text || text.toLowerCase() === "none") return 999999;
         const match = text.match(/\(Top\s*(\d+)\)/i);
@@ -229,9 +226,7 @@
         const container = document.getElementById('leaderboard-list');
         const query = document.getElementById('player-search').value.toLowerCase();
         const sortBy = document.getElementById('sort-select').value;
-        
         let display = window.PLAYER_DATA.filter(p => p.name.toLowerCase().includes(query));
-        
         if (sortBy === 'totalclears') display.sort((a, b) => getClears(b.name).length - getClears(a.name).length);
         else if (sortBy === 'difficulty') display.sort((a, b) => getTopNumber(a.hardest) - getTopNumber(b.hardest));
         else display.sort((a, b) => b.points - a.points);
@@ -252,9 +247,9 @@
                 <div class="player-info">
                     <div class="player-name-wrapper">
                         ${p.country ? `<img class="flag-container" src="https://flagcdn.com/w40/${p.country}.png">` : ''} 
-                        <span class="level-name" style="font-size:0.9rem">${p.name}</span>
+                        <span class="level-name" style="font-size:0.95rem; font-weight:800;">${p.name}</span>
                     </div>
-                    <span class="level-meta" style="font-size:0.7rem">${p.hardest}</span>
+                    <span class="level-meta" style="font-size:0.7rem; color:var(--text-muted); font-weight:600;">${p.hardest}</span>
                 </div>
                 <div class="level-points">${p.points.toLocaleString()}</div>
             </div>`;
@@ -266,14 +261,12 @@
         renderLeaderboard();
         const p = window.PLAYER_DATA.find(x => x.name === name);
         const clears = getClears(name);
-        
         const counts = { GM: 0, Master: 0, Expert: 0 };
         clears.forEach(l => {
             if(l.difficulty.includes("Grandmaster")) counts.GM++;
             else if(l.difficulty.includes("Master")) counts.Master++;
             else if(l.difficulty.includes("Expert")) counts.Expert++;
         });
-
         const pCounts = {};
         clears.forEach(l => l.skills.forEach(s => pCounts[s] = (pCounts[s] || 0) + 1));
         const skillProfile = Object.entries(pCounts).map(([s, count]) => ({
@@ -284,13 +277,13 @@
         const hardestLvl = window.ALL_LEVELS.find(l => l.name.toLowerCase() === baseName);
 
         document.getElementById('player-profile-view').innerHTML = `
-            <div style="display:flex; align-items:center; gap:20px;">
-                <img src="assets/players/${p.name}.png" onerror="this.src='assets/players/default.png'" style="width:80px; height:80px; border-radius:12px; border: 2px solid var(--border);">
+            <div style="display:flex; align-items:center; gap:25px;">
+                <img src="assets/players/${p.name}.png" onerror="this.src='assets/players/default.png'" style="width:100px; height:100px; border-radius:15px; border: 2px solid var(--border); box-shadow: var(--shadow);">
                 <div>
-                    <h1 style="margin:0; font-size:1.8rem; display:flex; align-items:center; gap:12px;">
-                        ${p.country ? `<img src="https://flagcdn.com/w40/${p.country}.png" class="flag-container" style="width:35px; height:auto;">` : ''} ${p.name}
+                    <h1 style="margin:0; font-size:2.2rem; display:flex; align-items:center; gap:15px; font-weight:900;">
+                        ${p.country ? `<img src="https://flagcdn.com/w40/${p.country}.png" style="width:40px; border-radius:4px;">` : ''} ${p.name}
                     </h1>
-                    <span style="color:var(--accent); font-weight:900; font-size: 1rem;">${p.points.toLocaleString()} TOTAL POINTS</span>
+                    <span style="color:var(--accent); font-weight:900; font-size: 1.1rem; letter-spacing:1px;">${p.points.toLocaleString()} TOTAL POINTS</span>
                 </div>
             </div>
 
@@ -304,13 +297,15 @@
             <div class="section-title">Hardest Clear</div>
             <div class="hc-card">
                 <img class="hc-thumb" src="assets/thumbs/${hardestLvl?.acronym || 'default'}.png" onerror="this.src='assets/thumbs/default.png'">
-                <div class="hc-overlay"><div class="level-name" style="font-size:1.5rem">${p.hardest}</div></div>
+                <div class="hc-overlay">
+                    <div style="font-size:1.8rem; font-weight:900; text-shadow:0 4px 12px rgba(0,0,0,0.9); color: #fff;">${p.hardest}</div>
+                </div>
             </div>
 
             <div class="section-title">Skillset Profile</div>
             <div>
                 ${skillProfile.slice(0, 5).map(s => `
-                    <div style="display:flex; justify-content:space-between; font-size:0.75rem; font-weight:700; color:var(--text-muted); margin-bottom:4px;">
+                    <div style="display:flex; justify-content:space-between; font-size:0.8rem; font-weight:800; color:var(--text-muted); margin-bottom:6px;">
                         <span>${s.skill}</span>
                         <span style="color:var(--accent)">${s.ratio.toFixed(1)}x</span>
                     </div>
@@ -321,7 +316,7 @@
             </div>
 
             <div class="section-title">All Clears</div>
-            <div style="display:flex; gap:8px; margin-bottom:20px;">
+            <div style="display:flex; gap:10px; margin-bottom:25px;">
                 <button class="clears-filter-btn active" onclick="filterC('all', this)">All</button>
                 <button class="clears-filter-btn" onclick="filterC('Grandmaster', this)">GM</button>
                 <button class="clears-filter-btn" onclick="filterC('Master', this)">Master</button>
