@@ -131,6 +131,7 @@
         window.ALL_LEVELS.forEach(l => l.skills.forEach(s => counts[s] = (counts[s] || 0) + 1));
         window.GLOBAL_SKILL_RATES = Object.fromEntries(Object.entries(counts).map(([s, c]) => [s, c / window.ALL_LEVELS.length]));
 
+        // Load and sort by points initially to establish "Global Rank"
         window.PLAYER_DATA = lb.map(row => ({
             name: (row["Username"] || "").trim(),
             points: parseInt((row["Points"] || "0").replace(/,/g, "")) || 0,
@@ -152,6 +153,13 @@
         return window.ALL_LEVELS.filter(l => l.victors.some(v => v.toLowerCase() === name.toLowerCase()));
     }
 
+    // --- Helper for Difficulty Sorting ---
+    function getTopNumber(text) {
+        if (!text || text.toLowerCase() === "none") return 999999;
+        const match = text.match(/\(Top\s*(\d+)\)/i);
+        return match ? parseInt(match[1], 10) : 999998; 
+    }
+
     function renderLeaderboard() {
         const container = document.getElementById('leaderboard-list');
         const query = document.getElementById('player-search').value.toLowerCase();
@@ -159,28 +167,35 @@
         
         let display = window.PLAYER_DATA.filter(p => p.name.toLowerCase().includes(query));
         
-        if(sortBy === 'totalclears') display.sort((a,b) => getClears(b.name).length - getClears(a.name).length);
-        if(sortBy === 'difficulty') display.sort((a,b) => (a.hardest === "None" ? 999 : 0) - (b.hardest === "None" ? 999 : 0));
+        if (sortBy === 'points') {
+            display.sort((a, b) => b.points - a.points);
+        } else if (sortBy === 'totalclears') {
+            display.sort((a, b) => getClears(b.name).length - getClears(a.name).length);
+        } else if (sortBy === 'difficulty') {
+            display.sort((a, b) => getTopNumber(a.hardest) - getTopNumber(b.hardest));
+        }
 
         container.innerHTML = display.map((p, i) => {
-            const rank = i + 1;
+            // Calculate rank based on position in original PLAYER_DATA (Points)
+            const globalRank = window.PLAYER_DATA.findIndex(x => x.name === p.name) + 1;
+            
             let colorClass = "rank-gray";
-            if (rank <= 3) colorClass = "rank-purple";
-            else if (rank <= 10) colorClass = "rank-blue";
-            else if (rank <= 25) colorClass = "rank-green";
-            else if (rank <= 50) colorClass = "rank-yellow";
-            else if (rank <= 100) colorClass = "rank-red";
+            if (globalRank <= 3) colorClass = "rank-purple";
+            else if (globalRank <= 10) colorClass = "rank-blue";
+            else if (globalRank <= 25) colorClass = "rank-green";
+            else if (globalRank <= 50) colorClass = "rank-yellow";
+            else if (globalRank <= 100) colorClass = "rank-red";
 
             return `
             <div class="level-entry ${colorClass} ${p.name === selectedPlayerName ? 'selected' : ''}" onclick="selectPlayer('${p.name.replace(/'/g, "\\'")}')">
-                <div class="level-rank">#${rank}</div>
+                <div class="level-rank">#${globalRank}</div>
                 <img class="player-pfp" src="assets/players/${p.name}.png" onerror="this.src='assets/players/default.png'">
                 <div class="player-info">
                     <div class="player-name-wrapper">
                         ${p.country ? `<img class="flag-icon" src="https://flagcdn.com/w40/${p.country}.png">` : ''} 
                         <b>${p.name}</b>
                     </div>
-                    <span class="hardest-sidebar-text">Hardest: ${p.hardest}</span>
+                    <span class="hardest-sidebar-text">${p.hardest}</span>
                 </div>
                 <div class="level-points">${p.points.toLocaleString()}</div>
             </div>`;
@@ -193,7 +208,6 @@
         const p = window.PLAYER_DATA.find(x => x.name === name);
         const clears = getClears(name);
         
-        // Stats
         const counts = { GM: 0, Master: 0, Expert: 0 };
         clears.forEach(l => {
             if(l.difficulty.includes("Grandmaster")) counts.GM++;
@@ -201,14 +215,15 @@
             else if(l.difficulty.includes("Expert")) counts.Expert++;
         });
 
-        // Skill Math
         const pCounts = {};
         clears.forEach(l => l.skills.forEach(s => pCounts[s] = (pCounts[s] || 0) + 1));
         const skillProfile = Object.entries(pCounts).map(([s, count]) => ({
             skill: s, ratio: (count / (clears.length || 1)) / (window.GLOBAL_SKILL_RATES[s] || 0.001)
         })).sort((a,b) => b.ratio - a.ratio);
 
-        const hardestLvl = window.ALL_LEVELS.find(l => l.name.toLowerCase() === p.hardest.replace(/\(Top\s*\d+\)/i, "").trim().toLowerCase());
+        // Strip the (Top X) suffix to find the correct level acronym for the thumbnail
+        const baseLevelName = p.hardest.replace(/\(Top\s*\d+\)/i, "").trim().toLowerCase();
+        const hardestLvl = window.ALL_LEVELS.find(l => l.name.toLowerCase() === baseLevelName);
 
         document.getElementById('player-profile-view').innerHTML = `
             <div style="display:flex; align-items:center; gap:20px;">
