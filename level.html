@@ -9,6 +9,7 @@
     <style>
         .page-container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
         
+        /* Top Navigation */
         .top-nav { margin-bottom: 20px; }
         .back-link { 
             color: var(--accent); 
@@ -17,15 +18,17 @@
             font-size: 0.85rem; 
             text-transform: uppercase; 
             letter-spacing: 1px;
+            transition: 0.2s;
         }
+        .back-link:hover { color: #fff; }
 
         .layout-wrapper { display: flex; gap: 25px; }
         .level-card { flex: 2; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; position: relative; }
         .sidebar-card { flex: 0.8; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; height: fit-content; }
         
+        /* Banner & Header */
         .banner { height: 350px; background-size: cover; background-position: center; position: relative; border-bottom: 1px solid var(--border); background-color: #000; }
         .banner-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent, rgba(15, 23, 42, 1)); }
-        
         .level-body { padding: 40px; position: relative; margin-top: -60px; }
         
         .id-badge { 
@@ -36,10 +39,12 @@
             color: var(--text-muted); 
             margin-left: 15px;
             border: 1px solid var(--border);
+            font-family: monospace;
         }
 
         .section-label { font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1.5px; margin-bottom: 15px; display: block; }
         
+        /* Sidebar Elements */
         .player-entry { 
             background: rgba(255,255,255,0.03); 
             padding: 10px; 
@@ -50,40 +55,38 @@
             align-items: center; 
             gap: 12px; 
         }
-        .player-pfp { width: 32px; height: 32px; border-radius: 4px; object-fit: cover; background: #222; }
+        .player-pfp { width: 32px; height: 32px; border-radius: 4px; object-fit: cover; background: #222; border: 1px solid rgba(255,255,255,0.1); }
         .sidebar-divider { height: 1px; background: var(--border); margin: 20px 0; }
 
+        /* Main Content Elements */
         .skill-tag { background: rgba(255,255,255,0.08); border: 1px solid var(--border); padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; display: inline-block; margin: 0 6px 6px 0; }
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px; }
 
-        /* Skinnier Code Section */
-        .code-container { 
-            display: flex; 
-            gap: 10px; 
-            margin-top: 10px; 
-            max-width: 400px; /* Makes it skinnier */
-        }
+        /* Code Bar Logic */
+        .code-container { display: flex; gap: 8px; margin-top: 10px; max-width: 450px; }
         .code-input { 
             flex: 1; 
-            background: rgba(0,0,0,0.4); 
-            border: 1px solid var(--border); 
+            background: rgba(0,0,0,0.5); 
+            border: 1px solid #444; 
             color: #fff; 
-            padding: 10px 15px; 
-            border-radius: 8px; 
+            padding: 10px; 
+            border-radius: 6px; 
             font-family: monospace; 
-            font-size: 0.9rem; 
+            font-size: 0.85rem; 
         }
-        .preview-btn { 
+        .action-btn { 
             background: var(--accent); 
             color: white; 
             border: none; 
-            padding: 0 20px; 
-            border-radius: 8px; 
+            padding: 0 15px; 
+            border-radius: 6px; 
             font-weight: 700; 
+            font-size: 0.8rem;
             cursor: pointer; 
             transition: 0.2s; 
             white-space: nowrap;
         }
+        .action-btn:hover { opacity: 0.9; }
 
         @media (max-width: 900px) { .layout-wrapper { flex-direction: column; } }
     </style>
@@ -99,7 +102,7 @@
         </div>
 
         <div id="loading-msg" style="text-align:center; margin-top:50px; font-weight:700; color:var(--text-muted);">
-            Retrieving level data...
+            Connecting to database...
         </div>
 
         <div class="layout-wrapper" id="page-content" style="display:none;">
@@ -122,6 +125,8 @@
         </div>
     </div>
 
+    <script src="levelPopup.js"></script>
+
     <script>
         const spreadsheetId = "10yZLCN80B0ExwiY8E5Y5GB95NV1T5UI69vLYywtg_J0";
         const sheetGids = ["0", "1720349441"]; 
@@ -139,15 +144,20 @@
                 ));
 
                 const allRows = results.flat();
-                const lvl = allRows.find(row => String(Object.values(row)[0]).trim() === String(targetId).trim());
+                
+                // Search specifically in Column A
+                const lvl = allRows.find(row => {
+                    const firstColumnValue = Object.values(row)[0];
+                    return String(firstColumnValue).trim() === String(targetId).trim();
+                });
 
                 if (!lvl) {
-                    document.getElementById('loading-msg').innerHTML = "<h1>Level Not Found</h1>";
+                    document.getElementById('loading-msg').innerHTML = "<h1>Level Not Found</h1><p>ID: " + targetId + "</p>";
                     return;
                 }
                 renderPage(lvl, targetId);
             } catch (err) {
-                document.getElementById('loading-msg').innerHTML = "Failed to load database.";
+                document.getElementById('loading-msg').innerHTML = "Database Connection Failed.";
             }
         }
 
@@ -161,26 +171,40 @@
             const rank = getVal(["Rank"]) || "?";
             const acronym = (getVal(["Acronym"]) || "").toLowerCase().trim();
             const thumb = acronym ? `assets/thumbs/${acronym}.png` : "assets/thumbs/Noimageavailable.png";
+            const levelCode = (getVal(["Level Code"]) || "").trim();
             
+            // Tab Title
             document.title = `(#${rank}) ${name}`;
+
             document.getElementById('banner').style.backgroundImage = `url('${thumb}')`;
             document.getElementById('loading-msg').style.display = 'none';
             document.getElementById('page-content').style.display = 'flex';
 
+            // Sidebar: Verifier
             const verifier = (getVal(["Verifier"]) || "").trim();
-            document.getElementById('verifier-area').innerHTML = verifier && verifier.toLowerCase() !== "none" 
-                ? `<div class="player-entry"><img src="assets/players/${verifier}.png" onerror="this.src='assets/players/default.png'" class="player-pfp"><span style="font-weight:700; font-size:0.9rem;">${verifier}</span></div>`
+            document.getElementById('verifier-area').innerHTML = (verifier && verifier.toLowerCase() !== "none") 
+                ? `<div class="player-entry">
+                    <img src="assets/players/${verifier}.png" onerror="this.src='assets/players/default.png'" class="player-pfp">
+                    <span style="font-weight:700; font-size:0.9rem;">${verifier}</span>
+                   </div>`
                 : `<p style="color:var(--text-muted); font-size:0.8rem;">None</p>`;
 
+            // Sidebar: Victors
             const victorsRaw = getVal(["Victors"]) || "";
             const otherVictors = victorsRaw.split(/[ ,]+/).filter(v => v && v.toLowerCase() !== "none" && v.toLowerCase() !== verifier.toLowerCase());
             document.getElementById('victors-area').innerHTML = otherVictors.length > 0 
-                ? otherVictors.map(v => `<div class="player-entry"><img src="assets/players/${v.trim()}.png" onerror="this.src='assets/players/default.png'" class="player-pfp"><span style="font-weight:600; font-size:0.85rem;">${v.trim()}</span></div>`).join("")
+                ? otherVictors.map(v => `
+                    <div class="player-entry">
+                        <img src="assets/players/${v.trim()}.png" onerror="this.src='assets/players/default.png'" class="player-pfp">
+                        <span style="font-weight:600; font-size:0.85rem;">${v.trim()}</span>
+                    </div>`).join("")
                 : `<p style="color:var(--text-muted); font-size:0.8rem;">None</p>`;
 
+            // Skills
             const skillsRaw = getVal(["Skills Needed", "Skills"]);
             const skillsHtml = skillsRaw ? skillsRaw.split(',').map(s => `<span class="skill-tag">${s.trim()}</span>`).join('') : "N/A";
 
+            // Main Content
             document.getElementById('main-details').innerHTML = `
                 <div style="display:flex; align-items:center; margin-bottom:5px; flex-wrap: wrap;">
                     <h1 style="font-size:3rem; font-weight:900; margin:0; line-height:1.1;">${name}</h1>
@@ -212,24 +236,25 @@
                 <div style="margin-top:40px; border-top: 1px solid var(--border); padding-top:30px;">
                     <span class="section-label">Level Code</span>
                     <div class="code-container">
-                        <input type="text" value="${getVal(["Level Code"]) || "No Code"}" readonly id="lcode" class="code-input">
-                        <button onclick="copyCode(this)" class="preview-btn">Level Preview</button>
+                        <input type="text" value="${levelCode || "No Code"}" readonly id="lcode" class="code-input">
+                        <button onclick="copyLevelCode(this, '${levelCode.replace(/'/g, "\\'")}')" class="action-btn">Copy</button>
+                        <button onclick="LevelPopup.show('${levelCode.replace(/'/g, "\\'")}')" class="action-btn">Level Preview</button>
                     </div>
                 </div>
             `;
         }
 
-        function copyCode(btn) {
-            const codeInput = document.getElementById('lcode');
-            codeInput.select();
-            document.execCommand('copy');
-            const original = btn.textContent;
-            btn.textContent = "Copied!";
-            btn.style.background = "#22c55e";
-            setTimeout(() => {
-                btn.textContent = original;
-                btn.style.background = "var(--accent)";
-            }, 2000);
+        function copyLevelCode(btn, code) {
+            if (!code || code === "No Code") return;
+            const orig = btn.textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                btn.textContent = "Copied!";
+                btn.style.background = "#22c55e";
+                setTimeout(() => {
+                    btn.textContent = orig;
+                    btn.style.background = "var(--accent)";
+                }, 1500);
+            });
         }
 
         window.onload = init;
