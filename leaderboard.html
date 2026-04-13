@@ -9,8 +9,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <style>
-        /* Layout Fixes */
-        body { margin: 0; padding: 0; overflow: hidden; background: var(--bg-page); font-family: 'Inter', sans-serif; }
+        /* Base Layout */
+        body { margin: 0; padding: 0; overflow: hidden; background: var(--bg-page); }
 
         .main-wrapper { 
             display: flex; 
@@ -62,7 +62,7 @@
 
         #leaderboard-list { flex: 1; overflow-y: auto; padding: 10px; }
 
-        /* Sidebar Item Styling */
+        /* Sidebar Entry Styling */
         .level-entry {
             display: flex;
             align-items: center;
@@ -78,7 +78,7 @@
         .level-entry:hover { background: rgba(255, 255, 255, 0.05); transform: translateX(4px); }
         .level-entry.selected { border-color: var(--accent) !important; background: var(--accent-light); }
 
-        /* Ranking Colors */
+        /* Ranking Border Colors */
         .rank-purple { border-left-color: #a155ff !important; }
         .rank-blue   { border-left-color: #5587ff !important; }
         .rank-green  { border-left-color: #55ff77 !important; }
@@ -108,29 +108,28 @@
         .pstat-val { font-size: 1.5rem; font-weight: 900; color: var(--text-main); display: block; }
         .pstat-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px; }
 
-        /* Hardest Clear Banner */
+        /* Hardest Clear Card */
         .hc-card { 
             position: relative; border-radius: 14px; overflow: hidden; 
             border: 1px solid var(--border); width: 100%; aspect-ratio: 21 / 9; background: #000; 
         }
-        .hc-thumb { width: 100%; height: 100%; object-fit: cover; opacity: 0.75; }
+        .hc-thumb { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
         .hc-overlay { 
             position: absolute; inset: 0; padding: 25px;
-            background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, transparent 70%); 
+            background: linear-gradient(0deg, rgba(0,0,0,0.95) 0%, transparent 80%); 
             display: flex; flex-direction: column; justify-content: flex-end; 
         }
 
-        /* Skill Profile */
+        /* Skill Bar Styling */
         .skill-bar-bg { background: var(--bg-page); height: 14px; border-radius: 7px; border: 1px solid var(--border); overflow: hidden; margin: 8px 0 15px 0; }
         .skill-bar-fill { height: 100%; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
 
         .section-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin: 40px 0 20px 0; border-bottom: 1px solid var(--border); padding-bottom: 10px; font-weight: 900; }
         
-        /* Grid */
         .clears-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; }
         .clear-card { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); aspect-ratio: 1; background: var(--bg-page); transition: 0.2s; }
-        .clear-card:hover { transform: scale(1.05); z-index: 2; border-color: var(--accent); }
-        .cc-label { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.85); font-size: 0.65rem; padding: 8px 4px; text-align: center; color: #fff; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .clear-card:hover { transform: scale(1.05); border-color: var(--accent); }
+        .cc-label { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.85); font-size: 0.65rem; padding: 8px 4px; text-align: center; color: #fff; font-weight: 800; }
 
         .clears-filter-btn {
             background: var(--bg-page); border: 1px solid var(--border); color: var(--text-muted); 
@@ -159,7 +158,7 @@
                     <option value="difficulty">Hardest</option>
                     <option value="totalclears">Clears</option>
                 </select>
-                <input type="text" id="player-search" class="search-bar" placeholder="Search players..." oninput="renderLeaderboard()">
+                <input type="text" id="player-search" class="search-bar" placeholder="Search victors..." oninput="renderLeaderboard()">
                 <i class="fa-solid fa-magnifying-glass" style="color: var(--text-muted)"></i>
             </div>
         </div>
@@ -169,7 +168,7 @@
     <div class="details-column" id="player-profile-view">
         <div style="height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; color: var(--text-muted);">
             <i class="fa-solid fa-medal" style="font-size: 4rem; margin-bottom: 20px; opacity: 0.05;"></i>
-            <h3 style="letter-spacing: 1px; font-weight: 300;">Select a player to view their profile</h3>
+            <h3 style="letter-spacing: 1px; font-weight: 400;">Select a victor to view profile</h3>
         </div>
     </div>
 </div>
@@ -303,7 +302,7 @@
             </div>
 
             <div class="section-title">Skillset Profile</div>
-            <div>
+            <div id="skills-container">
                 ${skillProfile.slice(0, 5).map(s => `
                     <div style="display:flex; justify-content:space-between; font-size:0.8rem; font-weight:800; color:var(--text-muted); margin-bottom:6px;">
                         <span>${s.skill}</span>
@@ -314,6 +313,10 @@
                     </div>
                 `).join('')}
             </div>
+            ${skillProfile.length > 5 ? `
+                <button id="show-more-skills" style="background:none; border:none; color:var(--accent); cursor:pointer; font-weight:800; font-size:0.75rem; padding:0; text-transform:uppercase;" onclick="expandSkills('${p.name.replace(/'/g, "\\'")}')">
+                    + Show More Skills
+                </button>` : ''}
 
             <div class="section-title">All Clears</div>
             <div style="display:flex; gap:10px; margin-bottom:25px;">
@@ -331,6 +334,27 @@
             </div>
         `;
     }
+
+    window.expandSkills = function(name) {
+        const p = window.PLAYER_DATA.find(x => x.name === name);
+        const clears = getClears(name);
+        const pCounts = {};
+        clears.forEach(l => l.skills.forEach(s => pCounts[s] = (pCounts[s] || 0) + 1));
+        const skillProfile = Object.entries(pCounts).map(([s, count]) => ({
+            skill: s, ratio: (count / (clears.length || 1)) / (window.GLOBAL_SKILL_RATES[s] || 0.001)
+        })).sort((a,b) => b.ratio - a.ratio);
+
+        document.getElementById('skills-container').innerHTML = skillProfile.map(s => `
+            <div style="display:flex; justify-content:space-between; font-size:0.8rem; font-weight:800; color:var(--text-muted); margin-bottom:6px;">
+                <span>${s.skill}</span>
+                <span style="color:var(--accent)">${s.ratio.toFixed(1)}x</span>
+            </div>
+            <div class="skill-bar-bg">
+                <div class="skill-bar-fill" style="width:${Math.min(s.ratio*10, 100)}%; background: linear-gradient(90deg, #550eb3, #8b3cf7);"></div>
+            </div>
+        `).join('');
+        document.getElementById('show-more-skills').style.display = 'none';
+    };
 
     window.filterC = function(diff, btn) {
         document.querySelectorAll('.clears-filter-btn').forEach(b => b.classList.remove('active'));
