@@ -12,7 +12,7 @@
         /* Base Layout & Spacing */
         body { margin: 0; padding: 0; overflow: hidden; background: var(--bg-page); }
 
-        /* margin-top: 70px accounts for your fixed navigation bar */
+
         .main-wrapper { 
             display: flex; 
             gap: 20px; 
@@ -104,8 +104,13 @@
 
         /* Cards & Skill Bars */
         .hc-card { 
-            position: relative; border-radius: 12px; overflow: hidden; 
-            border: 1px solid var(--border); height: 160px; background: #000; 
+            position: relative; 
+            border-radius: 12px; 
+            overflow: hidden; 
+            border: 1px solid var(--border); 
+            width: 100%;
+            aspect-ratio: 21 / 9;
+            background: #000; 
         }
         .hc-thumb { width: 100%; height: 100%; object-fit: cover; opacity: 0.5; }
         .hc-overlay { 
