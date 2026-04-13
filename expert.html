@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Expert Zone | Extended List</title>
     <link rel="icon" type="image/png" href="assets/diffs/High Expert.png">
     <link rel="stylesheet" href="style.css">
@@ -30,7 +31,7 @@
 
         .bucket-title {
             font-size: 1.35rem;
-            font-weight: 900;
+            font-weight: 800; /* Dialed back from 900 for readability */
             color: var(--text-main);
             letter-spacing: 0.5px;
         }
@@ -56,8 +57,27 @@
         .bucket-low    .bucket-header { border-left: 4px solid #27ae60; }
 
         /* Level Entry Tweak */
-        .level-entry.expert-entry { cursor: pointer; transition: transform 0.2s; }
+        .level-entry.expert-entry { 
+            cursor: pointer; 
+            transition: transform 0.2s; 
+            min-width: 0; /* Allows children to shrink for ellipsis */
+        }
         .level-entry.expert-entry:hover { transform: translateX(5px); background: rgba(255,255,255,0.05); }
+
+        /* Prevent text from going off screen */
+        .level-name {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .level-meta {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     </style>
 </head>
 <body>
@@ -118,12 +138,16 @@
         }
 
         function mapRowToLevel(row) {
+            // Automatically detect whatever is in the FIRST column (Column A)
+            const firstColHeader = Object.keys(row)[0];
+            const levelIdFromColA = safeText(row[firstColHeader]);
+
             const name = safeText(row["Name"] || row["name"]);
             const acronym = safeText(row["Acronym"]);
             const skillsArray = parseSkills(row["Skills Needed"] || row["Skills"]);
             
             return {
-                id: acronym || name, // ID used for the URL parameter
+                id: levelIdFromColA || acronym || name, // ID used for URL
                 name,
                 acronym,
                 author: safeText(row["Creator(s)"] || row["Author"]),
@@ -189,16 +213,15 @@
             const qualityIcon = lvl.quality ? `<img src="assets/quality/${lvl.quality.trim()}.svg" class="diff-icon-small" title="Quality: ${lvl.quality}">` : '';
             const diffIcon = lvl.difficulty ? `<img src="assets/diffs/${lvl.difficulty.trim()}.png" class="diff-icon-small" style="padding:10px;" title="${lvl.difficulty}">` : '';
 
-            // This now links to the expert-level.html page instead of opening a modal
             return `
             <div class="level-entry expert-entry" onclick="window.location.href='expert-level.html?id=${encodeURIComponent(lvl.id)}'">
                 <img class="level-thumb" src="${lvl.img}" onerror="this.src='assets/thumbs/Noimageavailable.png'">
-                <div class="level-info" style="padding: 0 12px;">
+                <div class="level-info" style="padding: 0 12px; min-width: 0;">
                     <div class="level-name">${lvl.name}</div>
                     <div class="level-meta">by ${lvl.author}</div>
                     <div class="level-meta" style="color:var(--accent); font-weight:700;">${lvl.points ? lvl.points + " pts" : ""}</div>
                 </div>
-                <div class="level-difficulty-slot" style="display:flex; gap:5px; align-items:center;">
+                <div class="level-difficulty-slot" style="display:flex; gap:5px; align-items:center; flex-shrink: 0;">
                     ${qualityIcon}
                     ${diffIcon}
                 </div>
