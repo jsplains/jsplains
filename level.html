@@ -26,7 +26,6 @@
         .level-card { flex: 2; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; position: relative; }
         .sidebar-card { flex: 0.8; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; height: fit-content; }
         
-        /* Banner & Header */
         .banner { height: 350px; background-size: cover; background-position: center; position: relative; border-bottom: 1px solid var(--border); background-color: #000; }
         .banner-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent, rgba(15, 23, 42, 1)); }
         .level-body { padding: 40px; position: relative; margin-top: -60px; }
@@ -58,12 +57,11 @@
         .player-pfp { width: 32px; height: 32px; border-radius: 4px; object-fit: cover; background: #222; border: 1px solid rgba(255,255,255,0.1); }
         .sidebar-divider { height: 1px; background: var(--border); margin: 20px 0; }
 
-        /* Main Content Elements */
         .skill-tag { background: rgba(255,255,255,0.08); border: 1px solid var(--border); padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; display: inline-block; margin: 0 6px 6px 0; }
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px; }
 
         /* Code Bar Logic */
-        .code-container { display: flex; gap: 8px; margin-top: 10px; max-width: 450px; }
+        .code-container { display: flex; gap: 8px; margin-top: 10px; max-width: 480px; }
         .code-input { 
             flex: 1; 
             background: rgba(0,0,0,0.5); 
@@ -81,7 +79,7 @@
             padding: 0 15px; 
             border-radius: 6px; 
             font-weight: 700; 
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             cursor: pointer; 
             transition: 0.2s; 
             white-space: nowrap;
@@ -125,11 +123,22 @@
         </div>
     </div>
 
+    <div id="infoModal" class="modal" style="display:none; position:fixed; z-index:9999; inset:0; background:rgba(0,0,0,0.9); display:none; align-items:center; justify-content:center;">
+        <div class="modal-content" style="background:#111; padding:20px; border-radius:12px; border:1px solid #333; max-width:900px; width:95%; position:relative;">
+            <span onclick="closeModal()" style="position:absolute; top:15px; right:20px; cursor:pointer; font-size:24px; color:#fff;">&times;</span>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
     <script src="levelPopup.js"></script>
 
     <script>
         const spreadsheetId = "10yZLCN80B0ExwiY8E5Y5GB95NV1T5UI69vLYywtg_J0";
         const sheetGids = ["0", "1720349441"]; 
+
+        function closeModal() {
+            document.getElementById('infoModal').style.display = 'none';
+        }
 
         async function init() {
             const params = new URLSearchParams(window.location.search);
@@ -144,15 +153,10 @@
                 ));
 
                 const allRows = results.flat();
-                
-                // Search specifically in Column A
-                const lvl = allRows.find(row => {
-                    const firstColumnValue = Object.values(row)[0];
-                    return String(firstColumnValue).trim() === String(targetId).trim();
-                });
+                const lvl = allRows.find(row => String(Object.values(row)[0]).trim() === String(targetId).trim());
 
                 if (!lvl) {
-                    document.getElementById('loading-msg').innerHTML = "<h1>Level Not Found</h1><p>ID: " + targetId + "</p>";
+                    document.getElementById('loading-msg').innerHTML = "<h1>Level Not Found</h1>";
                     return;
                 }
                 renderPage(lvl, targetId);
@@ -173,38 +177,25 @@
             const thumb = acronym ? `assets/thumbs/${acronym}.png` : "assets/thumbs/Noimageavailable.png";
             const levelCode = (getVal(["Level Code"]) || "").trim();
             
-            // Tab Title
             document.title = `(#${rank}) ${name}`;
-
             document.getElementById('banner').style.backgroundImage = `url('${thumb}')`;
             document.getElementById('loading-msg').style.display = 'none';
             document.getElementById('page-content').style.display = 'flex';
 
-            // Sidebar: Verifier
             const verifier = (getVal(["Verifier"]) || "").trim();
             document.getElementById('verifier-area').innerHTML = (verifier && verifier.toLowerCase() !== "none") 
-                ? `<div class="player-entry">
-                    <img src="assets/players/${verifier}.png" onerror="this.src='assets/players/default.png'" class="player-pfp">
-                    <span style="font-weight:700; font-size:0.9rem;">${verifier}</span>
-                   </div>`
+                ? `<div class="player-entry"><img src="assets/players/${verifier}.png" onerror="this.src='assets/players/default.png'" class="player-pfp"><span style="font-weight:700; font-size:0.9rem;">${verifier}</span></div>`
                 : `<p style="color:var(--text-muted); font-size:0.8rem;">None</p>`;
 
-            // Sidebar: Victors
             const victorsRaw = getVal(["Victors"]) || "";
             const otherVictors = victorsRaw.split(/[ ,]+/).filter(v => v && v.toLowerCase() !== "none" && v.toLowerCase() !== verifier.toLowerCase());
             document.getElementById('victors-area').innerHTML = otherVictors.length > 0 
-                ? otherVictors.map(v => `
-                    <div class="player-entry">
-                        <img src="assets/players/${v.trim()}.png" onerror="this.src='assets/players/default.png'" class="player-pfp">
-                        <span style="font-weight:600; font-size:0.85rem;">${v.trim()}</span>
-                    </div>`).join("")
+                ? otherVictors.map(v => `<div class="player-entry"><img src="assets/players/${v.trim()}.png" onerror="this.src='assets/players/default.png'" class="player-pfp"><span style="font-weight:600; font-size:0.85rem;">${v.trim()}</span></div>`).join("")
                 : `<p style="color:var(--text-muted); font-size:0.8rem;">None</p>`;
 
-            // Skills
             const skillsRaw = getVal(["Skills Needed", "Skills"]);
             const skillsHtml = skillsRaw ? skillsRaw.split(',').map(s => `<span class="skill-tag">${s.trim()}</span>`).join('') : "N/A";
 
-            // Main Content
             document.getElementById('main-details').innerHTML = `
                 <div style="display:flex; align-items:center; margin-bottom:5px; flex-wrap: wrap;">
                     <h1 style="font-size:3rem; font-weight:900; margin:0; line-height:1.1;">${name}</h1>
@@ -238,10 +229,18 @@
                     <div class="code-container">
                         <input type="text" value="${levelCode || "No Code"}" readonly id="lcode" class="code-input">
                         <button onclick="copyLevelCode(this, '${levelCode.replace(/'/g, "\\'")}')" class="action-btn">Copy</button>
-                        <button onclick="LevelPopup.show('${levelCode.replace(/'/g, "\\'")}')" class="action-btn">Level Preview</button>
+                        <button onclick="triggerPreview('${levelCode.replace(/'/g, "\\'")}')" class="action-btn">Level Preview</button>
                     </div>
                 </div>
             `;
+        }
+
+        function triggerPreview(code) {
+            if (typeof LevelPopup !== 'undefined') {
+                LevelPopup.show(code);
+            } else {
+                console.error("levelPopup.js not loaded yet");
+            }
         }
 
         function copyLevelCode(btn, code) {
