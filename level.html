@@ -3,24 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loading Level...</title> <link rel="stylesheet" href="style.css">
+    <title>Loading Level...</title>
+    <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <style>
-        .page-container { max-width: 1200px; margin: 40px auto; display: flex; gap: 25px; padding: 0 20px; }
-        .level-card { flex: 2; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; position: relative; min-height: 600px; }
-        .victor-card { flex: 0.8; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; height: fit-content; }
+        .page-container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
+        
+        .top-nav { margin-bottom: 20px; }
+        .back-link { 
+            color: var(--accent); 
+            text-decoration: none; 
+            font-weight: 700; 
+            font-size: 0.85rem; 
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+        }
+
+        .layout-wrapper { display: flex; gap: 25px; }
+        .level-card { flex: 2; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; position: relative; }
+        .sidebar-card { flex: 0.8; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; height: fit-content; }
+        
         .banner { height: 350px; background-size: cover; background-position: center; position: relative; border-bottom: 1px solid var(--border); background-color: #000; }
         .banner-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent, rgba(15, 23, 42, 1)); }
-        .level-body { padding: 40px; position: relative; margin-top: -60px; }
-        .back-link { color: var(--accent); text-decoration: none; font-weight: 700; margin-bottom: 20px; display: inline-block; transition: 0.2s; }
-        .back-link:hover { color: var(--accent-hover); }
         
-        .id-text { font-size: 1.2rem; color: var(--text-muted); font-weight: 400; margin-left: 10px; }
-        .skill-tag { background: rgba(255,255,255,0.08); border: 1px solid var(--border); padding: 5px 12px; border-radius: 6px; font-size: 0.8rem; display: inline-block; margin: 0 5px 5px 0; }
-        .victor-pill { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+        .level-body { padding: 40px; position: relative; margin-top: -60px; }
+        
+        .id-badge { 
+            font-size: 0.9rem; 
+            background: rgba(255,255,255,0.05); 
+            padding: 4px 10px; 
+            border-radius: 6px; 
+            color: var(--text-muted); 
+            margin-left: 15px;
+            border: 1px solid var(--border);
+        }
+
+        .section-label { font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1.5px; margin-bottom: 15px; display: block; }
+        
+        .player-entry { 
+            background: rgba(255,255,255,0.03); 
+            padding: 10px; 
+            border-radius: 8px; 
+            border: 1px solid var(--border); 
+            margin-bottom: 8px; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+        }
+        .player-pfp { width: 32px; height: 32px; border-radius: 4px; object-fit: cover; background: #222; }
+        .sidebar-divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+        .skill-tag { background: rgba(255,255,255,0.08); border: 1px solid var(--border); padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; display: inline-block; margin: 0 6px 6px 0; }
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px; }
 
-        @media (max-width: 900px) { .page-container { flex-direction: column; } }
+        /* Skinnier Code Section */
+        .code-container { 
+            display: flex; 
+            gap: 10px; 
+            margin-top: 10px; 
+            max-width: 400px; /* Makes it skinnier */
+        }
+        .code-input { 
+            flex: 1; 
+            background: rgba(0,0,0,0.4); 
+            border: 1px solid var(--border); 
+            color: #fff; 
+            padding: 10px 15px; 
+            border-radius: 8px; 
+            font-family: monospace; 
+            font-size: 0.9rem; 
+        }
+        .preview-btn { 
+            background: var(--accent); 
+            color: white; 
+            border: none; 
+            padding: 0 20px; 
+            border-radius: 8px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            transition: 0.2s; 
+            white-space: nowrap;
+        }
+
+        @media (max-width: 900px) { .layout-wrapper { flex-direction: column; } }
     </style>
 </head>
 <body>
@@ -28,21 +93,32 @@
         <a href="index.html" class="logo-link"><img src="assets/logo.webp" alt="Logo" class="nav-logo"></a>
     </nav>
 
-    <div id="loading-msg" style="text-align:center; margin-top:100px; font-weight:700; color:var(--text-muted);">
-        Scanning database...
-    </div>
-
-    <div class="page-container" id="page-content" style="display:none;">
-        <div class="level-card">
-            <div id="banner" class="banner"><div class="banner-overlay"></div></div>
-            <div class="level-body">
-                <a href="index.html" class="back-link">← Back to Main List</a>
-                <div id="main-details"></div>
-            </div>
+    <div class="page-container">
+        <div class="top-nav">
+            <a href="index.html" class="back-link">← Back to Main List</a>
         </div>
-        <div class="victor-card">
-            <h3 style="text-transform:uppercase; font-size:0.75rem; color:var(--text-muted); margin-bottom:20px; letter-spacing:1px;">Victors</h3>
-            <div id="victor-list"></div>
+
+        <div id="loading-msg" style="text-align:center; margin-top:50px; font-weight:700; color:var(--text-muted);">
+            Retrieving level data...
+        </div>
+
+        <div class="layout-wrapper" id="page-content" style="display:none;">
+            <div class="level-card">
+                <div id="banner" class="banner"><div class="banner-overlay"></div></div>
+                <div class="level-body">
+                    <div id="main-details"></div>
+                </div>
+            </div>
+            
+            <div class="sidebar-card">
+                <span class="section-label">Verifier</span>
+                <div id="verifier-area"></div>
+                
+                <div class="sidebar-divider"></div>
+                
+                <span class="section-label">Victors</span>
+                <div id="victors-area"></div>
+            </div>
         </div>
     </div>
 
@@ -86,59 +162,58 @@
             const acronym = (getVal(["Acronym"]) || "").toLowerCase().trim();
             const thumb = acronym ? `assets/thumbs/${acronym}.png` : "assets/thumbs/Noimageavailable.png";
             
-            // Set Tab Title: (# Rank) Level Name
             document.title = `(#${rank}) ${name}`;
-
             document.getElementById('banner').style.backgroundImage = `url('${thumb}')`;
             document.getElementById('loading-msg').style.display = 'none';
             document.getElementById('page-content').style.display = 'flex';
 
-            // Victors logic
             const verifier = (getVal(["Verifier"]) || "").trim();
+            document.getElementById('verifier-area').innerHTML = verifier && verifier.toLowerCase() !== "none" 
+                ? `<div class="player-entry"><img src="assets/players/${verifier}.png" onerror="this.src='assets/players/default.png'" class="player-pfp"><span style="font-weight:700; font-size:0.9rem;">${verifier}</span></div>`
+                : `<p style="color:var(--text-muted); font-size:0.8rem;">None</p>`;
+
             const victorsRaw = getVal(["Victors"]) || "";
             const otherVictors = victorsRaw.split(/[ ,]+/).filter(v => v && v.toLowerCase() !== "none" && v.toLowerCase() !== verifier.toLowerCase());
-            let vHtml = verifier ? `<div class="victor-pill" style="border-left:3px solid var(--accent)"><strong>${verifier}</strong> (Verifier)</div>` : "";
-            vHtml += otherVictors.map(v => `<div class="victor-pill">${v}</div>`).join("");
-            document.getElementById('victor-list').innerHTML = vHtml || "None";
+            document.getElementById('victors-area').innerHTML = otherVictors.length > 0 
+                ? otherVictors.map(v => `<div class="player-entry"><img src="assets/players/${v.trim()}.png" onerror="this.src='assets/players/default.png'" class="player-pfp"><span style="font-weight:600; font-size:0.85rem;">${v.trim()}</span></div>`).join("")
+                : `<p style="color:var(--text-muted); font-size:0.8rem;">None</p>`;
 
-            // Skills logic
             const skillsRaw = getVal(["Skills Needed", "Skills"]);
             const skillsHtml = skillsRaw ? skillsRaw.split(',').map(s => `<span class="skill-tag">${s.trim()}</span>`).join('') : "N/A";
 
             document.getElementById('main-details').innerHTML = `
-                <div style="display:flex; align-items:baseline; margin-bottom:5px;">
-                    <h1 style="font-size:3rem; font-weight:900; margin:0;">${name}</h1>
-                    <span class="id-text">ID: ${idValue}</span>
+                <div style="display:flex; align-items:center; margin-bottom:5px; flex-wrap: wrap;">
+                    <h1 style="font-size:3rem; font-weight:900; margin:0; line-height:1.1;">${name}</h1>
+                    <span class="id-badge">ID: ${idValue}</span>
                 </div>
-                <p style="color:var(--text-muted); font-size:1.2rem;">by <strong>${getVal(["Creator(s)", "Author"])}</strong></p>
+                <p style="color:var(--text-muted); font-size:1.2rem; margin-top:10px;">by <strong>${getVal(["Creator(s)", "Author"])}</strong></p>
                 
                 <div style="margin:30px 0; padding:25px; background:rgba(0,0,0,0.2); border:1px solid var(--border); border-radius:12px;">
-                    <h4 style="margin:0 0 10px 0; font-size:0.7rem; text-transform:uppercase; color:var(--accent);">Description</h4>
-                    <p style="margin:0; line-height:1.6;">${getVal(["Description", "Notes"]) || "No description."}</p>
+                    <span class="section-label" style="color:var(--accent)">Description</span>
+                    <p style="margin:0; line-height:1.6; color:#eee; font-size:0.95rem;">${getVal(["Description", "Notes"]) || "No description provided."}</p>
                 </div>
 
                 <div style="margin-bottom:30px;">
-                    <h4 style="margin:0 0 10px 0; font-size:0.7rem; text-transform:uppercase; color:var(--text-muted);">Skills Required</h4>
+                    <span class="section-label">Skills Required</span>
                     <div style="margin-top:10px;">${skillsHtml}</div>
                 </div>
 
                 <div class="stat-grid">
-                    <div style="background:rgba(255,255,255,0.03); padding:20px; border-radius:10px; border:1px solid var(--border); text-align:center;">
-                        <div style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase;">Enjoyment</div>
+                    <div style="background:rgba(255,255,255,0.02); padding:20px; border-radius:10px; border:1px solid var(--border); text-align:center;">
+                        <span class="section-label" style="margin-bottom:5px;">Enjoyment</span>
                         <div style="font-size:1.8rem; font-weight:900;">${getVal(["Enjoyment"]) || "N/A"}</div>
                     </div>
-                    <div style="background:rgba(255,255,255,0.03); padding:20px; border-radius:10px; border:1px solid var(--border); text-align:center;">
-                        <div style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase;">List Points</div>
-                        <div style="font-size:1.8rem; font-weight:900; color:var(--accent)">${getVal(["Points"]) || "0"}</div>
+                    <div style="background:rgba(255,255,255,0.02); padding:20px; border-radius:10px; border:1px solid var(--border); text-align:center;">
+                        <span class="section-label" style="margin-bottom:5px;">List Points</span>
+                        <div style="font-size:1.8rem; font-weight:900; color:var(--accent);">${getVal(["Points"]) || "0"}</div>
                     </div>
                 </div>
 
-                <div style="margin-top:30px; border-top: 1px solid var(--border); padding-top:30px;">
-                    <h4 style="margin:0 0 15px 0; font-size:0.7rem; text-transform:uppercase; color:var(--text-muted);">Level Preview (Code)</h4>
-                    <div style="display:flex; gap:10px;">
-                        <input type="text" value="${getVal(["Level Code"]) || "No Code"}" readonly id="lcode" 
-                            style="flex:1; background:rgba(0,0,0,0.4); border:1px solid var(--border); color:#fff; padding:15px; border-radius:8px; font-family:monospace; font-size:1rem;">
-                        <button onclick="copyCode(this)" style="background:var(--accent); color:white; border:none; padding:0 25px; border-radius:8px; font-weight:700; cursor:pointer; transition:0.2s;">Copy</button>
+                <div style="margin-top:40px; border-top: 1px solid var(--border); padding-top:30px;">
+                    <span class="section-label">Level Code</span>
+                    <div class="code-container">
+                        <input type="text" value="${getVal(["Level Code"]) || "No Code"}" readonly id="lcode" class="code-input">
+                        <button onclick="copyCode(this)" class="preview-btn">Level Preview</button>
                     </div>
                 </div>
             `;
