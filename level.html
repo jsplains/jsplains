@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Loading Level...</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <style>
         .page-container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
@@ -45,7 +46,31 @@
         .sidebar-divider { height: 1px; background: var(--border); margin: 20px 0; }
 
         .skill-tag { background: rgba(255,255,255,0.08); border: 1px solid var(--border); padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; display: inline-block; margin: 0 6px 6px 0; }
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px; }
+        
+        .stat-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
+            gap: 15px; 
+            margin-top: 30px; 
+        }
+
+        .stat-item {
+            background: rgba(255,255,255,0.02); 
+            padding: 20px; 
+            border-radius: 10px; 
+            border: 1px solid var(--border); 
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-icon {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            opacity: 0.8;
+        }
 
         .code-container { display: flex; gap: 8px; margin-top: 10px; max-width: 480px; }
         .code-input { 
@@ -72,19 +97,25 @@
         }
         .action-btn:hover { opacity: 0.9; }
 
-        /* Style for the Rank Bubble */
         .rank-bubble {
             background: var(--accent);
             color: white;
-            padding: 4px 12px;
+            padding: 6px 14px;
             border-radius: 8px;
             font-size: 1.8rem;
             font-weight: 900;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            margin-right: 15px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            flex-shrink: 0;
+        }
+
+        .level-header-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
         }
 
         @media (max-width: 900px) { .layout-wrapper { flex-direction: column; } }
@@ -129,7 +160,7 @@
         const spreadsheetId = "10yZLCN80B0ExwiY8E5Y5GB95NV1T5UI69vLYywtg_J0";
         const sheetGids = ["0", "1720349441"]; 
 
-        function getEnjoymentColor(val) {
+        function getScoreColor(val) {
             const score = parseFloat(val);
             if (isNaN(score)) return 'var(--text-muted)';
             const normalized = score <= 10 ? score * 10 : score;
@@ -175,7 +206,10 @@
             const acronym = (getVal(["Acronym"]) || "").toLowerCase().trim();
             const thumb = acronym ? `assets/thumbs/${acronym}.png` : "assets/thumbs/Noimageavailable.png";
             const levelCode = (getVal(["Level Code"]) || "").trim();
+            
             const enjoymentVal = getVal(["Enjoyment"]) || "N/A";
+            const qualityVal = getVal(["Quality"]) || "N/A";
+            const difficultyVal = getVal(["Difficulty"]) || "N/A";
             
             document.title = `(#${rank}) ${name}`;
             document.getElementById('banner').style.backgroundImage = `url('${thumb}')`;
@@ -197,12 +231,12 @@
             const skillsHtml = skillsRaw ? skillsRaw.split(',').map(s => `<span class="skill-tag">${s.trim()}</span>`).join('') : "N/A";
 
             document.getElementById('main-details').innerHTML = `
-                <div style="display:flex; align-items:center; margin-bottom:5px; flex-wrap: wrap;">
+                <div class="level-header-row">
                     <span class="rank-bubble">#${rank}</span>
                     <h1 style="font-size:3rem; font-weight:900; margin:0; line-height:1.1;">${name}</h1>
-                    <span style="color: var(--text-muted); font-size: 1.3rem; font-family: monospace; margin-left:15px;">(${idValue})</span>
+                    <span style="color: var(--text-muted); font-size: 1.3rem; font-family: monospace;">(${idValue})</span>
                 </div>
-                <p style="color:var(--text-muted); font-size:1.2rem; margin-top:10px;">by <strong>${getVal(["Creator(s)", "Author"])}</strong></p>
+                <p style="color:var(--text-muted); font-size:1.2rem; margin-top:15px;">by <strong>${getVal(["Creator(s)", "Author"])}</strong></p>
                 
                 <div style="margin:30px 0; padding:25px; background:rgba(0,0,0,0.2); border:1px solid var(--border); border-radius:12px;">
                     <span class="section-label" style="color:var(--accent)">Description</span>
@@ -215,11 +249,23 @@
                 </div>
 
                 <div class="stat-grid">
-                    <div style="background:rgba(255,255,255,0.02); padding:20px; border-radius:10px; border:1px solid var(--border); text-align:center;">
-                        <span class="section-label" style="margin-bottom:5px;">Enjoyment</span>
-                        <div style="font-size:1.8rem; font-weight:900; color: ${getEnjoymentColor(enjoymentVal)};">${enjoymentVal}</div>
+                    <div class="stat-item">
+                        <i class="fa-solid fa-gauge-high stat-icon" style="color: #cbd5e1;"></i>
+                        <span class="section-label" style="margin-bottom:5px;">Difficulty</span>
+                        <div style="font-size:1.8rem; font-weight:900;">${difficultyVal}</div>
                     </div>
-                    <div style="background:rgba(255,255,255,0.02); padding:20px; border-radius:10px; border:1px solid var(--border); text-align:center;">
+                    <div class="stat-item">
+                        <i class="fa-solid fa-face-smile stat-icon" style="color: ${getScoreColor(enjoymentVal)};"></i>
+                        <span class="section-label" style="margin-bottom:5px;">Enjoyment</span>
+                        <div style="font-size:1.8rem; font-weight:900; color: ${getScoreColor(enjoymentVal)};">${enjoymentVal}</div>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fa-solid fa-star stat-icon" style="color: ${getScoreColor(qualityVal)};"></i>
+                        <span class="section-label" style="margin-bottom:5px;">Quality</span>
+                        <div style="font-size:1.8rem; font-weight:900; color: ${getScoreColor(qualityVal)};">${qualityVal}</div>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fa-solid fa-trophy stat-icon" style="color: var(--accent);"></i>
                         <span class="section-label" style="margin-bottom:5px;">List Points</span>
                         <div style="font-size:1.8rem; font-weight:900; color:var(--accent);">${getVal(["Points"]) || "0"}</div>
                     </div>
