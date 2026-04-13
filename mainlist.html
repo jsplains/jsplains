@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loading Level...</title>
+    <title>The Grandmaster Zone</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
@@ -116,194 +116,117 @@
 </head>
 <body>
     <nav>
-        <a href="index.html" class="logo-link"><img src="assets/logo.webp" alt="Logo" class="nav-logo"></a>
+        <a href="/" class="logo-link"><img src="assets/logo.webp" alt="Logo" class="nav-logo"></a>
+        <div class="nav-links">
+            <a href="index.html" class="active">Main List</a>
+            <a href="expert.html">Extended List</a>
+            <a href="leaderboard.html">Leaderboard</a>
+        </div>
     </nav>
 
-    <div class="page-container">
-        <div class="top-nav">
-            <a href="index.html" class="back-link">← Back to Main List</a>
-        </div>
+    <div id="main-layout">
+        <main>
+            <div id="loading-overlay">Loading levels...</div>
+            <div id="list-view"></div>
+        </main>
 
-        <div id="loading-msg" style="text-align:center; margin-top:50px; font-weight:700; color:var(--text-muted);">
-            Connecting to database...
-        </div>
-
-        <div class="layout-wrapper" id="page-content" style="display:none;">
-            <div class="level-card">
-                <div id="banner" class="banner"><div class="banner-overlay"></div></div>
-                <div class="level-body">
-                    <div id="main-details"></div>
-                </div>
-            </div>
-            
-            <div class="sidebar-card">
-                <span class="section-label">Verifier</span>
-                <div id="verifier-area"></div>
-                <div class="sidebar-divider"></div>
-                <span class="section-label">Victors</span>
-                <div id="victors-area"></div>
-            </div>
-        </div>
+        <aside id="sidebar">
+            <a href="https://docs.google.com/forms/..." target="_blank" class="submit-btn">Submit a Completion</a>
+            <h3>Filter Skills</h3>
+            <div id="tag-filters"></div>
+        </aside>
     </div>
-
-    <script src="levelRenderer.js"></script>
-    <script src="levelPopup.js"></script>
 
     <script>
         const spreadsheetId = "10yZLCN80B0ExwiY8E5Y5GB95NV1T5UI69vLYywtg_J0";
         const sheetGids = ["0", "1720349441"]; 
 
-        function getScoreColor(val) {
-            const score = parseFloat(val);
-            if (isNaN(score)) return 'var(--text-muted)';
-            const normalized = score <= 10 ? score * 10 : score;
-            if (normalized >= 75) return '#22c55e';
-            if (normalized >= 55) return '#eab308';
-            if (normalized >= 35) return '#f97316';
-            return '#ef4444';
-        }
+        let activeTags = [];
+        window.DATA = { levels: [] };
 
-        async function init() {
-            const params = new URLSearchParams(window.location.search);
-            const targetId = params.get('id');
-            if (!targetId) { window.location.href = 'index.html'; return; }
+        // --- UTILS ---
+        function getCsvUrl(gid) { return `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}`; }
+        function parseSkills(raw) { return raw ? raw.split(/\r?\n|,/).map(s => s.trim()).filter(Boolean) : []; }
+        function safeText(val) { return val == null ? "" : String(val); }
 
-            try {
-                const results = await Promise.all(sheetGids.map(gid => 
-                    fetch(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}`)
-                    .then(r => r.text())
-                    .then(txt => Papa.parse(txt, { header: true, skipEmptyLines: true }).data)
-                ));
-
-                const allRows = results.flat();
-                const lvl = allRows.find(row => String(Object.values(row)[0]).trim() === String(targetId).trim());
-
-                if (!lvl) {
-                    document.getElementById('loading-msg').innerHTML = "<h1>Level Not Found</h1>";
-                    return;
-                }
-                renderPage(lvl, targetId);
-            } catch (err) {
-                document.getElementById('loading-msg').innerHTML = "Database Connection Failed.";
-            }
-        }
-
-        function renderPage(lvl, idValue) {
-            const getVal = (keys) => {
-                const foundKey = Object.keys(lvl).find(k => keys.includes(k.trim()));
-                return foundKey ? lvl[foundKey] : "";
+        function mapRowToLevel(row) {
+            const m82id = safeText(row["ID (M82)"] || "N/A");
+            const acronym = safeText(row["Acronym"] || "").toLowerCase();
+            return {
+                id: m82id,
+                name: safeText(row["Name"] || "Unknown"),
+                img: acronym ? `assets/thumbs/${acronym}.png` : "assets/thumbs/Noimageavailable.png",
+                author: safeText(row["Creator(s)"] || "Unknown"),
+                rank: safeText(row["Rank"] || "0"),
+                difficulty: safeText(row["Difficulty"] || ""),
+                points: safeText(row["Points"] || "0"),
+                quality: safeText(row["Quality"] || ""),
+                _skillsArray: parseSkills(safeText(row["Skills Needed"] || "")).map(s => s.toLowerCase())
             };
-
-            const name = getVal(["Name", "name"]) || "Unknown";
-            const rank = getVal(["Rank"]) || "?";
-            const acronym = (getVal(["Acronym"]) || "").toLowerCase().trim();
-            const thumb = acronym ? `assets/thumbs/${acronym}.png` : "assets/thumbs/Noimageavailable.png";
-            const levelCode = (getVal(["Level Code"]) || "").trim();
-            
-            const enjoymentVal = getVal(["Enjoyment"]) || "N/A";
-            const qualityVal = getVal(["Quality"]) || "N/A";
-            const difficultyVal = getVal(["Difficulty"]) || "N/A";
-            const pointsVal = getVal(["Points"]) || "0";
-            
-            document.title = `(#${rank}) ${name}`;
-            document.getElementById('banner').style.backgroundImage = `url('${thumb}')`;
-            document.getElementById('loading-msg').style.display = 'none';
-            document.getElementById('page-content').style.display = 'flex';
-
-            // Verifier & Victors
-            const verifier = (getVal(["Verifier"]) || "").trim();
-            document.getElementById('verifier-area').innerHTML = (verifier && verifier.toLowerCase() !== "none") 
-                ? `<div class="player-entry"><img src="assets/players/${verifier}.png" onerror="this.src='assets/players/default.png'" class="player-pfp"><span style="font-weight:700;">${verifier}</span></div>`
-                : `<p style="color:var(--text-muted);">None</p>`;
-
-            const victorsRaw = getVal(["Victors"]) || "";
-            const otherVictors = victorsRaw.split(/[ ,]+/).filter(v => v && v.toLowerCase() !== "none" && v.toLowerCase() !== verifier.toLowerCase());
-            document.getElementById('victors-area').innerHTML = otherVictors.length > 0 
-                ? otherVictors.map(v => `<div class="player-entry"><img src="assets/players/${v.trim()}.png" onerror="this.src='assets/players/default.png'" class="player-pfp"><span style="font-weight:600;">${v.trim()}</span></div>`).join("")
-                : `<p style="color:var(--text-muted);">None</p>`;
-
-            const skillsRaw = getVal(["Skills Needed", "Skills"]);
-            const skillsHtml = skillsRaw ? skillsRaw.split(',').map(s => `<span class="skill-tag">${s.trim()}</span>`).join('') : "N/A";
-
-            document.getElementById('main-details').innerHTML = `
-                <div class="level-header-row">
-                    <span class="rank-bubble">#${rank}</span>
-                    <h1 style="font-size:3rem; font-weight:900; margin:0; line-height:1.1;">${name}</h1>
-                    <span style="color: var(--text-muted); font-size: 1.3rem; font-family: monospace;">(${idValue})</span>
-                </div>
-                <p style="color:var(--text-muted); font-size:1.2rem; margin-top:15px;">by <strong>${getVal(["Creator(s)", "Author"])}</strong></p>
-                
-                <div style="margin:30px 0; padding:25px; background:rgba(0,0,0,0.2); border:1px solid var(--border); border-radius:12px;">
-                    <span class="section-label" style="color:var(--accent)">Description</span>
-                    <p style="margin:0; line-height:1.6; color:#eee; font-size:0.95rem;">${getVal(["Description", "Notes"]) || "No description provided."}</p>
-                </div>
-
-                <div class="stat-grid">
-                    <div class="stat-item">
-                        <img src="assets/diffs/${difficultyVal.trim()}.png" onerror="this.style.display='none'" class="custom-stat-icon">
-                        <div class="label-with-icon">
-                            <i class="fa-solid fa-gauge-high"></i>
-                            Difficulty
-                        </div>
-                        <div style="font-size:1.5rem; font-weight:900;">${difficultyVal}</div>
-                    </div>
-
-                    <div class="stat-item">
-                        <div style="height:55px; display:flex; align-items:center; justify-content:center; margin-bottom:15px;">
-                             <i class="fa-solid fa-face-smile" style="font-size:3rem; color:${getScoreColor(enjoymentVal)}; opacity: 0.9;"></i>
-                        </div>
-                        <div class="label-with-icon">
-                            <i class="fa-solid fa-heart"></i>
-                            Enjoyment
-                        </div>
-                        <div style="font-size:1.5rem; font-weight:900; color: ${getScoreColor(enjoymentVal)};">${enjoymentVal}</div>
-                    </div>
-
-                    <div class="stat-item">
-                        <img src="assets/quality/${qualityVal.trim()}.svg" onerror="this.style.display='none'" class="custom-stat-icon">
-                        <div class="label-with-icon">
-                            <i class="fa-solid fa-star"></i>
-                            Quality
-                        </div>
-                        <div style="font-size:1.5rem; font-weight:900; color: ${getScoreColor(qualityVal)};">${qualityVal}</div>
-                    </div>
-
-                    <div class="stat-item">
-                        <div style="height:55px; display:flex; align-items:center; justify-content:center; margin-bottom:15px;">
-                             <i class="fa-solid fa-trophy" style="font-size:3rem; color:var(--accent); opacity: 0.9;"></i>
-                        </div>
-                        <div class="label-with-icon">
-                            <i class="fa-solid fa-bolt"></i>
-                            Points
-                        </div>
-                        <div style="font-size:1.5rem; font-weight:900; color:var(--accent);">${pointsVal}</div>
-                    </div>
-                </div>
-
-                <div style="margin-top:40px; border-top: 1px solid var(--border); padding-top:30px;">
-                    <span class="section-label">Skills Required</span>
-                    <div style="margin-top:10px;">${skillsHtml}</div>
-                </div>
-
-                <div style="margin-top:40px; border-top: 1px solid var(--border); padding-top:30px;">
-                    <span class="section-label">Level Code</span>
-                    <div class="code-container">
-                        <input type="text" value="${levelCode || "No Code"}" readonly id="lcode" class="code-input">
-                        <button onclick="copyLevelCode(this, \`${levelCode}\`)" class="action-btn">Copy</button>
-                    </div>
-                </div>
-            `;
         }
 
-        function copyLevelCode(btn, code) {
-            if (!code || code === "No Code") return;
-            navigator.clipboard.writeText(code).then(() => {
-                const orig = btn.textContent;
-                btn.textContent = "Copied!";
-                setTimeout(() => btn.textContent = orig, 1500);
+        async function fetchSheetCsv(gid) {
+            const res = await fetch(getCsvUrl(gid));
+            const text = await res.text();
+            return Papa.parse(text, { header: true, skipEmptyLines: true }).data;
+        }
+
+        // --- NAVIGATION ---
+        function navigateToLevel(id) {
+            window.location.href = `level.html?id=${id}`;
+        }
+
+        // --- RENDERING ---
+        function filterLevels() {
+            const filtered = window.DATA.levels.filter(lvl => 
+                activeTags.length === 0 || activeTags.every(t => lvl._skillsArray.includes(t.toLowerCase()))
+            );
+            
+            document.getElementById('list-view').innerHTML = filtered.map(lvl => `
+                <div class="level-entry" onclick="navigateToLevel('${lvl.id}')" style="--bg-image: url('${lvl.img}')">
+                    <img class="level-thumb" src="${lvl.img}" onerror="this.src='assets/thumbs/Noimageavailable.png'">
+                    <div class="level-rank">#${lvl.rank}</div>
+                    <div class="level-info">
+                        <div class="level-name">${lvl.name}</div>
+                        <div class="level-meta">by ${lvl.author}</div>
+                        <div class="level-meta" style="color:var(--accent); font-weight:700;">${lvl.points} pts</div>
+                    </div>
+                    <div class="level-difficulty-slot">
+                        ${lvl.quality ? `<img src="assets/quality/${lvl.quality.trim()}.svg" class="diff-icon-small">` : ''}
+                        ${lvl.difficulty ? `<img src="assets/diffs/${lvl.difficulty.trim()}.png" class="diff-icon-small">` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderTagButtons(allTags) {
+            const container = document.getElementById("tag-filters");
+            allTags.sort().forEach(tag => {
+                const btn = document.createElement("button");
+                btn.className = "tag-btn";
+                btn.textContent = tag;
+                btn.onclick = () => {
+                    btn.classList.toggle("active-tag");
+                    activeTags = Array.from(document.querySelectorAll(".active-tag")).map(b => b.textContent);
+                    filterLevels();
+                };
+                container.appendChild(btn);
             });
         }
 
+        async function init() {
+            try {
+                const [d1, d2] = await Promise.all([fetchSheetCsv(sheetGids[0]), fetchSheetCsv(sheetGids[1])]);
+                window.DATA.levels = [...d1, ...d2].map(mapRowToLevel);
+                
+                const tagSet = new Set();
+                window.DATA.levels.forEach(l => l._skillsArray.forEach(s => tagSet.add(s)));
+                renderTagButtons(Array.from(tagSet));
+                
+                document.getElementById('loading-overlay').style.display = 'none';
+                filterLevels();
+            } catch (e) { console.error(e); }
+        }
         window.onload = init;
     </script>
 </body>
