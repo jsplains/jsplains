@@ -72,17 +72,32 @@
         }
         .action-btn:hover { opacity: 0.9; }
 
+        /* Style for the Rank Bubble */
+        .rank-bubble {
+            background: var(--accent);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 1.8rem;
+            font-weight: 900;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
         @media (max-width: 900px) { .layout-wrapper { flex-direction: column; } }
     </style>
 </head>
 <body>
     <nav>
-        <a href="/index" class="logo-link"><img src="assets/logo.webp" alt="Logo" class="nav-logo"></a>
+        <a href="index.html" class="logo-link"><img src="assets/logo.webp" alt="Logo" class="nav-logo"></a>
     </nav>
 
     <div class="page-container">
         <div class="top-nav">
-            <a href="/mainlist" class="back-link">← Back to Main List</a>
+            <a href="index.html" class="back-link">← Back to Main List</a>
         </div>
 
         <div id="loading-msg" style="text-align:center; margin-top:50px; font-weight:700; color:var(--text-muted);">
@@ -118,10 +133,10 @@
             const score = parseFloat(val);
             if (isNaN(score)) return 'var(--text-muted)';
             const normalized = score <= 10 ? score * 10 : score;
-            if (normalized >= 75) return '#22c55e'; // Green
-            if (normalized >= 55) return '#eab308'; // Yellow
-            if (normalized >= 35) return '#f97316'; // Orange
-            return '#ef4444'; // Red
+            if (normalized >= 75) return '#22c55e';
+            if (normalized >= 55) return '#eab308';
+            if (normalized >= 35) return '#f97316';
+            return '#ef4444';
         }
 
         async function init() {
@@ -182,9 +197,10 @@
             const skillsHtml = skillsRaw ? skillsRaw.split(',').map(s => `<span class="skill-tag">${s.trim()}</span>`).join('') : "N/A";
 
             document.getElementById('main-details').innerHTML = `
-                <div style="display:flex; align-items:baseline; margin-bottom:5px; flex-wrap: wrap; gap: 12px;">
-                    <h1 style="font-size:3rem; font-weight:900; margin:0; line-height:1.1;">#${rank} ${name}</h1>
-                    <span style="color: var(--text-muted); font-size: 1.3rem; font-family: monospace;">(${idValue})</span>
+                <div style="display:flex; align-items:center; margin-bottom:5px; flex-wrap: wrap;">
+                    <span class="rank-bubble">#${rank}</span>
+                    <h1 style="font-size:3rem; font-weight:900; margin:0; line-height:1.1;">${name}</h1>
+                    <span style="color: var(--text-muted); font-size: 1.3rem; font-family: monospace; margin-left:15px;">(${idValue})</span>
                 </div>
                 <p style="color:var(--text-muted); font-size:1.2rem; margin-top:10px;">by <strong>${getVal(["Creator(s)", "Author"])}</strong></p>
                 
