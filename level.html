@@ -47,6 +47,7 @@
 
         .skill-tag { background: rgba(255,255,255,0.08); border: 1px solid var(--border); padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; display: inline-block; margin: 0 6px 6px 0; }
         
+        /* Stats Styling */
         .stat-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
@@ -63,39 +64,27 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            transition: transform 0.2s;
+        }
+        .stat-item:hover { transform: translateY(-3px); background: rgba(255,255,255,0.04); }
+
+        .custom-stat-icon {
+            height: 55px;
+            margin-bottom: 15px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 8px rgba(0,0,0,0.5));
         }
 
-        .stat-icon {
-            font-size: 1.2rem;
-            margin-bottom: 10px;
-            opacity: 0.8;
+        .label-with-icon {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            margin-bottom: 8px;
         }
-
-        .code-container { display: flex; gap: 8px; margin-top: 10px; max-width: 480px; }
-        .code-input { 
-            flex: 1; 
-            background: rgba(0,0,0,0.5); 
-            border: 1px solid #444; 
-            color: #fff; 
-            padding: 10px; 
-            border-radius: 6px; 
-            font-family: monospace; 
-            font-size: 0.85rem; 
-        }
-        .action-btn { 
-            background: var(--accent); 
-            color: white; 
-            border: none; 
-            padding: 0 15px; 
-            border-radius: 6px; 
-            font-weight: 700; 
-            font-size: 0.75rem;
-            cursor: pointer; 
-            transition: 0.2s; 
-            white-space: nowrap;
-        }
-        .action-btn:hover { opacity: 0.9; }
 
         .rank-bubble {
             background: var(--accent);
@@ -117,6 +106,10 @@
             gap: 15px;
             flex-wrap: wrap;
         }
+
+        .code-container { display: flex; gap: 8px; margin-top: 10px; }
+        .code-input { flex: 1; background: rgba(0,0,0,0.5); border: 1px solid #444; color: #fff; padding: 10px; border-radius: 6px; font-family: monospace; }
+        .action-btn { background: var(--accent); color: white; border: none; padding: 0 15px; border-radius: 6px; font-weight: 700; cursor: pointer; }
 
         @media (max-width: 900px) { .layout-wrapper { flex-direction: column; } }
     </style>
@@ -210,22 +203,24 @@
             const enjoymentVal = getVal(["Enjoyment"]) || "N/A";
             const qualityVal = getVal(["Quality"]) || "N/A";
             const difficultyVal = getVal(["Difficulty"]) || "N/A";
+            const pointsVal = getVal(["Points"]) || "0";
             
             document.title = `(#${rank}) ${name}`;
             document.getElementById('banner').style.backgroundImage = `url('${thumb}')`;
             document.getElementById('loading-msg').style.display = 'none';
             document.getElementById('page-content').style.display = 'flex';
 
+            // Verifier & Victors
             const verifier = (getVal(["Verifier"]) || "").trim();
             document.getElementById('verifier-area').innerHTML = (verifier && verifier.toLowerCase() !== "none") 
-                ? `<div class="player-entry"><img src="assets/players/${verifier}.png" onerror="this.src='assets/players/default.png'" class="player-pfp"><span style="font-weight:700; font-size:0.9rem;">${verifier}</span></div>`
-                : `<p style="color:var(--text-muted); font-size:0.8rem;">None</p>`;
+                ? `<div class="player-entry"><img src="assets/players/${verifier}.png" onerror="this.src='assets/players/default.png'" class="player-pfp"><span style="font-weight:700;">${verifier}</span></div>`
+                : `<p style="color:var(--text-muted);">None</p>`;
 
             const victorsRaw = getVal(["Victors"]) || "";
             const otherVictors = victorsRaw.split(/[ ,]+/).filter(v => v && v.toLowerCase() !== "none" && v.toLowerCase() !== verifier.toLowerCase());
             document.getElementById('victors-area').innerHTML = otherVictors.length > 0 
-                ? otherVictors.map(v => `<div class="player-entry"><img src="assets/players/${v.trim()}.png" onerror="this.src='assets/players/default.png'" class="player-pfp"><span style="font-weight:600; font-size:0.85rem;">${v.trim()}</span></div>`).join("")
-                : `<p style="color:var(--text-muted); font-size:0.8rem;">None</p>`;
+                ? otherVictors.map(v => `<div class="player-entry"><img src="assets/players/${v.trim()}.png" onerror="this.src='assets/players/default.png'" class="player-pfp"><span style="font-weight:600;">${v.trim()}</span></div>`).join("")
+                : `<p style="color:var(--text-muted);">None</p>`;
 
             const skillsRaw = getVal(["Skills Needed", "Skills"]);
             const skillsHtml = skillsRaw ? skillsRaw.split(',').map(s => `<span class="skill-tag">${s.trim()}</span>`).join('') : "N/A";
@@ -243,40 +238,58 @@
                     <p style="margin:0; line-height:1.6; color:#eee; font-size:0.95rem;">${getVal(["Description", "Notes"]) || "No description provided."}</p>
                 </div>
 
-                <div style="margin-bottom:30px;">
-                    <span class="section-label">Skills Required</span>
-                    <div style="margin-top:10px;">${skillsHtml}</div>
-                </div>
-
                 <div class="stat-grid">
                     <div class="stat-item">
-                        <i class="fa-solid fa-gauge-high stat-icon" style="color: #cbd5e1;"></i>
-                        <span class="section-label" style="margin-bottom:5px;">Difficulty</span>
-                        <div style="font-size:1.8rem; font-weight:900;">${difficultyVal}</div>
+                        <img src="assets/diffs/${difficultyVal.trim()}.png" onerror="this.style.display='none'" class="custom-stat-icon">
+                        <div class="label-with-icon">
+                            <i class="fa-solid fa-gauge-high"></i>
+                            Difficulty
+                        </div>
+                        <div style="font-size:1.5rem; font-weight:900;">${difficultyVal}</div>
                     </div>
+
                     <div class="stat-item">
-                        <i class="fa-solid fa-face-smile stat-icon" style="color: ${getScoreColor(enjoymentVal)};"></i>
-                        <span class="section-label" style="margin-bottom:5px;">Enjoyment</span>
-                        <div style="font-size:1.8rem; font-weight:900; color: ${getScoreColor(enjoymentVal)};">${enjoymentVal}</div>
+                        <div style="height:55px; display:flex; align-items:center; justify-content:center; margin-bottom:15px;">
+                             <i class="fa-solid fa-face-smile" style="font-size:3rem; color:${getScoreColor(enjoymentVal)}; opacity: 0.9;"></i>
+                        </div>
+                        <div class="label-with-icon">
+                            <i class="fa-solid fa-heart"></i>
+                            Enjoyment
+                        </div>
+                        <div style="font-size:1.5rem; font-weight:900; color: ${getScoreColor(enjoymentVal)};">${enjoymentVal}</div>
                     </div>
+
                     <div class="stat-item">
-                        <i class="fa-solid fa-star stat-icon" style="color: ${getScoreColor(qualityVal)};"></i>
-                        <span class="section-label" style="margin-bottom:5px;">Quality</span>
-                        <div style="font-size:1.8rem; font-weight:900; color: ${getScoreColor(qualityVal)};">${qualityVal}</div>
+                        <img src="assets/quality/${qualityVal.trim()}.svg" onerror="this.style.display='none'" class="custom-stat-icon">
+                        <div class="label-with-icon">
+                            <i class="fa-solid fa-star"></i>
+                            Quality
+                        </div>
+                        <div style="font-size:1.5rem; font-weight:900; color: ${getScoreColor(qualityVal)};">${qualityVal}</div>
                     </div>
+
                     <div class="stat-item">
-                        <i class="fa-solid fa-trophy stat-icon" style="color: var(--accent);"></i>
-                        <span class="section-label" style="margin-bottom:5px;">List Points</span>
-                        <div style="font-size:1.8rem; font-weight:900; color:var(--accent);">${getVal(["Points"]) || "0"}</div>
+                        <div style="height:55px; display:flex; align-items:center; justify-content:center; margin-bottom:15px;">
+                             <i class="fa-solid fa-trophy" style="font-size:3rem; color:var(--accent); opacity: 0.9;"></i>
+                        </div>
+                        <div class="label-with-icon">
+                            <i class="fa-solid fa-bolt"></i>
+                            Points
+                        </div>
+                        <div style="font-size:1.5rem; font-weight:900; color:var(--accent);">${pointsVal}</div>
                     </div>
+                </div>
+
+                <div style="margin-top:40px; border-top: 1px solid var(--border); padding-top:30px;">
+                    <span class="section-label">Skills Required</span>
+                    <div style="margin-top:10px;">${skillsHtml}</div>
                 </div>
 
                 <div style="margin-top:40px; border-top: 1px solid var(--border); padding-top:30px;">
                     <span class="section-label">Level Code</span>
                     <div class="code-container">
                         <input type="text" value="${levelCode || "No Code"}" readonly id="lcode" class="code-input">
-                        <button onclick="copyLevelCode(this, \`${levelCode.replace(/`/g, '\\`').replace(/\$\{/g, '\\${')}\`)" class="action-btn">Copy</button>
-                        <button onclick="LevelPopup.show(\`${levelCode.replace(/`/g, '\\`').replace(/\$\{/g, '\\${')}\`)" class="action-btn">Level Preview</button>
+                        <button onclick="copyLevelCode(this, \`${levelCode}\`)" class="action-btn">Copy</button>
                     </div>
                 </div>
             `;
@@ -284,14 +297,10 @@
 
         function copyLevelCode(btn, code) {
             if (!code || code === "No Code") return;
-            const orig = btn.textContent;
             navigator.clipboard.writeText(code).then(() => {
+                const orig = btn.textContent;
                 btn.textContent = "Copied!";
-                btn.style.background = "#22c55e";
-                setTimeout(() => {
-                    btn.textContent = orig;
-                    btn.style.background = "var(--accent)";
-                }, 1500);
+                setTimeout(() => btn.textContent = orig, 1500);
             });
         }
 
