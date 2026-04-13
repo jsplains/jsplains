@@ -47,7 +47,6 @@
 
         .skill-tag { background: rgba(255,255,255,0.08); border: 1px solid var(--border); padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; display: inline-block; margin: 0 6px 6px 0; }
         
-        /* Fixed Stat Grid */
         .stat-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
@@ -129,16 +128,16 @@
 </head>
 <body>
     <nav>
-        <a href="index.html" class="logo-link"><img src="assets/logo.webp" alt="Logo" class="nav-logo"></a>
+        <a href="/" class="logo-link"><img src="assets/logo.webp" alt="Logo" class="nav-logo"></a>
     </nav>
 
     <div class="page-container">
         <div class="top-nav">
-            <a href="index.html" class="back-link">← Back to Main List</a>
+            <a href="/mainlist" class="back-link">← Back to Main List</a>
         </div>
 
         <div id="loading-msg" style="text-align:center; margin-top:50px; font-weight:700; color:var(--text-muted);">
-            Connecting to database...
+            Connecting to the zone...
         </div>
 
         <div class="layout-wrapper" id="page-content" style="display:none;">
@@ -170,16 +169,25 @@
             const score = parseFloat(val);
             if (isNaN(score)) return 'var(--text-muted)';
             const normalized = score <= 10 ? score * 10 : score;
-            if (normalized >= 75) return '#22c55e';
-            if (normalized >= 55) return '#eab308';
-            if (normalized >= 35) return '#f97316';
-            return '#ef4444';
+            if (normalized >= 75) return '#22c55e'; // Green
+            if (normalized >= 55) return '#eab308'; // Yellow
+            if (normalized >= 35) return '#f97316'; // Orange
+            return '#ef4444'; // Red
+        }
+
+        function getEnjoymentIcon(val) {
+            const score = parseFloat(val);
+            if (isNaN(score)) return 'fa-face-meh-blank';
+            
+            if (score >= 7.5) return 'fa-face-smile';      // Good (Green)
+            if (score >= 3.5) return 'fa-face-meh';        // Mediocre (Yellow/Orange)
+            return 'fa-face-frown';                         // Bad (Red)
         }
 
         async function init() {
             const params = new URLSearchParams(window.location.search);
             const targetId = params.get('id');
-            if (!targetId) { window.location.href = 'index.html'; return; }
+            if (!targetId) { window.location.href = '/mainlist'; return; }
 
             try {
                 const results = await Promise.all(sheetGids.map(gid => 
@@ -241,7 +249,7 @@
                 <div class="level-header-row">
                     <span class="rank-bubble">#${rank}</span>
                     <h1 style="font-size:3rem; font-weight:900; margin:0; line-height:1.1;">${name}</h1>
-                    <span style="color: var(--text-muted); font-size: 1.3rem; font-family: monospace;">(${idValue})</span>
+                    <span style="color: var(--text-muted); font-size: 1.3rem; font-family: monospace;">(ID: ${idValue})</span>
                 </div>
                 <p style="color:var(--text-muted); font-size:1.2rem; margin-top:15px;">by <strong>${getVal(["Creator(s)", "Author"])}</strong></p>
                 
@@ -261,7 +269,7 @@
 
                     <div class="stat-item">
                         <div style="height:55px; display:flex; align-items:center; justify-content:center; margin-bottom:15px;">
-                             <i class="fa-solid fa-face-smile" style="font-size:3rem; color:${getScoreColor(enjoymentVal)}; opacity: 0.9;"></i>
+                             <i class="fa-solid ${getEnjoymentIcon(enjoymentVal)}" style="font-size:3rem; color:${getScoreColor(enjoymentVal)}; opacity: 0.9;"></i>
                         </div>
                         <div class="label-with-icon">
                             <i class="fa-solid fa-heart"></i> Enjoyment
