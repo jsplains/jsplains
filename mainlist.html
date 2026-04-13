@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <style>
-        /* ADDED STYLES FOR THE SIDE-BY-SIDE MODAL */
+        /* Side-by-side Modal Styles */
         .modal-wrapper {
             display: flex;
             flex-direction: row;
@@ -109,7 +109,6 @@
     <script src="levelPopup.js"></script>
 
     <script>
-        // ----- CONFIG -----
         const spreadsheetId = "10yZLCN80B0ExwiY8E5Y5GB95NV1T5UI69vLYywtg_J0";
         const sheetGids = ["0", "1720349441"]; 
 
@@ -117,7 +116,6 @@
             return `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}`;
         }
 
-        // ----- UTILITIES -----
         function parseSkills(raw) {
             if (!raw) return [];
             return raw.split(/\r?\n|,/).map(s => s.trim()).filter(Boolean);
@@ -127,6 +125,7 @@
             return (val === undefined || val === null) ? "" : String(val); 
         }
 
+        // Close modal and clean URL
         document.getElementById("infoModal").addEventListener("click", function (e) {
             const modalContent = this.querySelector(".modal-content");
             const sidecar = document.getElementById("victors-sidecar");
@@ -202,6 +201,13 @@
             return "#008037";
         }
 
+        // REDIRECT LOGIC: Updates URL and then triggers the view
+        function navigateToLevel(id) {
+            const newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?id=' + id;
+            window.history.pushState({path:newurl}, '', newurl);
+            showLevelDetails(id);
+        }
+
         function filterLevels() {
             if (!window.DATA.levels) return;
             const filtered = DATA.levels.filter(lvl => {
@@ -214,7 +220,7 @@
                 const qIcon = lvl.quality ? `<img src="assets/quality/${lvl.quality.trim()}.svg" class="diff-icon-small">` : '';
                 const thumb = lvl.img || fallback;
                 return `
-                <div class="level-entry" onclick="showLevelDetails('${lvl.id}')" style="--bg-image: url('${thumb}'), url('${fallback}')">
+                <div class="level-entry" onclick="navigateToLevel('${lvl.id}')" style="--bg-image: url('${thumb}'), url('${fallback}')">
                     <img class="level-thumb" src="${thumb}" onerror="this.src='${fallback}'" alt="${lvl.name}">
                     <div class="level-rank">#${lvl.rank}</div>
                     <div class="level-info">
@@ -241,7 +247,6 @@
             modalBox.style.backgroundSize = "cover";
             modalBox.style.backgroundPosition = "center";
 
-            // --- VICTOR & VERIFIER LOGIC ---
             const verifierName = lvl.verifier.trim();
             const otherVictors = lvl.victors ? lvl.victors.split(/[ ,]+/)
                 .map(v => v.trim())
@@ -249,7 +254,6 @@
                 : [];
 
             let victorsHtml = '';
-
             if (verifierName && verifierName.toLowerCase() !== "none") {
                 victorsHtml += `
                     <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; gap:12px; margin-bottom:10px;">
@@ -285,17 +289,12 @@
                     </div>`;
             };
 
-            // SET THE SIDEBAR CONTENT FIRST
             sidecar.innerHTML = `
                 <div style="padding:15px; border-bottom:1px solid rgba(255,255,255,0.1); margin-bottom:15px;">
                     <h3 style="font-size:0.8rem; text-transform:uppercase; color:#888; margin:0; letter-spacing:1px;">Victors</h3>
                 </div>
-                <div class="victors-scroll-area">
-                    ${victorsHtml}
-                </div>
-            `;
+                <div class="victors-scroll-area">${victorsHtml}</div>`;
 
-            // SET MAIN BODY (Simplified to one column)
             document.getElementById('modal-body').innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:15px;">
                     <div>
@@ -307,13 +306,11 @@
                         ${lvl.difficulty ? `<img src="assets/diffs/${lvl.difficulty.trim()}.png" style="width:60px;" title="Difficulty">` : ""}
                     </div>
                 </div>
-
                 <div style="flex-grow:1; overflow-y:auto; padding-right:10px;">
                     <div style="background:rgba(0,0,0,0.3); padding:15px; border-radius:10px; border:1px solid rgba(255,255,255,0.05); margin-bottom:20px;">
                         <h3 style="font-size:0.8rem; text-transform:uppercase; color:#888; margin:0 0 10px 0;">Description</h3>
                         <p style="margin:0; font-size:0.95rem; line-height:1.5; color:#eee;">${lvl.desc}</p>
                     </div>
-
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
                         <div>
                             ${renderBar("Enjoyment", lvl.enjoyment)}
@@ -333,8 +330,7 @@
                             </div>` : ""}
                         </div>
                     </div>
-                </div>
-            `;
+                </div>`;
 
             document.getElementById('infoModal').style.display = "block";
             document.body.style.overflow = "hidden";
@@ -350,9 +346,24 @@
         }
 
         function closeModal() { 
+            // Reset URL when closing
+            const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+            window.history.pushState({path:cleanUrl}, '', cleanUrl);
             document.getElementById('infoModal').style.display = "none"; 
             document.body.style.overflow = "auto"; 
         }
+
+        // Listen for browser Back/Forward buttons
+        window.onpopstate = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const levelId = urlParams.get('id');
+            if (levelId) {
+                showLevelDetails(levelId);
+            } else {
+                document.getElementById('infoModal').style.display = "none";
+                document.body.style.overflow = "auto";
+            }
+        };
 
         async function init() {
             try {
@@ -360,11 +371,19 @@
                 const data2 = await fetchSheetCsv(sheetGids[1]);
                 const merged = [...data1.map(mapRowToLevel), ...data2.map(mapRowToLevel)];
                 window.DATA.levels = merged;
+                
                 const tagSet = new Set();
                 merged.forEach(l => (l._skillsArray || []).forEach(s => tagSet.add(s)));
                 renderTagButtons(Array.from(tagSet));
+                
                 document.getElementById('loading-overlay').style.display = 'none';
                 filterLevels();
+
+                // Check URL on load
+                const urlParams = new URLSearchParams(window.location.search);
+                const levelId = urlParams.get('id');
+                if (levelId) showLevelDetails(levelId);
+
             } catch (err) {
                 console.error(err);
                 document.getElementById('loading-overlay').innerHTML = "<span style='color:red;'>Connection Error.</span>";
