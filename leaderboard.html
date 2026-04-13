@@ -2,410 +2,270 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Grandmaster Zone | Leaderboard</title>
-    <link rel="icon" type="image/png" href="assets/diffs/Grandmaster V.png">
-    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <style>
-        /* ── Compressed Sort Bar ── */
-        .sort-container {
-            margin: 15px auto;
-            max-width: 850px;
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 12px;
-            padding: 0 10px;
-        }
-        .sort-wrapper {
-            display: flex;
-            align-items: center;
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding-left: 12px;
-        }
-        .sort-wrapper i { color: var(--accent); font-size: 0.9rem; }
-        #sort-select {
-            padding: 8px 12px;
-            background: transparent;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-family: inherit;
-            font-size: 0.85rem;
-            outline: none;
+        :root {
+            --bg: #0a0a0a;
+            --bg-card: #111111;
+            --border: #222222;
+            --text: #e0e0e0;
+            --accent: #8b3cf7;
         }
 
-        /* ── Compressed Entry Layout ── */
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* ── Split Layout Logic ── */
+        #container {
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        #main-layout {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+
+        #leaderboard-container {
+            flex: 1;
+            min-width: 0;
+        }
+
+        /* Sticky Right Side Popup Panel */
+        #player-popup-panel {
+            width: 450px;
+            position: sticky;
+            top: 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 25px;
+            display: block; /* Shown by default now */
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            z-index: 100;
+        }
+
+        /* ── Rank Border Colors (Exact Brackets) ── */
+        .rank-purple { border-left: 5px solid #8b3cf7; } /* 1-3 */
+        .rank-blue   { border-left: 5px solid #3c87f7; } /* 4-10 */
+        .rank-green  { border-left: 5px solid #3cf770; } /* 11-25 */
+        .rank-yellow { border-left: 5px solid #f7e63c; } /* 26-50 */
+        .rank-red    { border-left: 5px solid #f73c3c; } /* 51-100 */
+        .rank-gray   { border-left: 5px solid #444444; }
+
+        /* ── Difficulty Text Colors ── */
+        .c-gm   { color: #4b0082 !important; font-weight: 900; } /* Dark Purple */
+        .c-mstr { color: #3c87f7 !important; font-weight: 900; } /* Blue (Master) */
+        .c-exp  { color: #ff69b4 !important; font-weight: 900; } /* Pink (Expert) */
+
+        /* ── Entry Styling ── */
         .level-entry {
             display: flex;
             align-items: center;
-            padding: 8px 16px; /* Reduced padding */
-            margin-bottom: 6px;
-            gap: 12px;
-        }
-        .player-info {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            min-width: 0;
-        }
-        .player-name-wrapper {
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .hardest-display {
-            font-size: 0.72rem; /* Smaller text */
-            color: #888;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-top: 1px;
-        }
-
-        /* ── Stats on the Right ── */
-        .entry-stats-right {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            text-align: right;
-            flex-shrink: 0;
-        }
-        .clear-counts-brief {
-            display: flex;
-            gap: 8px;
-            font-size: 0.75rem;
-            font-weight: 800;
-        }
-        .c-tag { padding: 2px 6px; border-radius: 4px; background: rgba(0,0,0,0.3); }
-        .c-gm { color: #f0f; }
-        .c-mstr { color: #55f; }
-        .c-exp { color: #5f5; }
-
-        .level-points {
-            font-size: 1.1rem;
-            width: 90px;
-            margin: 0;
-            text-align: right;
-        }
-
-        /* ── Modal Improvements ── */
-        .modal-section-title {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .clears-filter-row {
-            background: rgba(0,0,0,0.2);
-            padding: 8px;
+            padding: 12px 20px;
+            margin-bottom: 8px;
+            background: rgba(255,255,255,0.02);
             border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
         }
+        .level-entry:hover, .level-entry.active-row {
+            background: rgba(255,255,255,0.06);
+        }
+        .level-entry.active-row { border-right: 2px solid var(--accent); }
+        
+        .player-info { flex: 1; display: flex; align-items: center; gap: 15px; }
+        .player-pfp { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; background: #222; border: 1px solid #333; }
+        
+        .entry-stats-right { display: flex; align-items: center; gap: 30px; }
+        .clear-counts-brief { display: flex; gap: 15px; font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; }
+        .level-points { width: 110px; text-align: right; font-weight: 900; font-size: 1.1rem; color: #fff; }
 
-        /* Mobile Optimization */
-        @media (max-width: 600px) {
-            .clear-counts-brief { display: none; }
-            .level-points { font-size: 0.9rem; width: 70px; }
+        /* ── Popup UI Elements ── */
+        .close-btn { float: right; cursor: pointer; color: #666; font-size: 1.8rem; line-height: 1; transition: 0.2s; }
+        .close-btn:hover { color: #fff; }
+        .popup-header { text-align: center; margin-bottom: 25px; border-bottom: 1px solid #222; padding-bottom: 20px; }
+        .popup-large-pfp { width: 100px; height: 100px; border-radius: 50%; margin-bottom: 15px; border: 3px solid var(--accent); }
+        
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 25px; }
+        .stat-card { background: #000; padding: 15px 5px; border-radius: 12px; text-align: center; border: 1px solid #1a1a1a; }
+        .stat-num { font-size: 1.4rem; font-weight: 900; display: block; }
+        .stat-label { font-size: 0.7rem; text-transform: uppercase; color: #666; letter-spacing: 1px; }
+
+        .clear-item { 
+            display: flex; justify-content: space-between; padding: 10px; 
+            background: rgba(255,255,255,0.02); border-radius: 6px; margin-bottom: 5px; font-size: 0.9rem;
         }
     </style>
 </head>
 <body>
-    <nav>
-        <a href="/" class="logo-link">
-            <img src="assets/logo.webp" alt="Logo" class="nav-logo">
-        </a>
-        <div class="nav-links">
-            <a href="/mainlist">Main List</a>
-            <a href="/expert">Extended List</a>
-            <a href="/leaderboard" class="active">Leaderboard</a>
-        </div>
-    </nav>
 
-    <div id="container" style="max-width: 850px; margin: 0px auto; padding: 20px;">
-        <h1 style="text-align:center; font-weight: 800; margin-bottom: 5px;">Leaderboard</h1>
-
-        <div class="sort-container">
-            <div class="sort-wrapper">
-                <i class="fa-solid fa-filter"></i>
-                <select id="sort-select" onchange="renderLeaderboard()">
-                    <option value="points">Points</option>
-                    <option value="difficulty">Hardest Clear</option>
-                    <option value="totalclears">Total Clears</option>
-                </select>
+<div id="container">
+    <div id="main-layout">
+        <div id="leaderboard-container">
+            <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:30px; padding: 0 10px;">
+                <div>
+                    <h1 style="margin:0; font-size: 2.5rem; font-weight: 900;">Leaderboard</h1>
+                </div>
+                <div style="background:#161616; padding:10px; border-radius:12px; border:1px solid #222;">
+                    <select id="sort-select" onchange="renderLeaderboard()" style="background:none; color:white; border:none; outline:none; cursor:pointer; font-weight:600;">
+                        <option value="points">Points</option>
+                        <option value="clears">Total Clears</option>
+                    </select>
+                </div>
             </div>
+            <div id="leaderboard-list"></div>
         </div>
 
-        <div id="loading-msg" style="text-align:center; padding: 40px; color: #888;">
-            <i class="fa-solid fa-circle-notch fa-spin"></i> Zoning in on the leaderboard...
-        </div>
-        <div id="leaderboard-list"></div>
-    </div>
-
-    <div id="playerModal" class="modal" style="display:none;">
-        <div class="modal-content" style="max-width:780px;">
-            <span onclick="closePlayerModal()" class="close-btn" style="cursor:pointer; font-size:24px; float:right;">&times;</span>
-            <div id="player-modal-body"></div>
+        <div id="player-popup-panel">
+            <span class="close-btn" onclick="closePopup()">&times;</span>
+            <div id="popup-content"></div>
         </div>
     </div>
+</div>
 
-    <script>
-        /* Existing Config & State logic remains identical */
-        const SPREADSHEET_ID = "10yZLCN80B0ExwiY8E5Y5GB95NV1T5UI69vLYywtg_J0";
-        const LB_GID         = "1908015854";
-        const LEVEL_GIDS     = ["0", "1720349441", "1575264256"];
-        const csvUrl = gid => `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&gid=${gid}`;
+<script>
+    const SHEET_ID = "10yZLCN80B0ExwiY8E5Y5GB95NV1T5UI69vLYywtg_J0";
+    const GIDS = { players: "1908015854", lists: ["0", "1720349441", "1575264256"] };
 
-        window.PLAYER_DATA         = [];
-        window.RANKED_DATA         = [];
-        window.ALL_LEVELS          = [];
-        window.GLOBAL_SKILL_RATES  = {};
-        window._currentModalClears = [];
-        let currentClearsFilter    = "all";
+    window.PLAYER_DATA = [];
+    window.LEVEL_DATA = [];
 
-        const safeText = v => (v === undefined || v === null) ? "" : String(v);
+    async function init() {
+        const fetchCSV = (gid) => fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`).then(r => r.text());
+        try {
+            const [pCsv, ...lCsvs] = await Promise.all([fetchCSV(GIDS.players), ...GIDS.lists.map(fetchCSV)]);
+            window.PLAYER_DATA = Papa.parse(pCsv, { header: true }).data.filter(p => p.Name);
+            lCsvs.forEach(csv => {
+                const parsed = Papa.parse(csv, { header: true }).data;
+                window.LEVEL_DATA = window.LEVEL_DATA.concat(parsed.filter(l => l.Name));
+            });
+            renderLeaderboard();
+        } catch (err) { console.error(err); }
+    }
 
-        function getTopNumber(text) {
-            if (!text || text.toLowerCase() === "none" || text.trim() === "") return 999999;
-            const m = text.match(/\(Top\s*(\d+)\)/i);
-            return m ? parseInt(m[1], 10) : 999998;
-        }
+    function getDiffGroup(diff) {
+        if (!diff) return "other";
+        const d = diff.toLowerCase();
+        if (d.includes("grandmaster")) return "gm";
+        if (d.includes("master")) return "master";
+        if (d.includes("expert")) return "expert";
+        return "other";
+    }
 
-        const parseVictors = raw => (!raw || !raw.trim()) ? [] : raw.trim().split(/\s+/).filter(Boolean);
-        const parseSkills  = raw => (!raw) ? [] : raw.split(/\r?\n|,/).map(s => s.trim()).filter(Boolean);
-
-        function extractLevelName(str) {
-            if (!str || str.trim() === "" || str.toLowerCase() === "none") return null;
-            return str.replace(/\(Top\s*\d+\)/i, "").trim();
-        }
-
-        function findLevel(nameStr) {
-            if (!nameStr) return null;
-            const needle = nameStr.toLowerCase();
-            return window.ALL_LEVELS.find(l => l.nameLower === needle)
-                || window.ALL_LEVELS.find(l => l.nameLower.includes(needle) || needle.includes(l.nameLower))
-                || null;
-        }
-
-        const getDiffGroup = d => {
-            const s = (d || "").toLowerCase();
-            if (s.includes("grandmaster")) return "gm";
-            if (s.includes("master"))      return "master";
-            if (s.includes("expert"))      return "expert";
-            return "other";
+    function getPlayerStats(name) {
+        const clears = window.LEVEL_DATA.filter(l => {
+            const victors = l.Victors ? l.Victors.split(',').map(v => v.trim()) : [];
+            return victors.includes(name);
+        });
+        return {
+            gm: clears.filter(l => getDiffGroup(l.Difficulty) === "gm").length,
+            master: clears.filter(l => getDiffGroup(l.Difficulty) === "master").length,
+            expert: clears.filter(l => getDiffGroup(l.Difficulty) === "expert").length,
+            all: clears.sort((a,b) => (parseInt(b.ID) || 0) - (parseInt(a.ID) || 0))
         };
+    }
 
-        async function fetchCsv(gid) {
-            const res  = await fetch(csvUrl(gid));
-            const text = await res.text();
-            return Papa.parse(text, { header: true, skipEmptyLines: true }).data;
-        }
+    function renderLeaderboard() {
+        const sortBy = document.getElementById('sort-select').value;
+        const listDiv = document.getElementById('leaderboard-list');
+        
+        let processed = window.PLAYER_DATA.map(p => ({
+            ...p,
+            stats: getPlayerStats(p.Name),
+            points: parseFloat(p.Points || 0)
+        }));
 
-        function parsePlayerRow(row) {
-            return {
-                name:          safeText(row["Username"] || row["username"] || "Unknown"),
-                points:        parseInt((row["Points"] || "0").replace(/,/g, "")) || 0,
-                hardest:       safeText(row["Hardest Clear (Master+)"]  || ""),
-                secondHardest: safeText(row["Second Hardest (Master+)"] || ""),
-                thirdHardest:  safeText(row["Third Hardest (Master+)"]  || ""),
-                country:       safeText(row["Country"] || "")
-            };
-        }
+        processed.sort((a, b) => sortBy === 'points' ? b.points - a.points : b.stats.all.length - a.stats.all.length);
 
-        function parseLevelRow(row) {
-            const name    = safeText(row["Name"] || row["name"]);
-            const acronym = safeText(row["Acronym"]).toLowerCase();
-            const diff    = safeText(row["Difficulty"] || "");
-            const rank    = safeText(row["Rank"] || "");
-            const explicitImg = safeText(row["Image"] || "");
-            const smallimg = explicitImg || (acronym ? `assets/smallthumbs/${acronym}.png` : "");
-            return {
-                name,
-                nameLower:  name.toLowerCase(),
-                acronym,
-                smallimg,
-                fullimg: acronym ? `assets/thumbs/${acronym}.png` : "",
-                diffimg: diff ? `assets/diffs/${diff.trim()}.png` : "",
-                difficulty: diff,
-                rank,
-                skills: parseSkills(safeText(row["Skills Needed"] || row["Skills"] || "")),
-                victors: parseVictors(safeText(row["Victors"] || ""))
-            };
-        }
+        listDiv.innerHTML = processed.map((p, i) => {
+            const rank = i + 1;
+            let bracket = "rank-gray";
+            if (rank <= 3) bracket = "rank-purple";
+            else if (rank <= 10) bracket = "rank-blue";
+            else if (rank <= 25) bracket = "rank-green";
+            else if (rank <= 50) bracket = "rank-yellow";
+            else if (rank <= 100) bracket = "rank-red";
 
-        async function fetchLeaderboard() {
-            try {
-                const [lbData, lvlData1, lvlData2, lvlData3] = await Promise.all([
-                    fetchCsv(LB_GID),
-                    fetchCsv(LEVEL_GIDS[0]),
-                    fetchCsv(LEVEL_GIDS[1]),
-                    fetchCsv(LEVEL_GIDS[2])
-                ]);
-
-                window.ALL_LEVELS = [...lvlData1, ...lvlData2, ...lvlData3].map(parseLevelRow);
-                
-                // Skill Calculation
-                const skillCounts = {};
-                window.ALL_LEVELS.forEach(lvl => lvl.skills.forEach(s => { if (s) skillCounts[s] = (skillCounts[s] || 0) + 1; }));
-                window.GLOBAL_SKILL_RATES = Object.fromEntries(Object.entries(skillCounts).map(([s, c]) => [s, c / (window.ALL_LEVELS.length || 1)]));
-
-                window.RANKED_DATA = lbData.map(parsePlayerRow).sort((a, b) => b.points - a.points);
-                window.PLAYER_DATA = [...window.RANKED_DATA];
-
-                document.getElementById('loading-msg').style.display = 'none';
-                renderLeaderboard();
-            } catch (err) {
-                document.getElementById('loading-msg').innerHTML = "Error loading data.";
-            }
-        }
-
-        function renderLeaderboard() {
-            const container = document.getElementById('leaderboard-list');
-            const sortBy    = document.getElementById('sort-select').value;
-
-            let display = [...window.PLAYER_DATA];
-            if (sortBy === "points") display.sort((a, b) => b.points - a.points);
-            else if (sortBy === 'difficulty') display.sort((a, b) => getTopNumber(a.hardest) - getTopNumber(b.hardest));
-            else if (sortBy === 'totalclears') {
-                display.sort((a, b) => getPlayerClears(b.name).length - getPlayerClears(a.name).length);
-            }
-
-            container.innerHTML = display.map(p => {
-                const globalRank = window.RANKED_DATA.indexOf(p) + 1;
-                const clears = getPlayerClears(p.name);
-                const gmCount = clears.filter(l => getDiffGroup(l.difficulty) === "gm").length;
-                const mstrCount = clears.filter(l => getDiffGroup(l.difficulty) === "master").length;
-                const expCount = clears.filter(l => getDiffGroup(l.difficulty) === "expert").length;
-
-                let colorClass = "rank-gray";
-                if (globalRank <= 3) colorClass = "rank-purple";
-                else if (globalRank <= 10) colorClass = "rank-blue";
-                else if (globalRank <= 25) colorClass = "rank-green";
-
-                return `
-                <div class="level-entry ${colorClass}" onclick="showPlayerDetails('${p.name.replace(/'/g, "\\'")}')">
-                    <div class="level-rank">#${globalRank}</div>
-                    <img class="player-pfp" src="assets/players/${p.name}.png" onerror="this.src='assets/players/default.png'">
-                    <div class="player-info">
-                        <div class="player-name-wrapper">${getFlagElement(p.country)} <b>${p.name}</b></div>
-                        <span class="hardest-display">Hardest: ${p.hardest || "—"}</span>
-                    </div>
-                    <div class="entry-stats-right">
-                        <div class="clear-counts-brief">
-                            <span class="c-tag c-gm">${gmCount}</span>
-                            <span class="c-tag c-mstr">${mstrCount}</span>
-                            <span class="c-tag c-exp">${expCount}</span>
-                        </div>
-                        <div class="level-points"><b>${p.points.toLocaleString()}</b></div>
-                    </div>
-                </div>`;
-            }).join('');
-        }
-
-        function getFlagElement(countryCode) {
-            if (!countryCode || countryCode.trim() === "" || countryCode.toLowerCase() === "n/a")
-                return `<div class="flag-container no-flag"></div>`;
-            const code = countryCode.toLowerCase().trim();
-            return `<img class="flag-container" src="https://flagcdn.com/w40/${code}.png" onerror="this.outerHTML='<div class=\'flag-container no-flag\'></div>'">`;
-        }
-
-        function getPlayerClears(playerName) {
-            const nameLower = playerName.toLowerCase();
-            return window.ALL_LEVELS.filter(lvl => lvl.victors.some(v => v.toLowerCase() === nameLower));
-        }
-
-        /* ── Modal logic remains mostly the same, updated with icons ── */
-        function showPlayerDetails(name) {
-            const player = window.PLAYER_DATA.find(p => p.name === name);
-            if (!player) return;
-
-            const clears = getPlayerClears(name);
-            const gmCount = clears.filter(l => getDiffGroup(l.difficulty) === "gm").length;
-            const masterCount = clears.filter(l => getDiffGroup(l.difficulty) === "master").length;
-            const expertCount = clears.filter(l => getDiffGroup(l.difficulty) === "expert").length;
-
-            currentClearsFilter = "all";
-            window._currentModalClears = clears;
-
-            document.getElementById('player-modal-body').innerHTML = `
-                <div class="player-modal-header">
-                    <img class="player-pfp" style="width:60px;height:60px;" src="assets/players/${player.name}.png" onerror="this.src='assets/players/default.png'">
-                    <div>
-                        <div style="display:flex;align-items:center;gap:8px;">
-                            ${getFlagElement(player.country)}
-                            <h2 style="margin:0;">${player.name}</h2>
-                        </div>
-                        <div style="color:var(--accent);font-size:0.9rem;font-weight:800;margin-top:2px;">${player.points.toLocaleString()} PTS</div>
-                    </div>
-                </div>
-
-                <div class="player-stats-row">
-                    <div class="pstat"><div class="pstat-val">${gmCount}</div><div class="pstat-label">GM</div></div>
-                    <div class="pstat"><div class="pstat-val">${masterCount}</div><div class="pstat-label">Master</div></div>
-                    <div class="pstat"><div class="pstat-val">${expertCount}</div><div class="pstat-label">Expert</div></div>
-                    <div class="pstat"><div class="pstat-val">${clears.length}</div><div class="pstat-label">Total</div></div>
-                </div>
-
-                <p class="modal-section-title"><i class="fa-solid fa-trophy"></i> Hardest Clears</p>
-                <div class="hardest-clears-row">
-                    ${[player.hardest, player.secondHardest, player.thirdHardest].map(c => hardestClearCard(c || "")).join('')}
-                </div>
-
-                <p class="modal-section-title"><i class="fa-solid fa-chart-simple"></i> All Clears</p>
-                <div class="clears-filter-row">
-                    <button class="clears-filter-btn active" data-filter="all" onclick="setClearsFilter(this)">All</button>
-                    <button class="clears-filter-btn" data-filter="gm" onclick="setClearsFilter(this)">GM</button>
-                    <button class="clears-filter-btn" data-filter="master" onclick="setClearsFilter(this)">Master</button>
-                    <button class="clears-filter-btn" data-filter="expert" onclick="setClearsFilter(this)">Expert</button>
-                    <span class="clears-count-label" id="pm-clears-count">${clears.length} clears</span>
-                </div>
-                <div class="clears-grid" id="pm-clears-grid">${renderClearsGrid(clears, 'all')}</div>
-            `;
-            document.getElementById('playerModal').style.display = "block";
-            document.body.style.overflow = "hidden";
-        }
-
-        // Include hardestClearCard, renderClearsGrid, setClearsFilter, closePlayerModal from original...
-        function hardestClearCard(clearText) {
-            const levelName = extractLevelName(clearText);
-            if (!levelName) return `<div class="hc-empty">—</div>`;
-            const lvl = findLevel(levelName);
-            const thumb = lvl ? (lvl.fullimg || lvl.smallimg) : "";
-            const topMatch = clearText.match(/\(Top\s*(\d+)\)/i);
             return `
-            <div class="hardest-clear-card">
-                ${thumb ? `<img class="hc-thumb" src="${thumb}" onerror="this.style.opacity='0.12'">` : `<div style="width:100%;height:100%;background:rgba(255,255,255,0.03);"></div>`}
-                <div class="hc-overlay"><div class="hc-name">${levelName}</div>${topMatch ? `<div class="hc-sub">Top ${topMatch[1]}</div>` : ''}</div>
-            </div>`;
-        }
-
-        function renderClearsGrid(clears, filter) {
-            const filtered = filter === "all" ? clears : clears.filter(lvl => getDiffGroup(lvl.difficulty) === filter);
-            return filtered.map(lvl => `
-                <div class="clear-card">
-                    <img class="cc-thumb" src="${lvl.smallimg}" onerror="this.style.opacity='0.12'">
-                    <div class="cc-label">${lvl.name}</div>
+            <div class="level-entry ${bracket}" id="row-${p.Name.replace(/\s+/g, '-')}" onclick="openPopup('${p.Name.replace(/'/g, "\\'")}')">
+                <div style="width: 40px; font-weight: 800; opacity: 0.3;">${rank}</div>
+                <div class="player-info">
+                    <img class="player-pfp" src="assets/players/${p.Name}.png" onerror="this.src='assets/players/default.png'">
+                    <div class="player-name-wrapper"><b>${p.Name}</b></div>
                 </div>
-            `).join('');
-        }
+                <div class="entry-stats-right">
+                    <div class="clear-counts-brief">
+                        <span class="c-gm">${p.stats.gm}</span>
+                        <span class="c-mstr">${p.stats.master}</span>
+                        <span class="c-exp">${p.stats.expert}</span>
+                    </div>
+                    <div class="level-points">${p.points.toLocaleString()}</div>
+                </div>
+            </div>`;
+        }).join('');
 
-        function setClearsFilter(btn) {
-            btn.closest('.clears-filter-row').querySelectorAll('.clears-filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentClearsFilter = btn.dataset.filter;
-            const grid = document.getElementById('pm-clears-grid');
-            grid.innerHTML = renderClearsGrid(window._currentModalClears, currentClearsFilter);
+        // ── AUTO-SELECT #1 PLAYER ──
+        if (processed.length > 0) {
+            openPopup(processed[0].Name);
         }
+    }
 
-        function closePlayerModal() {
-            document.getElementById('playerModal').style.display = "none";
-            document.body.style.overflow = "auto";
-        }
+    function openPopup(name) {
+        const player = window.PLAYER_DATA.find(p => p.Name === name);
+        const stats = getPlayerStats(name);
+        const panel = document.getElementById('player-popup-panel');
+        const content = document.getElementById('popup-content');
 
-        window.onload = fetchLeaderboard;
-    </script>
+        // Add visual feedback to the list
+        document.querySelectorAll('.level-entry').forEach(el => el.classList.remove('active-row'));
+        const activeRow = document.getElementById(`row-${name.replace(/\s+/g, '-')}`);
+        if(activeRow) activeRow.classList.add('active-row');
+
+        content.innerHTML = `
+            <div class="popup-header">
+                <img src="assets/players/${name}.png" onerror="this.src='assets/players/default.png'" class="popup-large-pfp">
+                <h2 style="margin:0;">${name}</h2>
+                <div style="color:var(--accent); font-weight:800; margin-top:5px;">
+                    ${parseFloat(player.Points || 0).toLocaleString()} POINTS
+                </div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card"><span class="stat-num c-gm">${stats.gm}</span><span class="stat-label">GM</span></div>
+                <div class="stat-card"><span class="stat-num c-mstr">${stats.master}</span><span class="stat-label">Master</span></div>
+                <div class="stat-card"><span class="stat-num c-exp">${stats.expert}</span><span class="stat-label">Expert</span></div>
+            </div>
+            <h3 style="font-size:0.9rem; text-transform:uppercase; color:#555;">Clear History</h3>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+                ${stats.all.slice(0, 15).map(l => `
+                    <div class="clear-item">
+                        <span>${l.Name}</span>
+                        <span class="c-${getDiffGroup(l.Difficulty)}">${l.Difficulty}</span>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        panel.style.display = 'block';
+    }
+
+    function closePopup() {
+        document.getElementById('player-popup-panel').style.display = 'none';
+        document.querySelectorAll('.level-entry').forEach(el => el.classList.remove('active-row'));
+    }
+
+    init();
+</script>
 </body>
 </html>
