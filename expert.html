@@ -31,7 +31,7 @@
 
         .bucket-title {
             font-size: 1.35rem;
-            font-weight: 800; /* Dialed back from 900 for readability */
+            font-weight: 800;
             color: var(--text-main);
             letter-spacing: 0.5px;
         }
@@ -47,45 +47,46 @@
             border-radius: 20px;
         }
 
+        /* The Blurred Background Effect (Matches Mainlist) */
+        .level-entry {
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+            background-color: #000;
+            display: flex;
+            align-items: center;
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+
+        .level-entry::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: var(--bg-image);
+            background-size: cover;
+            background-position: center;
+            filter: blur(15px) brightness(0.3);
+            z-index: -1;
+            transform: scale(1.1);
+        }
+
+        .level-entry:hover { transform: translateX(5px); }
+
         /* Stripe accents for buckets */
-        .bucket-high   .level-entry { border-left: 3px solid #c0392b; }
-        .bucket-medium .level-entry { border-left: 3px solid #e67e22; }
-        .bucket-low    .level-entry { border-left: 3px solid #27ae60; }
+        .bucket-high   .level-entry { border-left: 4px solid #c0392b; }
+        .bucket-medium .level-entry { border-left: 4px solid #e67e22; }
+        .bucket-low    .level-entry { border-left: 4px solid #27ae60; }
 
-        .bucket-high   .bucket-header { border-left: 4px solid #c0392b; }
-        .bucket-medium .bucket-header { border-left: 4px solid #e67e22; }
-        .bucket-low    .bucket-header { border-left: 4px solid #27ae60; }
-
-        /* Level Entry Tweak */
-        .level-entry.expert-entry { 
-            cursor: pointer; 
-            transition: transform 0.2s; 
-            min-width: 0; /* Allows children to shrink for ellipsis */
-        }
-        .level-entry.expert-entry:hover { transform: translateX(5px); background: rgba(255,255,255,0.05); }
-
-        /* Prevent text from going off screen */
-        .level-name {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            font-weight: 700;
-            font-size: 1.1rem;
-        }
-
-        .level-meta {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+        .bucket-high   .bucket-header { border-left: 5px solid #c0392b; }
+        .bucket-medium .bucket-header { border-left: 5px solid #e67e22; }
+        .bucket-low    .bucket-header { border-left: 5px solid #27ae60; }
     </style>
 </head>
 <body>
 
     <nav>
-        <a href="/" class="logo-link">
-            <img src="assets/logo.webp" alt="Logo" class="nav-logo">
-        </a>
+        <a href="/" class="logo-link"><img src="assets/logo.webp" alt="Logo" class="nav-logo"></a>
         <div class="nav-links">
             <a href="/mainlist">Main List</a>
             <a href="/expert" class="active">Extended List</a>
@@ -100,8 +101,7 @@
         </main>
 
         <aside id="sidebar">
-            <a href="https://docs.google.com/forms/d/e/1FAIpQLSfgjpCE6e8sHa-GcjVrD27Tcymbc0Q7w2MGdxVTtWnKi-uoXg/viewform?usp=header" target="_blank" class="submit-btn" style="margin-bottom: 25px;">Submit a Completion</a>
-
+            <a href="https://docs.google.com/forms/..." target="_blank" class="submit-btn" style="margin-bottom: 25px;">Submit a Completion</a>
             <h3>Filter Skills</h3>
             <div id="tag-filters"></div>
         </aside>
@@ -120,61 +120,29 @@
         let activeTags = [];
         window.DATA = { levels: [] };
 
-        // --- UTILS ---
         function safeText(val) { return val ? String(val).trim() : ""; }
-        
-        function parseSkills(raw) {
-            if (!raw) return [];
-            return raw.split(/\r?\n|,/).map(s => s.trim()).filter(Boolean);
-        }
+        function parseSkills(raw) { return raw ? raw.split(/\r?\n|,/).map(s => s.trim()).filter(Boolean) : []; }
 
         function getBucket(level) {
             const d = level.difficulty.toLowerCase();
-            for (const bucket of BUCKETS) {
-                if (bucket.match.some(m => d === m || d.includes(m))) return bucket;
-            }
-            return null;
+            return BUCKETS.find(b => b.match.some(m => d.includes(m))) || null;
         }
 
         function mapRowToLevel(row) {
-            // Automatically detect whatever is in the FIRST column (Column A)
             const firstColHeader = Object.keys(row)[0];
-            const levelIdFromColA = safeText(row[firstColHeader]);
-
-            const name = safeText(row["Name"] || row["name"]);
+            const levelId = safeText(row[firstColHeader]);
             const acronym = safeText(row["Acronym"]);
-            const skillsArray = parseSkills(row["Skills Needed"] || row["Skills"]);
             
             return {
-                id: levelIdFromColA || acronym || name, // ID used for URL
-                name,
-                acronym,
+                id: levelId || acronym,
+                name: safeText(row["Name"] || row["name"]),
                 author: safeText(row["Creator(s)"] || row["Author"]),
                 difficulty: safeText(row["Difficulty"]),
                 points: safeText(row["Points"]),
                 quality: safeText(row["Quality"]),
-                _skillsArray: skillsArray.map(s => s.toLowerCase()),
+                _skillsArray: parseSkills(row["Skills Needed"]).map(s => s.toLowerCase()),
                 img: acronym ? `assets/thumbs/${acronym.toLowerCase()}.png` : "assets/thumbs/Noimageavailable.png"
             };
-        }
-
-        // --- RENDERING ---
-        function renderTagButtons(allTags) {
-            const container = document.getElementById("tag-filters");
-            container.innerHTML = "";
-            allTags.sort().forEach(tag => {
-                const btn = document.createElement("button");
-                btn.className = "tag-btn";
-                btn.textContent = tag;
-                btn.onclick = () => {
-                    const idx = activeTags.indexOf(tag);
-                    if (idx > -1) activeTags.splice(idx, 1);
-                    else activeTags.push(tag);
-                    btn.classList.toggle("active-tag");
-                    renderLevels();
-                };
-                container.appendChild(btn);
-            });
         }
 
         function renderLevels() {
@@ -182,16 +150,9 @@
                 activeTags.every(t => lvl._skillsArray.includes(t.toLowerCase()))
             );
 
-            const bucketMap = {};
-            BUCKETS.forEach(b => bucketMap[b.key] = []);
-            filtered.forEach(lvl => {
-                const b = getBucket(lvl);
-                if (b) bucketMap[b.key].push(lvl);
-            });
-
             let html = "";
             BUCKETS.forEach(bucket => {
-                const levels = bucketMap[bucket.key];
+                const levels = filtered.filter(lvl => getBucket(lvl)?.key === bucket.key);
                 if (levels.length === 0) return;
 
                 html += `
@@ -199,55 +160,51 @@
                     <div class="bucket-header">
                         <img src="assets/diffs/${bucket.diffAsset}.png" alt="${bucket.label}">
                         <span class="bucket-title">${bucket.label}</span>
-                        <span class="bucket-count">${levels.length} Level${levels.length !== 1 ? "s" : ""}</span>
+                        <span class="bucket-count">${levels.length} Levels</span>
                     </div>
-                    ${levels.map(lvl => renderEntry(lvl)).join("")}
+                    ${levels.map(lvl => `
+                        <div class="level-entry" onclick="window.location.href='expert-level.html?id=${encodeURIComponent(lvl.id)}'" style="--bg-image: url('${lvl.img}')">
+                            <img class="level-thumb" src="${lvl.img}" onerror="this.src='assets/thumbs/Noimageavailable.png'">
+                            <div class="level-info" style="padding: 0 12px; min-width: 0;">
+                                <div class="level-name">${lvl.name}</div>
+                                <div class="level-meta">by ${lvl.author}</div>
+                                <div class="level-meta" style="color:var(--accent); font-weight:700;">${lvl.points} pts</div>
+                            </div>
+                            <div class="level-difficulty-slot" style="display:flex; gap:5px; margin-left: auto;">
+                                ${lvl.quality ? `<img src="assets/quality/${lvl.quality.trim()}.svg" class="diff-icon-small">` : ''}
+                                ${lvl.difficulty ? `<img src="assets/diffs/${lvl.difficulty.trim()}.png" class="diff-icon-small">` : ''}
+                            </div>
+                        </div>
+                    `).join('')}
                 </div>`;
             });
-
-            document.getElementById("list-view").innerHTML = html || `<p style="text-align:center; color:var(--text-muted); margin-top:50px;">No levels match your criteria.</p>`;
+            document.getElementById("list-view").innerHTML = html || "<p>No matches.</p>";
         }
 
-        function renderEntry(lvl) {
-            const qualityIcon = lvl.quality ? `<img src="assets/quality/${lvl.quality.trim()}.svg" class="diff-icon-small" title="Quality: ${lvl.quality}">` : '';
-            const diffIcon = lvl.difficulty ? `<img src="assets/diffs/${lvl.difficulty.trim()}.png" class="diff-icon-small" style="padding:10px;" title="${lvl.difficulty}">` : '';
-
-            return `
-            <div class="level-entry expert-entry" onclick="window.location.href='expert-level.html?id=${encodeURIComponent(lvl.id)}'">
-                <img class="level-thumb" src="${lvl.img}" onerror="this.src='assets/thumbs/Noimageavailable.png'">
-                <div class="level-info" style="padding: 0 12px; min-width: 0;">
-                    <div class="level-name">${lvl.name}</div>
-                    <div class="level-meta">by ${lvl.author}</div>
-                    <div class="level-meta" style="color:var(--accent); font-weight:700;">${lvl.points ? lvl.points + " pts" : ""}</div>
-                </div>
-                <div class="level-difficulty-slot" style="display:flex; gap:5px; align-items:center; flex-shrink: 0;">
-                    ${qualityIcon}
-                    ${diffIcon}
-                </div>
-            </div>`;
-        }
-
-        // --- INIT ---
         async function init() {
-            try {
-                const url = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${expertSheetGid}`;
-                const res = await fetch(url);
-                const text = await res.text();
-                const { data } = Papa.parse(text, { header: true, skipEmptyLines: true });
-                
-                DATA.levels = data.map(mapRowToLevel);
-                
-                const tagSet = new Set();
-                DATA.levels.forEach(l => l._skillsArray.forEach(s => tagSet.add(s)));
-                renderTagButtons(Array.from(tagSet));
+            const res = await fetch(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${expertSheetGid}`);
+            const text = await res.text();
+            const { data } = Papa.parse(text, { header: true, skipEmptyLines: true });
+            DATA.levels = data.map(mapRowToLevel);
 
-                document.getElementById("loading-overlay").style.display = "none";
-                renderLevels();
-            } catch (err) {
-                document.getElementById("loading-overlay").innerHTML = "<span style='color:red;'>Failed to load Expert Zone.</span>";
-            }
+            const tagSet = new Set();
+            DATA.levels.forEach(l => l._skillsArray.forEach(s => tagSet.add(s)));
+            const container = document.getElementById("tag-filters");
+            Array.from(tagSet).sort().forEach(tag => {
+                const btn = document.createElement("button");
+                btn.className = "tag-btn";
+                btn.textContent = tag;
+                btn.onclick = () => {
+                    btn.classList.toggle("active-tag");
+                    activeTags = Array.from(document.querySelectorAll(".active-tag")).map(b => b.textContent);
+                    renderLevels();
+                };
+                container.appendChild(btn);
+            });
+
+            document.getElementById("loading-overlay").style.display = "none";
+            renderLevels();
         }
-
         window.onload = init;
     </script>
 </body>
