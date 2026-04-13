@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Level Details</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <style>
+        .page-container { max-width: 1200px; margin: 40px auto; display: flex; gap: 25px; padding: 0 20px; }
+        .level-card { flex: 2; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; position: relative; }
+        .victor-card { flex: 0.8; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; height: fit-content; }
+        .banner { height: 300px; background-size: cover; background-position: center; position: relative; border-bottom: 1px solid var(--border); }
+        .banner-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent, rgba(15, 23, 42, 0.9)); }
+        .level-body { padding: 30px; position: relative; }
+        .back-link { color: var(--accent); text-decoration: none; font-weight: 700; margin-bottom: 20px; display: inline-block; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="logo-link"><img src="assets/logo.webp" alt="Logo" class="nav-logo"></a>
+    </nav>
+
+    <div class="page-container" id="page-content" style="display:none;">
+        <div class="level-card">
+            <div id="banner" class="banner"><div class="banner-overlay"></div></div>
+            <div class="level-body">
+                <a href="index.html" class="back-link">← Back to List</a>
+                <div id="main-details"></div>
+            </div>
+        </div>
+
+        <div class="victor-card">
+            <h3 style="text-transform:uppercase; font-size:0.8rem; color:var(--text-muted);">Victors</h3>
+            <div id="victor-list" style="margin-top:15px;"></div>
+        </div>
+    </div>
+
+    <script>
+        const spreadsheetId = "10yZLCN80B0ExwiY8E5Y5GB95NV1T5UI69vLYywtg_J0";
+
+        function getStatColor(val) {
+            const num = parseFloat(val);
+            if (num <= 4.5) return "#cc0000";
+            if (num <= 7.5) return "#e6ac00";
+            return "#008037";
+        }
+
+        async function init() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+            if (!id) { window.location.href = 'index.html'; return; }
+
+            const res = await fetch(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv`);
+            const text = await res.text();
+            const data = Papa.parse(text, { header: true }).data;
+            
+            // Look through all rows for the matching ID
+            const lvl = data.find(row => String(row["ID (M82)"]) === id);
+            if (!lvl) { document.body.innerHTML = "<h1>Level Not Found</h1>"; return; }
+
+            renderPage(lvl);
+        }
+
+        function renderPage(lvl) {
+            const acronym = (lvl["Acronym"] || "").toLowerCase();
+            const thumb = acronym ? `assets/thumbs/${acronym}.png` : "assets/thumbs/Noimageavailable.png";
+            
+            document.getElementById('banner').style.backgroundImage = `url('${thumb}')`;
+            document.getElementById('page-content').style.display = 'flex';
+
+            // Victors Logic
+            const verifier = (lvl["Verifier"] || "").trim();
+            const victors = (lvl["Victors"] || "").split(/[ ,]+/).filter(v => v && v.toLowerCase() !== "none" && v !== verifier);
+            
+            let vHtml = verifier ? `<div class="victor-pill"><strong>${verifier}</strong> (Verifier)</div>` : "";
+            vHtml += victors.map(v => `<div class="victor-pill">${v}</div>`).join("");
+            document.getElementById('victor-list').innerHTML = vHtml || "No victors yet.";
+
+            // Main Info
+            document.getElementById('main-details').innerHTML = `
+                <h1 style="font-size:2.5rem; margin:0;">${lvl.Name}</h1>
+                <p style="color:var(--text-muted);">By <strong>${lvl["Creator(s)"]}</strong></p>
+                <div style="margin:20px 0; padding:20px; background:rgba(255,255,255,0.03); border-radius:8px;">
+                    ${lvl.Description || "No description provided."}
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                    <div class="stat-box">
+                        <div class="stat-label">Enjoyment</div>
+                        <div class="stat-value" style="color:${getStatColor(lvl.Enjoyment)}">${lvl.Enjoyment || "N/A"}</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Points</div>
+                        <div class="stat-value">${lvl.Points || "0"}</div>
+                    </div>
+                </div>
+            `;
+        }
+        window.onload = init;
+    </script>
+</body>
+</html>
