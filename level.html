@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Level Details</title>
+    <title>Level Details | The Grandmaster Zone</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <style>
@@ -14,7 +14,7 @@
         .banner-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent, rgba(15, 23, 42, 1)); }
         .level-body { padding: 40px; position: relative; margin-top: -60px; }
         .back-link { color: var(--accent); text-decoration: none; font-weight: 700; margin-bottom: 20px; display: inline-block; transition: 0.2s; }
-        .back-link:hover { color: var(--accent-hover); text-decoration: underline; }
+        .back-link:hover { color: var(--accent-hover); }
         .victor-pill { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px; }
         
@@ -55,7 +55,7 @@
 
     <script>
         const spreadsheetId = "10yZLCN80B0ExwiY8E5Y5GB95NV1T5UI69vLYywtg_J0";
-        // List all GIDs just in case the ID is on the second sheet
+        // Both GIDs are included here
         const sheetGids = ["0", "1720349441"]; 
 
         function getStatColor(val) {
@@ -76,16 +76,17 @@
             }
 
             try {
-                // Fetch both sheets to ensure we find the level wherever it is
-                const results = await Promise.all(sheetGids.map(gid => 
+                // Fetch ALL sheets in parallel
+                const fetchPromises = sheetGids.map(gid => 
                     fetch(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}`)
                     .then(r => r.text())
                     .then(txt => Papa.parse(txt, { header: true, skipEmptyLines: true }).data)
-                ));
+                );
 
-                const allRows = results.flat();
+                const results = await Promise.all(fetchPromises);
+                const allRows = results.flat(); // Merge all rows from all sheets into one array
                 
-                // CRITICAL FIX: Try multiple possible ID column names and convert both to strings for comparison
+                // Find the level by checking ID (M82) across the merged data
                 const lvl = allRows.find(row => {
                     const rowId = row["ID (M82)"] || row["ID"] || row["id"];
                     return String(rowId).trim() === String(targetId).trim();
@@ -94,22 +95,21 @@
                 if (!lvl) {
                     document.getElementById('loading-msg').innerHTML = `
                         <h1 style="color:#ef4444">Level Not Found</h1>
-                        <p>ID: ${targetId} could not be located in the database.</p>
-                        <a href="index.html" style="color:var(--accent)">Return to List</a>
+                        <p style="color:#fff">The ID <strong>${targetId}</strong> does not exist in GID 0 or GID 1720349441.</p>
+                        <a href="index.html" style="color:var(--accent); font-weight:bold;">Return to List</a>
                     `;
                     return;
                 }
 
                 renderPage(lvl);
             } catch (err) {
-                console.error("Initialization Error:", err);
-                document.getElementById('loading-msg').innerHTML = "Failed to connect to the database.";
+                console.error("Database Error:", err);
+                document.getElementById('loading-msg').innerHTML = "Failed to connect to Google Sheets.";
             }
         }
 
         function renderPage(lvl) {
-            // Setup naming/images
-            const name = lvl["Name"] || lvl["name"] || "Unknown Level";
+            const name = lvl["Name"] || "Unknown Level";
             const acronym = (lvl["Acronym"] || "").toLowerCase().trim();
             const thumb = acronym ? `assets/thumbs/${acronym}.png` : "assets/thumbs/Noimageavailable.png";
             
@@ -117,7 +117,6 @@
             document.getElementById('loading-msg').style.display = 'none';
             document.getElementById('page-content').style.display = 'flex';
 
-            // Victors Logic
             const verifier = (lvl["Verifier"] || "").trim();
             const victorsRaw = lvl["Victors"] || "";
             const otherVictors = victorsRaw.split(/[ ,]+/).filter(v => v && v.toLowerCase() !== "none" && v.toLowerCase() !== verifier.toLowerCase());
@@ -126,7 +125,7 @@
             if (verifier && verifier.toLowerCase() !== "none") {
                 vHtml += `
                     <div class="victor-pill" style="border-left: 4px solid var(--accent)">
-                        <img src="assets/players/${verifier}.png" onerror="this.src='assets/players/default.png'" style="width:30px; height:30px; border-radius:4px;">
+                        <img src="assets/players/${verifier}.png" onerror="this.src='assets/players/default.png'" style="width:30px; height:30px; border-radius:4px; object-fit:cover;">
                         <div>
                             <div style="font-size:0.85rem; font-weight:700;">${verifier}</div>
                             <div style="font-size:0.6rem; color:var(--accent); text-transform:uppercase; font-weight:800;">Verifier</div>
@@ -137,21 +136,20 @@
             otherVictors.forEach(v => {
                 vHtml += `
                     <div class="victor-pill">
-                        <img src="assets/players/${v}.png" onerror="this.src='assets/players/default.png'" style="width:30px; height:30px; border-radius:4px;">
+                        <img src="assets/players/${v}.png" onerror="this.src='assets/players/default.png'" style="width:30px; height:30px; border-radius:4px; object-fit:cover;">
                         <div style="font-size:0.85rem; font-weight:700;">${v}</div>
                     </div>`;
             });
 
             document.getElementById('victor-list').innerHTML = vHtml || "<p style='color:var(--text-muted); font-size:0.8rem;'>No recorded victors.</p>";
 
-            // Main Details Construction
             const difficulty = lvl["Difficulty"] || "";
             const quality = lvl["Quality"] || "";
 
             document.getElementById('main-details').innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                     <div>
-                        <h1 style="font-size:2.8rem; font-weight:900; line-height:1; margin:0; text-shadow: 0 4px 10px rgba(0,0,0,0.5);">${name}</h1>
+                        <h1 style="font-size:2.8rem; font-weight:900; line-height:1; margin:0;">${name}</h1>
                         <p style="font-size:1.1rem; color:var(--text-muted); margin-top:10px;">by <strong style="color:var(--text-main)">${lvl["Creator(s)"] || lvl["Author"] || "Unknown"}</strong></p>
                     </div>
                     <div style="display:flex; gap:10px;">
@@ -167,11 +165,11 @@
 
                 <div class="stat-grid">
                     <div style="background:rgba(255,255,255,0.03); padding:20px; border-radius:10px; border:1px solid var(--border); text-align:center;">
-                        <div style="font-size:0.65rem; text-transform:uppercase; color:var(--text-muted); margin-bottom:5px;">Enjoyment Score</div>
+                        <div style="font-size:0.65rem; text-transform:uppercase; color:var(--text-muted); margin-bottom:5px;">Enjoyment</div>
                         <div style="font-size:1.5rem; font-weight:900; color:${getStatColor(lvl.Enjoyment)}">${lvl.Enjoyment || "N/A"}</div>
                     </div>
                     <div style="background:rgba(255,255,255,0.03); padding:20px; border-radius:10px; border:1px solid var(--border); text-align:center;">
-                        <div style="font-size:0.65rem; text-transform:uppercase; color:var(--text-muted); margin-bottom:5px;">List Points</div>
+                        <div style="font-size:0.65rem; text-transform:uppercase; color:var(--text-muted); margin-bottom:5px;">Points</div>
                         <div style="font-size:1.5rem; font-weight:900; color:var(--accent)">${lvl.Points || "0"}</div>
                     </div>
                 </div>
@@ -179,15 +177,17 @@
                 <div style="margin-top:30px;">
                     <h4 style="margin:0 0 10px 0; font-size:0.7rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:1px;">Level Code</h4>
                     <div style="display:flex; gap:10px;">
-                        <input type="text" value="${lvl["Level Code"] || ""}" readonly style="flex:1; background:rgba(0,0,0,0.4); border:1px solid var(--border); color:#fff; padding:12px; border-radius:8px; font-family:monospace;">
-                        <button onclick="copyCode(this, '${lvl["Level Code"]}')" style="background:var(--accent); color:white; border:none; padding:0 20px; border-radius:8px; font-weight:700; cursor:pointer;">Copy</button>
+                        <input type="text" value="${lvl["Level Code"] || ""}" readonly id="lcode" style="flex:1; background:rgba(0,0,0,0.4); border:1px solid var(--border); color:#fff; padding:12px; border-radius:8px; font-family:monospace;">
+                        <button onclick="copyCode(this)" style="background:var(--accent); color:white; border:none; padding:0 20px; border-radius:8px; font-weight:700; cursor:pointer;">Copy</button>
                     </div>
                 </div>
             `;
         }
 
-        function copyCode(btn, code) {
-            navigator.clipboard.writeText(code);
+        function copyCode(btn) {
+            const codeInput = document.getElementById('lcode');
+            codeInput.select();
+            document.execCommand('copy');
             const original = btn.textContent;
             btn.textContent = "Copied!";
             btn.style.background = "#22c55e";
