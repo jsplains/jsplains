@@ -9,7 +9,6 @@
     <style>
         .page-container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
         
-        /* Top Navigation */
         .top-nav { margin-bottom: 20px; }
         .back-link { 
             color: var(--accent); 
@@ -29,21 +28,9 @@
         .banner { height: 350px; background-size: cover; background-position: center; position: relative; border-bottom: 1px solid var(--border); background-color: #000; }
         .banner-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent, rgba(15, 23, 42, 1)); }
         .level-body { padding: 40px; position: relative; margin-top: -60px; }
-        
-        .id-badge { 
-            font-size: 0.9rem; 
-            background: rgba(255,255,255,0.05); 
-            padding: 4px 10px; 
-            border-radius: 6px; 
-            color: var(--text-muted); 
-            margin-left: 15px;
-            border: 1px solid var(--border);
-            font-family: monospace;
-        }
 
         .section-label { font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1.5px; margin-bottom: 15px; display: block; }
         
-        /* Sidebar Elements */
         .player-entry { 
             background: rgba(255,255,255,0.03); 
             padding: 10px; 
@@ -60,7 +47,6 @@
         .skill-tag { background: rgba(255,255,255,0.08); border: 1px solid var(--border); padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; display: inline-block; margin: 0 6px 6px 0; }
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px; }
 
-        /* Code Bar Logic */
         .code-container { display: flex; gap: 8px; margin-top: 10px; max-width: 480px; }
         .code-input { 
             flex: 1; 
@@ -114,9 +100,7 @@
             <div class="sidebar-card">
                 <span class="section-label">Verifier</span>
                 <div id="verifier-area"></div>
-                
                 <div class="sidebar-divider"></div>
-                
                 <span class="section-label">Victors</span>
                 <div id="victors-area"></div>
             </div>
@@ -129,6 +113,16 @@
     <script>
         const spreadsheetId = "10yZLCN80B0ExwiY8E5Y5GB95NV1T5UI69vLYywtg_J0";
         const sheetGids = ["0", "1720349441"]; 
+
+        function getEnjoymentColor(val) {
+            const score = parseFloat(val);
+            if (isNaN(score)) return 'var(--text-muted)';
+            const normalized = score <= 10 ? score * 10 : score;
+            if (normalized >= 75) return '#22c55e'; // Green
+            if (normalized >= 55) return '#eab308'; // Yellow
+            if (normalized >= 35) return '#f97316'; // Orange
+            return '#ef4444'; // Red
+        }
 
         async function init() {
             const params = new URLSearchParams(window.location.search);
@@ -143,7 +137,6 @@
                 ));
 
                 const allRows = results.flat();
-                // Search in the first column for the ID
                 const lvl = allRows.find(row => String(Object.values(row)[0]).trim() === String(targetId).trim());
 
                 if (!lvl) {
@@ -167,6 +160,7 @@
             const acronym = (getVal(["Acronym"]) || "").toLowerCase().trim();
             const thumb = acronym ? `assets/thumbs/${acronym}.png` : "assets/thumbs/Noimageavailable.png";
             const levelCode = (getVal(["Level Code"]) || "").trim();
+            const enjoymentVal = getVal(["Enjoyment"]) || "N/A";
             
             document.title = `(#${rank}) ${name}`;
             document.getElementById('banner').style.backgroundImage = `url('${thumb}')`;
@@ -175,10 +169,7 @@
 
             const verifier = (getVal(["Verifier"]) || "").trim();
             document.getElementById('verifier-area').innerHTML = (verifier && verifier.toLowerCase() !== "none") 
-                ? `<div class="player-entry">
-                    <img src="assets/players/${verifier}.png" onerror="this.src='assets/players/default.png'" class="player-pfp">
-                    <span style="font-weight:700; font-size:0.9rem;">${verifier}</span>
-                   </div>`
+                ? `<div class="player-entry"><img src="assets/players/${verifier}.png" onerror="this.src='assets/players/default.png'" class="player-pfp"><span style="font-weight:700; font-size:0.9rem;">${verifier}</span></div>`
                 : `<p style="color:var(--text-muted); font-size:0.8rem;">None</p>`;
 
             const victorsRaw = getVal(["Victors"]) || "";
@@ -191,9 +182,9 @@
             const skillsHtml = skillsRaw ? skillsRaw.split(',').map(s => `<span class="skill-tag">${s.trim()}</span>`).join('') : "N/A";
 
             document.getElementById('main-details').innerHTML = `
-                <div style="display:flex; align-items:center; margin-bottom:5px; flex-wrap: wrap;">
-                    <h1 style="font-size:3rem; font-weight:900; margin:0; line-height:1.1;">${name}</h1>
-                    <span class="id-badge">ID: ${idValue}</span>
+                <div style="display:flex; align-items:baseline; margin-bottom:5px; flex-wrap: wrap; gap: 12px;">
+                    <h1 style="font-size:3rem; font-weight:900; margin:0; line-height:1.1;">#${rank} ${name}</h1>
+                    <span style="color: var(--text-muted); font-size: 1.3rem; font-family: monospace;">(${idValue})</span>
                 </div>
                 <p style="color:var(--text-muted); font-size:1.2rem; margin-top:10px;">by <strong>${getVal(["Creator(s)", "Author"])}</strong></p>
                 
@@ -210,7 +201,7 @@
                 <div class="stat-grid">
                     <div style="background:rgba(255,255,255,0.02); padding:20px; border-radius:10px; border:1px solid var(--border); text-align:center;">
                         <span class="section-label" style="margin-bottom:5px;">Enjoyment</span>
-                        <div style="font-size:1.8rem; font-weight:900;">${getVal(["Enjoyment"]) || "N/A"}</div>
+                        <div style="font-size:1.8rem; font-weight:900; color: ${getEnjoymentColor(enjoymentVal)};">${enjoymentVal}</div>
                     </div>
                     <div style="background:rgba(255,255,255,0.02); padding:20px; border-radius:10px; border:1px solid var(--border); text-align:center;">
                         <span class="section-label" style="margin-bottom:5px;">List Points</span>
