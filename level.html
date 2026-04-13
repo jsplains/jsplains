@@ -179,9 +179,11 @@
             const score = parseFloat(val);
             if (isNaN(score)) return 'fa-face-meh-blank';
             
-            if (score >= 7.5) return 'fa-face-smile';      // Good (Green)
-            if (score >= 3.5) return 'fa-face-meh';        // Mediocre (Yellow/Orange)
-            return 'fa-face-frown';                         // Bad (Red)
+            const normalized = score <= 10 ? score * 10 : score;
+            
+            if (normalized >= 75) return 'fa-face-smile';      // Green range
+            if (normalized >= 35) return 'fa-face-meh';        // Yellow/Orange range
+            return 'fa-face-frown';                            // Red range
         }
 
         async function init() {
@@ -221,8 +223,8 @@
             const thumb = acronym ? `assets/thumbs/${acronym}.png` : "assets/thumbs/Noimageavailable.png";
             const levelCode = (getVal(["Level Code"]) || "").trim();
             
-            const enjoymentVal = getVal(["Enjoyment"]) || "N/A";
-            const qualityVal = getVal(["Quality"]) || "N/A";
+            const enjoymentVal = getVal(["Enjoyment"]) || "0";
+            const qualityVal = getVal(["Quality"]) || "0";
             const difficultyVal = getVal(["Difficulty"]) || "N/A";
             const pointsVal = getVal(["Points"]) || "0";
             
