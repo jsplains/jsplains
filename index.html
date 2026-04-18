@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Grandmaster Zone | Home</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <nav>
-        <a href="index.html"><img src="assets/logo.webp" class="nav-logo"></a>
+        <a href="index.html"><img src="assets/logo.webp" class="nav-logo" alt="Logo"></a>
         <div class="nav-links">
             <a href="/mainlist">Main List</a>
             <a href="/expert">Extended List</a>
@@ -17,18 +18,42 @@
     </nav>
 
     <div class="home-container">
-        <section class="welcome-hero smaller-hero">
+        <section class="welcome-hero smaller-hero glass-card">
             <h1>Welcome to <span class="accent-text">The Grandmaster Zone!</span></h1>
             <p class="disclaimer-text">Disclaimer: Placements within The Grandmaster Zone are determined by aggregating difficulty opinions and skill-set assessments from a wide range of experienced players. Because difficulty is subjective, your personal difficulty will differ from these rankings. Please view this list as a community-driven guide rather than objective fact.</p>
             <a href="/mainlist" class="cta-btn">SEE LIST →</a>
         </section>
+
+        <div class="stats-bar glass-card">
+            <div class="stat-item">
+                <i class="fas fa-users"></i>
+                <div class="stat-info">
+                    <span class="stat-number" id="count-users">0</span>
+                    <span class="stat-label">Active Users</span>
+                </div>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-layer-group"></i>
+                <div class="stat-info">
+                    <span class="stat-number" id="count-levels">0</span>
+                    <span class="stat-label">Levels Ranked</span>
+                </div>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-trophy"></i>
+                <div class="stat-info">
+                    <span class="stat-number" id="count-records">0</span>
+                    <span class="stat-label">Records Submitted</span>
+                </div>
+            </div>
+        </div>
 
         <div class="home-main-grid">
             <div class="home-column">
                 <div class="section-header">
                     <h2>Changelog</h2>
                 </div>
-                <div class="changelog-container" style="max-height: 800px; overflow-y: auto;">
+                <div class="changelog-container glass-card" style="max-height: 800px; overflow-y: auto;">
 
                     <div class="change-entry">
                         <span class="change-date">03/31/2026</span>
@@ -108,16 +133,15 @@
 
                     <div class="change-entry">
                         <span class="change-date">03/03/2026</span>
-                        <p><span class="plus">+</span> Description tab added (Thank you splains)</p>
+                        <p><span class="plus">+</span> Description tab added</p>
                         <p><span class="up">↑</span> Numerous consistency changes</p>
                     </div>
 
                     <div class="change-entry">
                         <span class="change-date">02/26/2026</span>
-                        <p><span class="minus">-</span> <strong>Average Banana Level: Walljump Edition</strong> removed from list</p>
+                        <p><span class="minus">-</span> <strong>Average Banana Level</strong> removed from list</p>
                         <p><span class="up">↓</span> <strong>Catalyst</strong> moved from #57 to #66</p>
                         <p><span class="up">↓</span> <strong>Rainfall</strong> moved from #26 to #37</p>
-                        <p><span class="up">↑</span> ID system implemented for LEQSEB convenience</p>
                     </div>
 
                     <div class="change-entry">
@@ -166,7 +190,7 @@
                 </div>
             </div>
 
-            <aside class="home-sidebar">
+            <aside class="home-sidebar glass-card" style="padding: 25px; border-radius: 12px;">
                 <div class="section-header">
                     <h2>The Team</h2>
                 </div>
@@ -185,11 +209,42 @@
                     <h3>Helpers</h3>
                     <div class="staff-list vertical-staff">
                         <div class="staff-member">pi314</div>
-                        <div class="staff-member">Splains</div>
+                        <div class="staff-member">TurningBack</div>
                     </div>
                 </div>
             </aside>
         </div>
     </div>
+
+    <script>
+        // Number counting animation with easing
+        function animateValue(id, start, end, duration) {
+            const obj = document.getElementById(id);
+            if(!obj) return;
+            let startTimestamp = null;
+            
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                
+                const easeProgress = 1 - Math.pow(1 - progress, 3);
+                
+                const currentCount = Math.floor(easeProgress * (end - start) + start);
+                obj.innerHTML = currentCount.toLocaleString() + "+";
+                
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Stats counting triggers
+            animateValue("count-users", 0, 50, 2000);
+            animateValue("count-levels", 0, 200, 2200);
+            animateValue("count-records", 0, 1000, 2800);
+        });
+    </script>
 </body>
 </html>
