@@ -150,7 +150,7 @@
         function safeText(val) { return val == null ? "" : String(val); }
 
         function mapRowToLevel(row) {
-            const m82id = safeText(row["ID (M83)"] || "N/A");
+            const m82id = safeText(row["ID (M84)"] || "N/A");
             const acronym = safeText(row["Acronym"] || "").toLowerCase();
             return {
                 id: m82id,
