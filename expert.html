@@ -163,7 +163,7 @@
                         <span class="bucket-count">${levels.length} Levels</span>
                     </div>
                     ${levels.map(lvl => `
-                        <div class="level-entry" onclick="window.location.href='expert-level.html?id=${encodeURIComponent(lvl.id)}'" style="--bg-image: url('${lvl.img}')">
+                        <div class="level-entry" onclick="window.location.href='/expert-level?id=${encodeURIComponent(lvl.id)}'" style="--bg-image: url('${lvl.img}')">
                             <img class="level-thumb" src="${lvl.img}" onerror="this.src='assets/thumbs/Noimageavailable.png'">
                             <div class="level-info" style="padding: 0 12px; min-width: 0;">
                                 <div class="level-name">${lvl.name}</div>
