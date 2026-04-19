@@ -776,3 +776,18 @@ main {
     background: rgba(139, 92, 246, 0.1);
     transform: translateX(5px);
 }
+
+.major { color: #f59e0b; font-weight: bold; text-shadow: 0 0 10px rgba(245, 158, 11, 0.3); } /* Gold/Amber */
+.minor { color: #94a3b8; font-weight: normal; 
+
+.change-entry strong {
+    color: var(--text-main);
+    font-weight: 700;
+}
+
+#changelog-target p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    text-align: center;
+    margin-top: 20px;
+}
