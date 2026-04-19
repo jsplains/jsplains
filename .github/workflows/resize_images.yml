@@ -1,0 +1,28 @@
+name: Auto-Resize Thumbnails
+on:
+  push:
+    paths:
+      - 'assets/thumbs/**'
+  workflow_dispatch:
+
+jobs:
+  resize:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Resize Images to 200px
+        uses: sharadcodes/img-resizer@v1.1
+        with:
+          image-folder: 'assets/thumbs'
+          new-resolution: '200x'
+          output-folder: 'assets/smallthumbs'
+
+      - name: Commit and Push
+        uses: EndBug/add-and-commit@v9
+        with:
+          add: 'assets/smallthumbs'
+          message: 'Duplicated at low res in smallthumbs folder!'
