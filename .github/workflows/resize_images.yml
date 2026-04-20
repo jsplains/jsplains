@@ -13,6 +13,14 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Wait for System
+        run: sleep 5
+
+      - name: Ensure Directory Exists
+        run: mkdir -p assets/smallthumbs
 
       - name: Resize Images to 200px
         uses: sharadcodes/img-resizer@v1.1
@@ -25,4 +33,5 @@ jobs:
         uses: EndBug/add-and-commit@v9
         with:
           add: 'assets/smallthumbs'
-          message: 'Duplicated at low res in smallthumbs folder!'
+          message: 'Automated: Resized thumbnails to 200px'
+          default_author: github_actions
