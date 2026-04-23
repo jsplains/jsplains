@@ -3,23 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loading Level...</title>
+    <title>Loading...</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <style>
         .page-container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
-        
         .top-nav { margin-bottom: 20px; }
-        .back-link { 
-            color: var(--accent); 
-            text-decoration: none; 
-            font-weight: 700; 
-            font-size: 0.85rem; 
-            text-transform: uppercase; 
-            letter-spacing: 1px;
-            transition: 0.2s;
-        }
+        .back-link { color: var(--accent); text-decoration: none; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s; }
         .back-link:hover { color: #fff; }
 
         .layout-wrapper { display: flex; gap: 25px; }
@@ -32,70 +23,22 @@
 
         .section-label { font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1.5px; margin-bottom: 15px; display: block; }
         
-        .player-entry { 
-            background: rgba(255,255,255,0.03); 
-            padding: 10px; 
-            border-radius: 8px; 
-            border: 1px solid var(--border); 
-            margin-bottom: 8px; 
-            display: flex; 
-            align-items: center; 
-            gap: 12px; 
-        }
-        .player-pfp { width: 32px; height: 32px; border-radius: 4px; object-fit: cover; background: #222; border: 1px solid rgba(255,255,255,0.1); }
-        .sidebar-divider { height: 1px; background: var(--border); margin: 20px 0; }
-
-        .skill-tag { background: rgba(255,255,255,0.08); border: 1px solid var(--border); padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; display: inline-block; margin: 0 6px 6px 0; }
-        
-        .stat-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
-            gap: 15px; 
-            margin-top: 30px; 
-        }
-
-        .stat-item {
+        .stat-list { display: flex; flex-direction: column; gap: 10px; margin-top: 30px; }
+        .stat-row {
             background: rgba(255,255,255,0.02); 
-            padding: 20px 10px;
+            padding: 12px 20px;
             border-radius: 10px; 
             border: 1px solid var(--border); 
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            transition: transform 0.2s;
-            min-width: 0;
-        }
-        .stat-item:hover { transform: translateY(-3px); background: rgba(255,255,255,0.04); }
-
-        .custom-stat-icon {
-            height: 55px;
-            margin-bottom: 15px;
-            object-fit: contain;
-            filter: drop-shadow(0 0 8px rgba(0,0,0,0.5));
-        }
-
-        .label-with-icon {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 6px;
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            letter-spacing: 1px;
-            margin-bottom: 8px;
-            width: 100%;
+            justify-content: space-between;
+            transition: all 0.2s;
         }
-
-        .stat-value {
-            font-size: 1.25rem;
-            font-weight: 900;
-            line-height: 1.2;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-            width: 100%;
-        }
+        .stat-row:hover { background: rgba(255,255,255,0.05); transform: translateX(5px); }
+        .stat-left { display: flex; align-items: center; gap: 15px; }
+        .stat-icon-wrapper { width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; }
+        .stat-row-label { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px; font-weight: 600; }
+        .stat-row-value { font-size: 1.15rem; font-weight: 800; }
 
         .rank-bubble {
             background: var(--accent);
@@ -111,16 +54,15 @@
             flex-shrink: 0;
         }
 
-        .level-header-row {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
+        .level-header-row { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+        .player-entry { background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+        .player-pfp { width: 32px; height: 32px; border-radius: 4px; object-fit: cover; background: #222; border: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-divider { height: 1px; background: var(--border); margin: 20px 0; }
+        .skill-tag { background: rgba(255,255,255,0.08); border: 1px solid var(--border); padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; display: inline-block; margin: 0 6px 6px 0; }
+        
         .code-container { display: flex; gap: 8px; margin-top: 10px; max-width: 600px; }
         .code-input { flex: 1; background: rgba(0,0,0,0.5); border: 1px solid #444; color: #fff; padding: 10px; border-radius: 6px; font-family: monospace; font-size: 0.9rem; }
-        .action-btn { background: var(--accent); color: white; border: none; padding: 0 20px; border-radius: 6px; font-weight: 700; cursor: pointer; transition: 0.2s; white-space: nowrap; }
+        .action-btn { background: var(--accent); color: white; border: none; padding: 0 20px; border-radius: 6px; font-weight: 700; cursor: pointer; transition: 0.2s; white-space: nowrap; height: 42px; }
         .action-btn:hover { opacity: 0.8; }
 
         @media (max-width: 900px) { .layout-wrapper { flex-direction: column; } }
@@ -133,11 +75,11 @@
 
     <div class="page-container">
         <div class="top-nav">
-            <a href="/mainlist" class="back-link">← Back to Main List</a>
+            <a href="/mainlist" id="back-btn" class="back-link">← Back</a>
         </div>
 
         <div id="loading-msg" style="text-align:center; margin-top:50px; font-weight:700; color:var(--text-muted);">
-            Connecting to the zone...
+            Connecting...
         </div>
 
         <div class="layout-wrapper" id="page-content" style="display:none;">
@@ -163,36 +105,44 @@
 
     <script>
         const spreadsheetId = "10yZLCN80B0ExwiY8E5Y5GB95NV1T5UI69vLYywtg_J0";
-        const sheetGids = ["0", "1720349441"]; 
+        
+        const GID_CONFIG = {
+            'M': { gids: ["0", "1720349441"], backText: "← Back to Main List", backLink: "/mainlist" },
+            'E': { gids: ["1575264256"], backText: "← Back to Extended List", backLink: "/expert" }
+        };
 
         function getScoreColor(val) {
-            const score = parseFloat(val);
-            if (isNaN(score)) return 'var(--text-muted)';
-            const normalized = score <= 10 ? score * 10 : score;
-            if (normalized >= 75) return '#22c55e'; // Green
-            if (normalized >= 55) return '#eab308'; // Yellow
-            if (normalized >= 35) return '#f97316'; // Orange
-            return '#ef4444'; // Red
+            const n = parseFloat(val) <= 10 ? parseFloat(val) * 10 : parseFloat(val);
+            if (isNaN(n)) return 'var(--text-muted)';
+            return `hsl(${n * 1.2}, 80%, 55%)`; 
         }
 
         function getEnjoymentIcon(val) {
-            const score = parseFloat(val);
-            if (isNaN(score)) return 'fa-face-meh-blank';
-            
-            const normalized = score <= 10 ? score * 10 : score;
-            
-            if (normalized >= 75) return 'fa-face-smile';      // Green range
-            if (normalized >= 35) return 'fa-face-meh';        // Yellow/Orange range
-            return 'fa-face-frown';                            // Red range
+            const n = parseFloat(val) <= 10 ? parseFloat(val) * 10 : parseFloat(val);
+            if (n >= 95) return 'fa-face-grin-stars';
+            if (n >= 85) return 'fa-face-grin-beam';
+            if (n >= 75) return 'fa-face-smile-beam';
+            if (n >= 60) return 'fa-face-smile';
+            if (n >= 45) return 'fa-face-meh';
+            if (n >= 30) return 'fa-face-frown';
+            if (n >= 15) return 'fa-face-angry';
+            return 'fa-face-dizzy';                    
         }
 
         async function init() {
             const params = new URLSearchParams(window.location.search);
-            const targetId = params.get('id');
+            const targetId = params.get('id') || "";
             if (!targetId) { window.location.href = '/mainlist'; return; }
 
+            const prefix = targetId.charAt(0).toUpperCase();
+            const config = GID_CONFIG[prefix] || GID_CONFIG['M'];
+
+            const backBtn = document.getElementById('back-btn');
+            backBtn.innerText = config.backText;
+            backBtn.href = config.backLink;
+
             try {
-                const results = await Promise.all(sheetGids.map(gid => 
+                const results = await Promise.all(config.gids.map(gid => 
                     fetch(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}`)
                     .then(r => r.text())
                     .then(txt => Papa.parse(txt, { header: true, skipEmptyLines: true }).data)
@@ -205,108 +155,106 @@
                     document.getElementById('loading-msg').innerHTML = "<h1>Level Not Found</h1>";
                     return;
                 }
-                renderPage(lvl, targetId);
+                renderPage(lvl, targetId, prefix);
             } catch (err) {
                 document.getElementById('loading-msg').innerHTML = "Database Connection Failed.";
             }
         }
 
-        function renderPage(lvl, idValue) {
+        function renderPage(lvl, idValue, prefix) {
             const getVal = (keys) => {
                 const foundKey = Object.keys(lvl).find(k => keys.includes(k.trim()));
                 return foundKey ? lvl[foundKey] : "";
             };
 
             const name = getVal(["Name", "name"]) || "Unknown";
-            const rank = getVal(["Rank"]) || "?";
+            const rank = getVal(["Rank"]);
             const acronym = (getVal(["Acronym"]) || "").toLowerCase().trim();
             const thumb = acronym ? `assets/thumbs/${acronym}.png` : "assets/thumbs/Noimageavailable.png";
             const levelCode = (getVal(["Level Code"]) || "").trim();
-            
             const enjoymentVal = getVal(["Enjoyment"]) || "0";
-            const qualityVal = getVal(["Quality"]) || "0";
-            const difficultyVal = getVal(["Difficulty"]) || "N/A";
+            const qualityVal = (getVal(["Quality"]) || "Basic").trim();
+            const difficultyVal = (getVal(["Difficulty"]) || "N/A").trim();
             const pointsVal = getVal(["Points"]) || "0";
             
-            document.title = `(#${rank}) ${name}`;
             document.getElementById('banner').style.backgroundImage = `url('${thumb}')`;
             document.getElementById('loading-msg').style.display = 'none';
             document.getElementById('page-content').style.display = 'flex';
 
             const verifier = (getVal(["Verifier"]) || "").trim();
-            document.getElementById('verifier-area').innerHTML = (verifier && verifier.toLowerCase() !== "none") 
-                ? `<div class="player-entry"><img src="assets/players/${verifier}.png" onerror="this.src='assets/players/default.png'" class="player-pfp"><span style="font-weight:700;">${verifier}</span></div>`
-                : `<p style="color:var(--text-muted);">None</p>`;
-
             const victorsRaw = getVal(["Victors"]) || "";
             const otherVictors = victorsRaw.split(/[ ,]+/).filter(v => v && v.toLowerCase() !== "none" && v.toLowerCase() !== verifier.toLowerCase());
+
+            document.getElementById('verifier-area').innerHTML = (verifier && verifier.toLowerCase() !== "none") 
+                ? `<div class="player-entry"><img src="assets/players/${verifier}.png" onerror="this.src='assets/players/default.png'" class="player-pfp"><strong>${verifier}</strong></div>`
+                : `<p style="color:var(--text-muted);">None</p>`;
+
             document.getElementById('victors-area').innerHTML = otherVictors.length > 0 
-                ? otherVictors.map(v => `<div class="player-entry"><img src="assets/players/${v.trim()}.png" onerror="this.src='assets/players/default.png'" class="player-pfp"><span style="font-weight:600;">${v.trim()}</span></div>`).join("")
+                ? otherVictors.map(v => `<div class="player-entry"><img src="assets/players/${v.trim()}.png" onerror="this.src='assets/players/default.png'" class="player-pfp"><span>${v.trim()}</span></div>`).join("")
                 : `<p style="color:var(--text-muted);">None</p>`;
 
             const skillsRaw = getVal(["Skills Needed", "Skills"]);
             const skillsHtml = skillsRaw ? skillsRaw.split(',').map(s => `<span class="skill-tag">${s.trim()}</span>`).join('') : "N/A";
 
+            const rankHtml = (prefix === 'M' && rank) ? `<span class="rank-bubble">#${rank}</span>` : "";
+
             document.getElementById('main-details').innerHTML = `
                 <div class="level-header-row">
-                    <span class="rank-bubble">#${rank}</span>
-                    <h1 style="font-size:3rem; font-weight:900; margin:0; line-height:1.1;">${name}</h1>
-                    <span style="color: var(--text-muted); font-size: 1.3rem; font-family: monospace;">(ID: ${idValue})</span>
+                    ${rankHtml}
+                    <div style="display: flex; flex-direction: column;">
+                        <h1 style="font-size:3rem; font-weight:900; margin:0; line-height: 1.1;">${name}</h1>
+                        <span style="color: rgba(255,255,255,0.5); font-size: 1.6rem; font-family: monospace; font-weight: 700; margin-top: 5px;">ID: ${idValue}</span>
+                    </div>
                 </div>
                 <p style="color:var(--text-muted); font-size:1.2rem; margin-top:15px;">by <strong>${getVal(["Creator(s)", "Author"])}</strong></p>
                 
-                <div style="margin:30px 0; padding:25px; background:rgba(0,0,0,0.2); border:1px solid var(--border); border-radius:12px;">
+                <div style="margin:30px 0; padding:20px; background:rgba(0,0,0,0.2); border:1px solid var(--border); border-radius:10px;">
                     <span class="section-label" style="color:var(--accent)">Description</span>
-                    <p style="margin:0; line-height:1.6; color:#eee; font-size:0.95rem;">${getVal(["Description", "Notes"]) || "No description provided."}</p>
+                    <p style="margin:0; color:#eee;">${getVal(["Description", "Notes"]) || "No description provided."}</p>
                 </div>
 
-                <div class="stat-grid">
-                    <div class="stat-item">
-                        <img src="assets/diffs/${difficultyVal.trim()}.png" onerror="this.style.visibility='hidden'" class="custom-stat-icon">
-                        <div class="label-with-icon">
-                            <i class="fa-solid fa-gauge-high"></i> Difficulty
+                <div class="stat-list">
+                    <div class="stat-row">
+                        <div class="stat-left">
+                            <div class="stat-icon-wrapper"><img src="assets/diffs/${difficultyVal}.png" style="height:25px;"></div>
+                            <span class="stat-row-label">Difficulty</span>
                         </div>
-                        <div class="stat-value">${difficultyVal}</div>
+                        <div class="stat-row-value">${difficultyVal}</div>
                     </div>
-
-                    <div class="stat-item">
-                        <div style="height:55px; display:flex; align-items:center; justify-content:center; margin-bottom:15px;">
-                             <i class="fa-solid ${getEnjoymentIcon(enjoymentVal)}" style="font-size:3rem; color:${getScoreColor(enjoymentVal)}; opacity: 0.9;"></i>
+                    <div class="stat-row">
+                        <div class="stat-left">
+                            <div class="stat-icon-wrapper"><i class="fa-solid ${getEnjoymentIcon(enjoymentVal)}" style="color:${getScoreColor(enjoymentVal)}"></i></div>
+                            <span class="stat-row-label">Enjoyment</span>
                         </div>
-                        <div class="label-with-icon">
-                            <i class="fa-solid fa-heart"></i> Enjoyment
-                        </div>
-                        <div class="stat-value" style="color: ${getScoreColor(enjoymentVal)};">${enjoymentVal}</div>
+                        <div class="stat-row-value" style="color:${getScoreColor(enjoymentVal)}">${enjoymentVal}</div>
                     </div>
-
-                    <div class="stat-item">
-                        <img src="assets/quality/${qualityVal.trim()}.svg" onerror="this.style.visibility='hidden'" class="custom-stat-icon">
-                        <div class="label-with-icon">
-                            <i class="fa-solid fa-star"></i> Quality
+                    <div class="stat-row">
+                        <div class="stat-left">
+                            <div class="stat-icon-wrapper">
+                                <img src="assets/quality/${qualityVal}.svg" style="height:25px;" onerror="this.style.display='none'">
+                            </div>
+                            <span class="stat-row-label">Quality</span>
                         </div>
-                        <div class="stat-value" style="color: ${getScoreColor(qualityVal)};">${qualityVal}</div>
+                        <div class="stat-row-value">${qualityVal}</div>
                     </div>
-
-                    <div class="stat-item">
-                        <div style="height:55px; display:flex; align-items:center; justify-content:center; margin-bottom:15px;">
-                             <i class="fa-solid fa-trophy" style="font-size:3rem; color:var(--accent); opacity: 0.9;"></i>
+                    <div class="stat-row">
+                        <div class="stat-left">
+                            <div class="stat-icon-wrapper"><i class="fa-solid fa-bolt" style="color:var(--accent)"></i></div>
+                            <span class="stat-row-label">Points</span>
                         </div>
-                        <div class="label-with-icon">
-                            <i class="fa-solid fa-bolt"></i> Points
-                        </div>
-                        <div class="stat-value" style="color:var(--accent);">${pointsVal}</div>
+                        <div class="stat-row-value" style="color:var(--accent)">${pointsVal}</div>
                     </div>
                 </div>
 
-                <div style="margin-top:40px; border-top: 1px solid var(--border); padding-top:30px;">
+                <div style="margin-top:40px; border-top: 1px solid var(--border); padding-top:20px;">
                     <span class="section-label">Skills Required</span>
                     <div style="margin-top:10px;">${skillsHtml}</div>
                 </div>
 
-                <div style="margin-top:40px; border-top: 1px solid var(--border); padding-top:30px;">
-                    <span class="section-label">Level Code</span>
+                <div style="margin-top:40px; border-top: 1px solid var(--border); padding-top:20px;">
+                    <span class="section-label">Level Details</span>
                     <div class="code-container">
-                        <input type="text" value="${levelCode || "No Code"}" readonly id="lcode" class="code-input">
+                        <input type="text" value="${levelCode}" readonly class="code-input">
                         <button onclick="copyLevelCode(this, \`${levelCode.replace(/'/g, "\\'")}\`)" class="action-btn">Copy</button>
                         <button onclick="LevelPopup.show(\`${levelCode.replace(/'/g, "\\'")}\`)" class="action-btn">Preview</button>
                     </div>
@@ -315,7 +263,6 @@
         }
 
         function copyLevelCode(btn, code) {
-            if (!code || code === "No Code") return;
             navigator.clipboard.writeText(code).then(() => {
                 const orig = btn.textContent;
                 btn.textContent = "Copied!";
