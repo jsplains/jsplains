@@ -12,6 +12,9 @@
         /* Base Layout */
         body { margin: 0; padding: 0; overflow: hidden; background: var(--bg-page); }
 
+        /* Ensure dropdowns aren't cut off by the main-wrapper's positioning */
+        nav { z-index: 1000; position: relative; }
+
         .main-wrapper { 
             display: flex; 
             gap: 20px; 
@@ -73,13 +76,12 @@
             border-left: 4px solid #888;
             transition: 0.15s ease;
             cursor: pointer;
-            min-width: 0; /* Important for ellipsis */
+            min-width: 0; 
         }
 
         .level-entry:hover { background: rgba(255, 255, 255, 0.05); transform: translateX(4px); }
         .level-entry.selected { border-color: var(--accent) !important; background: var(--accent-light); }
 
-        /* Ranking Border Colors */
         .rank-purple { border-left-color: #a155ff !important; }
         .rank-blue   { border-left-color: #5587ff !important; }
         .rank-green  { border-left-color: #55ff77 !important; }
@@ -92,7 +94,6 @@
         .player-info { flex: 1; display: flex; flex-direction: column; min-width: 0; }
         .player-name-wrapper { display: flex; align-items: center; gap: 6px; min-width: 0; }
         
-        /* Ellipsis fix for names */
         .level-name { 
             white-space: nowrap; 
             overflow: hidden; 
@@ -119,7 +120,6 @@
         .pstat-val { font-size: 1.3rem; font-weight: 800; color: var(--text-main); display: block; }
         .pstat-label { font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
 
-        /* Hardest Clear Card */
         .hc-card { 
             position: relative; border-radius: 12px; overflow: hidden; 
             border: 1px solid var(--border); width: 100%; aspect-ratio: 21 / 9; background: #000; 
@@ -131,7 +131,6 @@
             display: flex; flex-direction: column; justify-content: flex-end; 
         }
 
-        /* Skill Bar Styling */
         .skill-bar-bg { background: var(--bg-page); height: 12px; border-radius: 6px; border: 1px solid var(--border); overflow: hidden; margin: 6px 0 12px 0; }
         .skill-bar-fill { height: 100%; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
 
@@ -152,11 +151,38 @@
 <body>
 
 <nav>
-    <a href="index.html"><img src="assets/logo.webp" class="nav-logo"></a>
+    <a href="index.html"><img src="assets/logo.webp" class="nav-logo" alt="Logo"></a>
     <div class="nav-links">
-        <a href="/mainlist">Main List</a>
-        <a href="/expert">Extended List</a>
-        <a href="/leaderboard" class="active">Leaderboard</a>
+        <div class="dropdown">
+            <button class="dropbtn">Lists <i class="fas fa-caret-down"></i></button>
+            <div class="dropdown-content">
+                <a href="/mainlist"><i class="fas fa-list-ol"></i> Main List</a>
+                <a href="/expert"><i class="fas fa-expand-arrows-alt"></i> Extended List</a>
+            </div>
+        </div>
+
+        <div class="dropdown">
+            <button class="dropbtn">Leaderboard <i class="fas fa-caret-down"></i></button>
+            <div class="dropdown-content">
+                <a href="/leaderboard"><i class="fas fa-user"></i> Individual</a>
+                <a href="/countries"><i class="fas fa-globe-americas"></i> Countries</a>
+            </div>
+        </div>
+
+        <div class="dropdown dropdown-right">
+            <button class="dropbtn">Socials <i class="fas fa-caret-down"></i></button>
+            <div class="dropdown-content">
+                <a href="https://dsc.gg/appelcord" target="_blank"><i class="fab fa-discord"></i> Discord</a>
+            </div>
+        </div>
+
+        <div class="dropdown dropdown-right">
+            <button class="dropbtn">More <i class="fas fa-caret-down"></i></button>
+            <div class="dropdown-content">
+                <a href="https://github.com/ProgramminguyFromScratch/GMZ" target="_blank"><i class="fab fa-github"></i> GitHub Repo</a>
+                <a href="/guidelines"><i class="fas fa-file-alt"></i> Submission Guidelines</a>
+            </div>
+        </div>
     </div>
 </nav>
 
