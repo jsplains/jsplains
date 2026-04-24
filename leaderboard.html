@@ -11,10 +11,16 @@
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <style>
         :root {
-            --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-main: 'Inter', sans-serif;
         }
 
-        body { margin: 0; padding: 0; overflow: hidden; background: var(--bg-page); font-family: var(--font-main); }
+        body { 
+            margin: 0; 
+            padding: 0; 
+            background: var(--bg-page); 
+            font-family: var(--font-main); 
+            color: var(--text-main);
+        }
 
         nav { 
             z-index: 10000; 
@@ -34,60 +40,69 @@
 
         .nav-logo { height: 40px; }
         .nav-links { display: flex; align-items: center; gap: 25px; }
-        .nav-links a { text-decoration: none; color: var(--text-muted); font-weight: 700; font-size: 0.9rem; transition: 0.2s; font-family: var(--font-main); }
+        .nav-links a { text-decoration: none; color: var(--text-muted); font-weight: 700; font-size: 0.9rem; transition: 0.2s; }
         .nav-links a:hover, .nav-links a.active { color: var(--accent); }
 
         .dropdown { position: relative; display: inline-block; }
         .dropbtn {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            font-weight: 700;
-            font-size: 0.9rem;
-            cursor: pointer;
-            padding: 10px 0;
-            display: flex;
-            align-items: center;
-            gap: 5px;
+            background: none; border: none; color: var(--text-muted);
+            font-weight: 700; font-size: 0.9rem; cursor: pointer;
+            padding: 10px 0; display: flex; align-items: center; gap: 5px;
             font-family: var(--font-main);
         }
-
         .dropdown-content {
-            display: none;
-            position: absolute;
-            background-color: var(--bg-card);
-            min-width: 160px;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5);
-            z-index: 1;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            top: 100%;
+            display: none; position: absolute; background-color: var(--bg-card);
+            min-width: 160px; box-shadow: 0px 8px 16px rgba(0,0,0,0.5);
+            z-index: 1; border-radius: 8px; border: 1px solid var(--border); top: 100%;
         }
-
         .dropdown-content a { color: var(--text-main); padding: 12px 16px; display: block; font-size: 0.85rem; }
-        .dropdown-content a:hover { background-color: rgba(255,255,255,0.05); }
         .dropdown:hover .dropdown-content { display: block; }
-        .dropdown:hover .dropbtn { color: var(--accent); }
 
         .main-wrapper { 
             display: flex; 
-            gap: 20px; 
+            gap: 25px; 
             max-width: 1300px; 
-            margin: 70px auto 0 auto; 
-            padding: 20px; 
-            height: calc(100vh - 70px); 
-            box-sizing: border-box; 
+            margin: 100px auto 50px auto; 
+            padding: 0 20px; 
+            align-items: flex-start;
         }
 
-        .leaderboard-column { flex: 0 0 350px; display: flex; flex-direction: column; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow); }
-        .list-header { padding: 12px; background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border); }
-        .search-container { display: flex; align-items: center; background: var(--bg-page); border: 1px solid var(--border); border-radius: 8px; padding: 0 10px; }
-        #sort-select { background: transparent; color: var(--text-muted); border: none; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; cursor: pointer; outline: none; padding: 8px 0; border-right: 1px solid var(--border); margin-right: 8px; font-family: var(--font-main); }
-        .search-bar { flex: 1; background: transparent; border: none; color: var(--text-main); padding: 8px 0; font-size: 0.8rem; outline: none; font-family: var(--font-main); }
-        #leaderboard-list { flex: 1; overflow-y: auto; padding: 10px; }
+        .leaderboard-column { 
+            flex: 0 0 380px; 
+            background: var(--bg-card); 
+            border-radius: 12px; 
+            border: 1px solid var(--border); 
+            position: sticky;
+            top: 100px;
+            max-height: calc(100vh - 150px);
+            display: flex;
+            flex-direction: column;
+        }
 
-        .level-entry { display: flex; align-items: center; margin-bottom: 6px; padding: 10px; background: rgba(15, 23, 42, 0.4); border-radius: 6px; border-left: 4px solid #888; transition: 0.15s ease; cursor: pointer; min-width: 0; }
-        .level-entry:hover { background: rgba(255, 255, 255, 0.05); transform: translateX(4px); }
+        .list-header { padding: 15px; border-bottom: 1px solid var(--border); }
+        .search-container { 
+            display: flex; align-items: center; background: var(--bg-page); 
+            border: 1px solid var(--border); border-radius: 8px; padding: 0 12px; 
+        }
+        #sort-select { 
+            background: transparent; color: var(--text-muted); border: none; 
+            font-size: 0.7rem; font-weight: 700; text-transform: uppercase; 
+            padding: 10px 0; border-right: 1px solid var(--border); margin-right: 10px;
+            font-family: var(--font-main);
+        }
+        .search-bar { 
+            flex: 1; background: transparent; border: none; color: var(--text-main); 
+            font-size: 0.85rem; outline: none; font-family: var(--font-main);
+        }
+
+        #leaderboard-list { overflow-y: auto; padding: 10px; }
+
+        .level-entry { 
+            display: flex; align-items: center; margin-bottom: 8px; padding: 12px; 
+            background: rgba(255, 255, 255, 0.03); border-radius: 8px; 
+            border-left: 4px solid #888; transition: 0.2s; cursor: pointer; 
+        }
+        .level-entry:hover { background: rgba(255, 255, 255, 0.07); transform: translateX(5px); }
         .level-entry.selected { border-color: var(--accent) !important; background: var(--accent-light); }
 
         .rank-purple { border-left-color: #a155ff !important; }
@@ -95,36 +110,48 @@
         .rank-green  { border-left-color: #55ff77 !important; }
         .rank-yellow { border-left-color: #f9ff55 !important; }
         .rank-red    { border-left-color: #ff5555 !important; }
-        .rank-gray   { border-left-color: #888888 !important; }
 
-        .level-rank { width: 40px; font-weight: 800; color: var(--text-main); font-size: 1rem; flex-shrink: 0; }
-        .player-pfp { width: 36px; height: 36px; border-radius: 6px; margin-right: 10px; object-fit: cover; border: 1px solid var(--border); flex-shrink: 0; }
-        .player-info { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-        .player-name-wrapper { display: flex; align-items: center; gap: 6px; min-width: 0; }
-        .level-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.9rem; font-weight: 700; }
-        .level-points { font-weight: 800; color: var(--accent); font-size: 0.9rem; flex-shrink: 0; margin-left: 8px; }
+        .level-rank { width: 45px; font-weight: 800; font-size: 1rem; color: var(--text-main); }
+        .player-pfp { width: 40px; height: 40px; border-radius: 8px; margin-right: 12px; border: 1px solid var(--border); }
+        .level-name { font-weight: 700; font-size: 0.95rem; display: block; }
+        .level-points { font-weight: 800; color: var(--accent); margin-left: auto; }
 
-        .details-column { flex: 1; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border); padding: 25px; overflow-y: auto; box-shadow: var(--shadow); }
-        .pstat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 20px 0; }
-        .pstat { background: var(--bg-page); border: 1px solid var(--border); border-radius: 10px; padding: 12px; text-align: center; }
-        .pstat-val { font-size: 1.3rem; font-weight: 800; color: var(--text-main); display: block; }
-        .pstat-label { font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+        .details-column { 
+            flex: 1; 
+            background: var(--bg-card); 
+            border-radius: 12px; 
+            border: 1px solid var(--border); 
+            padding: 30px; 
+            min-height: 600px;
+        }
 
-        .hc-card { position: relative; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); width: 100%; aspect-ratio: 21 / 9; background: #000; }
-        .hc-thumb { width: 100%; height: 100%; object-fit: cover; opacity: 0.75; }
-        .hc-overlay { position: absolute; inset: 0; padding: 20px; background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, transparent 80%); display: flex; flex-direction: column; justify-content: flex-end; }
+        .pstat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 25px 0; }
+        .pstat { background: var(--bg-page); border: 1px solid var(--border); border-radius: 12px; padding: 15px; text-align: center; }
+        .pstat-val { font-size: 1.5rem; font-weight: 800; display: block; }
+        .pstat-label { font-size: 0.65rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
 
-        .skill-bar-bg { background: var(--bg-page); height: 12px; border-radius: 6px; border: 1px solid var(--border); overflow: hidden; margin: 6px 0 12px 0; }
-        .skill-bar-fill { height: 100%; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+        .hc-card { border-radius: 15px; overflow: hidden; border: 1px solid var(--border); aspect-ratio: 21/9; position: relative; background: #000; }
+        .hc-thumb { width: 100%; height: 100%; object-fit: cover; opacity: 0.6; }
+        .hc-overlay { position: absolute; bottom: 20px; left: 20px; }
 
-        .section-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); margin: 30px 0 15px 0; border-bottom: 1px solid var(--border); padding-bottom: 8px; font-weight: 800; }
-        .clears-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
-        .clear-card { position: relative; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); aspect-ratio: 1; background: var(--bg-page); transition: 0.2s; }
-        .clear-card:hover { transform: scale(1.03); border-color: var(--accent); }
-        .cc-label { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.85); font-size: 0.6rem; padding: 6px 4px; text-align: center; color: #fff; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .section-title { 
+            font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; 
+            color: var(--text-muted); margin: 40px 0 15px 0; border-bottom: 1px solid var(--border); 
+            padding-bottom: 10px; font-weight: 800; 
+        }
 
-        .clears-filter-btn { background: var(--bg-page); border: 1px solid var(--border); color: var(--text-muted); padding: 6px 16px; border-radius: 8px; cursor: pointer; font-size: 0.75rem; font-weight: 700; transition: 0.2s; font-family: var(--font-main); }
-        .clears-filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+        .skill-bar-bg { background: var(--bg-page); height: 10px; border-radius: 5px; margin: 8px 0 15px 0; overflow: hidden; }
+        .skill-bar-fill { height: 100%; background: var(--accent); transition: 1s ease-out; }
+
+        .clears-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; }
+        .clear-card { border-radius: 10px; overflow: hidden; border: 1px solid var(--border); aspect-ratio: 1; position: relative; background: var(--bg-page); }
+        .cc-label { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.8); font-size: 0.65rem; padding: 5px; text-align: center; font-weight: 700; }
+
+        .clears-filter-btn { 
+            background: var(--bg-page); border: 1px solid var(--border); color: var(--text-muted); 
+            padding: 8px 18px; border-radius: 8px; cursor: pointer; font-weight: 700; font-family: var(--font-main);
+        }
+        .clears-filter-btn.active { background: var(--accent); color: #fff; }
     </style>
 </head>
 <body>
@@ -152,19 +179,14 @@
                     <option value="difficulty">Hardest</option>
                     <option value="totalclears">Clears</option>
                 </select>
-                <input type="text" id="player-search" class="search-bar" placeholder="Search players..." oninput="renderLeaderboard()">
-                <i class="fa-solid fa-magnifying-glass" style="color: var(--text-muted)"></i>
+                <input type="text" id="player-search" class="search-bar" placeholder="Search..." oninput="renderLeaderboard()">
             </div>
         </div>
         <div id="leaderboard-list"></div>
     </div>
 
     <div class="details-column" id="player-profile-view">
-        <div style="height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; color: var(--text-muted);">
-            <i class="fa-solid fa-medal" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.05;"></i>
-            <h3>Select a player to view profile</h3>
         </div>
-    </div>
 </div>
 
 <script>
@@ -185,18 +207,21 @@
                 name: (row["Name"] || "").trim(),
                 acronym: (row["Acronym"] || "").toLowerCase(),
                 difficulty: (row["Difficulty"] || "").trim(),
-                skills: (row["Skills Needed"] || row["Skills"] || "").split(/,|\n/).map(s=>s.trim()).filter(Boolean),
+                skills: (row["Skills Needed"] || "").split(/,|\n/).map(s=>s.trim()).filter(Boolean),
                 victors: (row["Victors"] || "").split(/\s+/).filter(Boolean)
             }));
+            
             const counts = {};
             window.ALL_LEVELS.forEach(l => l.skills.forEach(s => counts[s] = (counts[s] || 0) + 1));
             window.GLOBAL_SKILL_RATES = Object.fromEntries(Object.entries(counts).map(([s, c]) => [s, c / window.ALL_LEVELS.length]));
+
             window.PLAYER_DATA = lb.map(row => ({
                 name: (row["Username"] || "").trim(),
                 points: parseInt((row["Points"] || "0").replace(/,/g, "")) || 0,
                 hardest: (row["Hardest Clear (Master+)"] || "None").trim(),
                 country: (row["Country"] || "").trim().toLowerCase()
             })).sort((a,b) => b.points - a.points);
+
             renderLeaderboard();
             if(window.PLAYER_DATA.length > 0) selectPlayer(window.PLAYER_DATA[0].name);
         } catch(e) { console.error(e); }
@@ -226,25 +251,17 @@
         else if (sortBy === 'difficulty') display.sort((a, b) => getTopNumber(a.hardest) - getTopNumber(b.hardest));
         else display.sort((a, b) => b.points - a.points);
 
-        container.innerHTML = display.map((p) => {
+        container.innerHTML = display.map((p, i) => {
             const globalRank = window.PLAYER_DATA.findIndex(x => x.name === p.name) + 1;
-            let rankClass = "rank-gray";
-            if (globalRank <= 3) rankClass = "rank-purple";
-            else if (globalRank <= 10) rankClass = "rank-blue";
-            else if (globalRank <= 25) rankClass = "rank-green";
-            else if (globalRank <= 50) rankClass = "rank-yellow";
-            else if (globalRank <= 100) rankClass = "rank-red";
+            let rankClass = globalRank <= 3 ? "rank-purple" : globalRank <= 10 ? "rank-blue" : globalRank <= 25 ? "rank-green" : globalRank <= 50 ? "rank-yellow" : "rank-red";
 
             return `
             <div class="level-entry ${rankClass} ${p.name === selectedPlayerName ? 'selected' : ''}" onclick="selectPlayer('${p.name.replace(/'/g, "\\'")}')">
                 <div class="level-rank">#${globalRank}</div>
                 <img class="player-pfp" src="assets/players/${p.name}.png" onerror="this.src='assets/players/default.png'">
-                <div class="player-info">
-                    <div class="player-name-wrapper">
-                        ${p.country ? `<img src="https://flagcdn.com/w40/${p.country}.png" style="width:16px; border-radius:2px;">` : ''} 
-                        <span class="level-name">${p.name}</span>
-                    </div>
-                    <span style="font-size:0.65rem; color:var(--text-muted); font-weight:600;">Hardest: ${p.hardest}</span>
+                <div style="min-width:0; flex:1;">
+                    <span class="level-name">${p.name}</span>
+                    <span style="font-size:0.6rem; color:var(--text-muted); font-weight:700;">HARDEST: ${p.hardest}</span>
                 </div>
                 <div class="level-points">${p.points.toLocaleString()}</div>
             </div>`;
@@ -262,6 +279,7 @@
             else if(l.difficulty.includes("Master")) counts.Master++;
             else if(l.difficulty.includes("Expert")) counts.Expert++;
         });
+
         const pCounts = {};
         clears.forEach(l => l.skills.forEach(s => pCounts[s] = (pCounts[s] || 0) + 1));
         const skillProfile = Object.entries(pCounts).map(([s, count]) => ({
@@ -272,46 +290,44 @@
         const hardestLvl = window.ALL_LEVELS.find(l => l.name.toLowerCase() === baseName);
 
         document.getElementById('player-profile-view').innerHTML = `
-            <div style="display:flex; align-items:center; gap:20px;">
-                <img src="assets/players/${p.name}.png" onerror="this.src='assets/players/default.png'" style="width:80px; height:80px; border-radius:12px; border: 2px solid var(--border); flex-shrink:0;">
-                <div style="min-width:0;">
-                    <h1 style="margin:0; font-size:1.7rem; display:flex; align-items:center; gap:10px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                        ${p.country ? `<img src="https://flagcdn.com/w40/${p.country}.png" style="width:30px; border-radius:3px;">` : ''} ${p.name}
+            <div style="display:flex; align-items:center; gap:25px; margin-bottom:30px;">
+                <img src="assets/players/${p.name}.png" onerror="this.src='assets/players/default.png'" style="width:100px; height:100px; border-radius:15px; border:2px solid var(--border);">
+                <div>
+                    <h1 style="margin:0; font-size:2rem; font-weight:800; display:flex; align-items:center; gap:12px;">
+                        ${p.country ? `<img src="https://flagcdn.com/w40/${p.country}.png" style="width:30px;">` : ''}${p.name}
                     </h1>
-                    <span style="color:var(--accent); font-weight:800; font-size: 1rem; letter-spacing:0.5px;">${p.points.toLocaleString()} TOTAL POINTS</span>
+                    <span style="color:var(--accent); font-weight:800; font-size:1.1rem;">${p.points.toLocaleString()} POINTS</span>
                 </div>
             </div>
+
             <div class="pstat-row">
                 <div class="pstat"><span class="pstat-val">${counts.GM}</span><span class="pstat-label">GM</span></div>
                 <div class="pstat"><span class="pstat-val">${counts.Master}</span><span class="pstat-label">Master</span></div>
                 <div class="pstat"><span class="pstat-val">${counts.Expert}</span><span class="pstat-label">Expert</span></div>
                 <div class="pstat"><span class="pstat-val">${clears.length}</span><span class="pstat-label">Clears</span></div>
             </div>
-            <div class="section-title">Hardest Clear</div>
+
+            <div class="section-title">Hardest Achievement</div>
             <div class="hc-card">
                 <img class="hc-thumb" src="assets/thumbs/${hardestLvl?.acronym || 'default'}.png" onerror="this.src='assets/thumbs/default.png'">
                 <div class="hc-overlay">
-                    <div style="font-size:1.4rem; font-weight:800; text-shadow:0 3px 10px rgba(0,0,0,0.9); color: #fff;">${p.hardest}</div>
+                    <div style="font-size:1.5rem; font-weight:800; color:#fff; text-shadow:0 2px 10px #000;">${p.hardest}</div>
                 </div>
             </div>
-            <div class="section-title">Skillset Profile</div>
-            <div id="skills-container">
-                ${skillProfile.map(s => `
-                    <div style="display:flex; justify-content:space-between; font-size:0.75rem; font-weight:700; color:var(--text-muted); margin-bottom:5px;">
-                        <span>${s.skill}</span>
-                        <span style="color:var(--accent)">${s.ratio.toFixed(1)}x</span>
-                    </div>
-                    <div class="skill-bar-bg">
-                        <div class="skill-bar-fill" style="width:${Math.min(s.ratio*10, 100)}%; background: linear-gradient(90deg, #550eb3, #8b3cf7);"></div>
-                    </div>
-                `).join('')}
-            </div>
-            <div class="section-title">All Clears</div>
-            <div style="display:flex; gap:8px; margin-bottom:20px;">
+
+            <div class="section-title">Specialties</div>
+            ${skillProfile.slice(0, 5).map(s => `
+                <div style="display:flex; justify-content:space-between; font-size:0.8rem; font-weight:700; margin-bottom:5px;">
+                    <span>${s.skill}</span><span style="color:var(--accent)">${s.ratio.toFixed(1)}x Preference</span>
+                </div>
+                <div class="skill-bar-bg"><div class="skill-bar-fill" style="width:${Math.min(s.ratio*10, 100)}%;"></div></div>
+            `).join('')}
+
+            <div class="section-title">Clear History</div>
+            <div style="display:flex; gap:10px; margin-bottom:20px;">
                 <button class="clears-filter-btn active" onclick="filterC('all', this)">All</button>
                 <button class="clears-filter-btn" onclick="filterC('Grandmaster', this)">GM</button>
                 <button class="clears-filter-btn" onclick="filterC('Master', this)">Master</button>
-                <button class="clears-filter-btn" onclick="filterC('Expert', this)">Expert</button>
             </div>
             <div class="clears-grid" id="history-grid">
                 ${clears.map(l => `<div class="clear-card"><img style="width:100%; height:100%; object-fit:cover;" src="assets/smallthumbs/${l.acronym}.png" onerror="this.src='assets/smallthumbs/default.png'"><div class="cc-label">${l.name}</div></div>`).join('')}
