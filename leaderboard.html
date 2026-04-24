@@ -9,13 +9,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <style>
-        /* Base Layout Fixes */
+        /* Base Layout */
         body { margin: 0; padding: 0; overflow: hidden; background: var(--bg-page); }
 
         .main-wrapper { 
             display: flex; 
             gap: 20px; 
-            max-width: 1400px; 
+            max-width: 1300px; 
             margin: 70px auto 0 auto; 
             padding: 20px; 
             height: calc(100vh - 70px); 
@@ -24,7 +24,7 @@
 
         /* Sidebar Column */
         .leaderboard-column { 
-            flex: 0 0 380px; 
+            flex: 0 0 350px; 
             display: flex; 
             flex-direction: column; 
             background: var(--bg-card); 
@@ -62,95 +62,101 @@
 
         #leaderboard-list { flex: 1; overflow-y: auto; padding: 10px; }
 
-        /* Ranking Border Colors */
+        /* Sidebar Entry Styling */
         .level-entry {
-            display: flex; align-items: center; margin-bottom: 6px; padding: 10px;
-            background: rgba(15, 23, 42, 0.4); border-radius: 6px; border-left: 4px solid #888;
-            transition: 0.15s ease; cursor: pointer; min-width: 0;
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+            padding: 10px;
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 6px;
+            border-left: 4px solid #888;
+            transition: 0.15s ease;
+            cursor: pointer;
+            min-width: 0; /* Important for ellipsis */
         }
+
         .level-entry:hover { background: rgba(255, 255, 255, 0.05); transform: translateX(4px); }
         .level-entry.selected { border-color: var(--accent) !important; background: var(--accent-light); }
 
+        /* Ranking Border Colors */
         .rank-purple { border-left-color: #a155ff !important; }
         .rank-blue   { border-left-color: #5587ff !important; }
         .rank-green  { border-left-color: #55ff77 !important; }
         .rank-yellow { border-left-color: #f9ff55 !important; }
         .rank-red    { border-left-color: #ff5555 !important; }
+        .rank-gray   { border-left-color: #888888 !important; }
 
         .level-rank { width: 40px; font-weight: 800; color: var(--text-main); font-size: 1rem; flex-shrink: 0; }
-        .player-pfp { width: 36px; height: 36px; border-radius: 6px; margin-right: 10px; object-fit: cover; border: 1px solid var(--border); }
+        .player-pfp { width: 36px; height: 36px; border-radius: 6px; margin-right: 10px; object-fit: cover; border: 1px solid var(--border); flex-shrink: 0; }
         .player-info { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-        .level-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.9rem; font-weight: 700; }
-        .level-points { font-weight: 800; color: var(--accent); font-size: 0.9rem; margin-left: 8px; }
+        .player-name-wrapper { display: flex; align-items: center; gap: 6px; min-width: 0; }
+        
+        /* Ellipsis fix for names */
+        .level-name { 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            font-size: 0.9rem; 
+            font-weight: 700; 
+        }
+        
+        .level-points { font-weight: 800; color: var(--accent); font-size: 0.9rem; flex-shrink: 0; margin-left: 8px; }
 
         /* Details Column */
         .details-column { 
-            flex: 1; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border); 
-            padding: 30px; overflow-y: auto; box-shadow: var(--shadow);
+            flex: 1; 
+            background: var(--bg-card); 
+            border-radius: 12px; 
+            border: 1px solid var(--border); 
+            padding: 25px; 
+            overflow-y: auto; 
+            box-shadow: var(--shadow);
         }
 
         .pstat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 20px 0; }
         .pstat { background: var(--bg-page); border: 1px solid var(--border); border-radius: 10px; padding: 12px; text-align: center; }
         .pstat-val { font-size: 1.3rem; font-weight: 800; color: var(--text-main); display: block; }
-        .pstat-label { font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
+        .pstat-label { font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
 
-        /* Skill Bars */
-        .skill-bar-bg { background: var(--bg-page); height: 12px; border-radius: 6px; border: 1px solid var(--border); overflow: hidden; margin: 6px 0 12px 0; }
-        .skill-bar-fill { height: 100%; transition: width 0.8s ease; }
-
+        /* Hardest Clear Card */
         .hc-card { 
-            position: relative; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); 
-            width: 100%; aspect-ratio: 21 / 9; background: #000; 
+            position: relative; border-radius: 12px; overflow: hidden; 
+            border: 1px solid var(--border); width: 100%; aspect-ratio: 21 / 9; background: #000; 
         }
-        .hc-thumb { width: 100%; height: 100%; object-fit: cover; opacity: 0.6; }
-        .hc-overlay { position: absolute; inset: 0; padding: 20px; display: flex; align-items: flex-end; background: linear-gradient(0deg, rgba(0,0,0,0.8), transparent); }
+        .hc-thumb { width: 100%; height: 100%; object-fit: cover; opacity: 0.75; }
+        .hc-overlay { 
+            position: absolute; inset: 0; padding: 20px;
+            background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, transparent 80%); 
+            display: flex; flex-direction: column; justify-content: flex-end; 
+        }
+
+        /* Skill Bar Styling */
+        .skill-bar-bg { background: var(--bg-page); height: 12px; border-radius: 6px; border: 1px solid var(--border); overflow: hidden; margin: 6px 0 12px 0; }
+        .skill-bar-fill { height: 100%; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
 
         .section-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); margin: 30px 0 15px 0; border-bottom: 1px solid var(--border); padding-bottom: 8px; font-weight: 800; }
+        
+        .clears-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
+        .clear-card { position: relative; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); aspect-ratio: 1; background: var(--bg-page); transition: 0.2s; }
+        .clear-card:hover { transform: scale(1.03); border-color: var(--accent); }
+        .cc-label { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.85); font-size: 0.6rem; padding: 6px 4px; text-align: center; color: #fff; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        .clears-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
-        .clear-card { position: relative; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); aspect-ratio: 1; background: #000; }
-        .cc-label { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.85); font-size: 0.6rem; padding: 5px; text-align: center; font-weight: 700; }
-
-        .clears-filter-btn { background: var(--bg-page); border: 1px solid var(--border); color: var(--text-muted); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.7rem; font-weight: 700; }
+        .clears-filter-btn {
+            background: var(--bg-page); border: 1px solid var(--border); color: var(--text-muted); 
+            padding: 6px 16px; border-radius: 8px; cursor: pointer; font-size: 0.75rem; font-weight: 700; transition: 0.2s;
+        }
         .clears-filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
     </style>
 </head>
 <body>
 
 <nav>
-    <a href="index.html"><img src="assets/logo.webp" class="nav-logo" alt="Logo"></a>
-    
+    <a href="index.html"><img src="assets/logo.webp" class="nav-logo"></a>
     <div class="nav-links">
-        <div class="dropdown">
-            <button class="dropbtn">Lists <i class="fas fa-caret-down"></i></button>
-            <div class="dropdown-content">
-                <a href="index.html"><i class="fas fa-list-ol"></i> Main List</a>
-                <a href="expert.html"><i class="fas fa-expand-arrows-alt"></i> Extended List</a>
-            </div>
-        </div>
-
-        <div class="dropdown">
-            <button class="dropbtn">Leaderboard <i class="fas fa-caret-down"></i></button>
-            <div class="dropdown-content">
-                <a href="leaderboard.html" class="active"><i class="fas fa-user"></i> Individual</a>
-                <a href="/countries"><i class="fas fa-globe-americas"></i> Countries</a>
-            </div>
-        </div>
-
-        <div class="dropdown dropdown-right">
-            <button class="dropbtn">Socials <i class="fas fa-caret-down"></i></button>
-            <div class="dropdown-content">
-                <a href="https://dsc.gg/appelcord" target="_blank"><i class="fab fa-discord"></i> Discord</a>
-            </div>
-        </div>
-
-        <div class="dropdown dropdown-right">
-            <button class="dropbtn">More <i class="fas fa-caret-down"></i></button>
-            <div class="dropdown-content">
-                <a href="https://github.com/ProgramminguyFromScratch/GMZ" target="_blank"><i class="fab fa-github"></i> GitHub Repo</a>
-                <a href="/guidelines"><i class="fas fa-file-alt"></i> Submission Guidelines</a>
-            </div>
-        </div>
+        <a href="/mainlist">Main List</a>
+        <a href="/expert">Extended List</a>
+        <a href="/leaderboard" class="active">Leaderboard</a>
     </div>
 </nav>
 
@@ -172,8 +178,8 @@
 
     <div class="details-column" id="player-profile-view">
         <div style="height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; color: var(--text-muted);">
-            <i class="fa-solid fa-medal" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.1;"></i>
-            <h3>Select a player to view profile</h3>
+            <i class="fa-solid fa-medal" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.05;"></i>
+            <h3 style="letter-spacing: 1px; font-weight: 400;">Select a player to view profile</h3>
         </div>
     </div>
 </div>
@@ -190,29 +196,27 @@
     let selectedPlayerName = null;
 
     async function init() {
-        const [lb, l1, l2, l3] = await Promise.all([fetchCsv(LB_GID), fetchCsv(LEVEL_GIDS[0]), fetchCsv(LEVEL_GIDS[1]), fetchCsv(LEVEL_GIDS[2])]);
-        
-        window.ALL_LEVELS = [...l1, ...l2, ...l3].map(row => ({
-            name: (row["Name"] || "").trim(),
-            acronym: (row["Acronym"] || "").toLowerCase(),
-            difficulty: (row["Difficulty"] || "").trim(),
-            skills: (row["Skills Needed"] || row["Skills"] || "").split(/,|\n/).map(s=>s.trim()).filter(Boolean),
-            victors: (row["Victors"] || "").split(/\s+/).filter(Boolean)
-        }));
-
-        const counts = {};
-        window.ALL_LEVELS.forEach(l => l.skills.forEach(s => counts[s] = (counts[s] || 0) + 1));
-        window.GLOBAL_SKILL_RATES = Object.fromEntries(Object.entries(counts).map(([s, c]) => [s, c / (window.ALL_LEVELS.length || 1)]));
-
-        window.PLAYER_DATA = lb.map(row => ({
-            name: (row["Username"] || "").trim(),
-            points: parseInt((row["Points"] || "0").replace(/,/g, "")) || 0,
-            hardest: (row["Hardest Clear (Master+)"] || "None").trim(),
-            country: (row["Country"] || "").trim().toLowerCase()
-        })).sort((a,b) => b.points - a.points);
-
-        renderLeaderboard();
-        if(window.PLAYER_DATA.length > 0) selectPlayer(window.PLAYER_DATA[0].name);
+        try {
+            const [lb, l1, l2, l3] = await Promise.all([fetchCsv(LB_GID), fetchCsv(LEVEL_GIDS[0]), fetchCsv(LEVEL_GIDS[1]), fetchCsv(LEVEL_GIDS[2])]);
+            window.ALL_LEVELS = [...l1, ...l2, ...l3].map(row => ({
+                name: (row["Name"] || "").trim(),
+                acronym: (row["Acronym"] || "").toLowerCase(),
+                difficulty: (row["Difficulty"] || "").trim(),
+                skills: (row["Skills Needed"] || row["Skills"] || "").split(/,|\n/).map(s=>s.trim()).filter(Boolean),
+                victors: (row["Victors"] || "").split(/\s+/).filter(Boolean)
+            }));
+            const counts = {};
+            window.ALL_LEVELS.forEach(l => l.skills.forEach(s => counts[s] = (counts[s] || 0) + 1));
+            window.GLOBAL_SKILL_RATES = Object.fromEntries(Object.entries(counts).map(([s, c]) => [s, c / window.ALL_LEVELS.length]));
+            window.PLAYER_DATA = lb.map(row => ({
+                name: (row["Username"] || "").trim(),
+                points: parseInt((row["Points"] || "0").replace(/,/g, "")) || 0,
+                hardest: (row["Hardest Clear (Master+)"] || "None").trim(),
+                country: (row["Country"] || "").trim().toLowerCase()
+            })).sort((a,b) => b.points - a.points);
+            renderLeaderboard();
+            if(window.PLAYER_DATA.length > 0) selectPlayer(window.PLAYER_DATA[0].name);
+        } catch(e) { console.error(e); }
     }
 
     async function fetchCsv(gid) {
@@ -221,36 +225,44 @@
         return Papa.parse(text, { header: true, skipEmptyLines: true }).data;
     }
 
-    const getClears = (name) => window.ALL_LEVELS.filter(l => l.victors.some(v => v.toLowerCase() === name.toLowerCase()));
+    function getClears(name) { return window.ALL_LEVELS.filter(l => l.victors.some(v => v.toLowerCase() === name.toLowerCase())); }
+    function getTopNumber(text) {
+        if (!text || text.toLowerCase() === "none") return 999999;
+        const match = text.match(/\(Top\s*(\d+)\)/i);
+        return match ? parseInt(match[1], 10) : 999998; 
+    }
 
     function renderLeaderboard() {
         const container = document.getElementById('leaderboard-list');
         const query = document.getElementById('player-search').value.toLowerCase();
         const sortBy = document.getElementById('sort-select').value;
         let display = window.PLAYER_DATA.filter(p => p.name.toLowerCase().includes(query));
-
         if (sortBy === 'totalclears') display.sort((a, b) => getClears(b.name).length - getClears(a.name).length);
-        else if (sortBy === 'difficulty') {
-            const getRank = t => {
-                const m = t.match(/\(Top\s*(\d+)\)/i);
-                return m ? parseInt(m[1]) : 999999;
-            };
-            display.sort((a, b) => getRank(a.hardest) - getRank(b.hardest));
-        } else display.sort((a, b) => b.points - a.points);
+        else if (sortBy === 'difficulty') display.sort((a, b) => getTopNumber(a.hardest) - getTopNumber(b.hardest));
+        else display.sort((a, b) => b.points - a.points);
 
-        container.innerHTML = display.map(p => {
+        container.innerHTML = display.map((p) => {
             const globalRank = window.PLAYER_DATA.findIndex(x => x.name === p.name) + 1;
-            let rCls = globalRank <= 3 ? "rank-purple" : globalRank <= 10 ? "rank-blue" : globalRank <= 25 ? "rank-green" : globalRank <= 50 ? "rank-yellow" : "rank-red";
+            let rankClass = "rank-gray";
+            if (globalRank <= 3) rankClass = "rank-purple";
+            else if (globalRank <= 10) rankClass = "rank-blue";
+            else if (globalRank <= 25) rankClass = "rank-green";
+            else if (globalRank <= 50) rankClass = "rank-yellow";
+            else if (globalRank <= 100) rankClass = "rank-red";
+
             return `
-                <div class="level-entry ${rCls} ${p.name === selectedPlayerName ? 'selected' : ''}" onclick="selectPlayer('${p.name.replace(/'/g, "\\'")}')">
-                    <div class="level-rank">#${globalRank}</div>
-                    <img class="player-pfp" src="assets/players/${p.name}.png" onerror="this.src='assets/players/default.png'">
-                    <div class="player-info">
+            <div class="level-entry ${rankClass} ${p.name === selectedPlayerName ? 'selected' : ''}" onclick="selectPlayer('${p.name.replace(/'/g, "\\'")}')">
+                <div class="level-rank">#${globalRank}</div>
+                <img class="player-pfp" src="assets/players/${p.name}.png" onerror="this.src='assets/players/default.png'">
+                <div class="player-info">
+                    <div class="player-name-wrapper">
+                        ${p.country ? `<img class="flag-container" src="https://flagcdn.com/w40/${p.country}.png">` : ''} 
                         <span class="level-name">${p.name}</span>
-                        <span style="font-size:0.6rem; opacity:0.6;">Hardest: ${p.hardest}</span>
                     </div>
-                    <div class="level-points">${p.points.toLocaleString()}</div>
-                </div>`;
+                    <span style="font-size:0.65rem; color:var(--text-muted); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Hardest: ${p.hardest}</span>
+                </div>
+                <div class="level-points">${p.points.toLocaleString()}</div>
+            </div>`;
         }).join('');
     }
 
@@ -259,23 +271,29 @@
         renderLeaderboard();
         const p = window.PLAYER_DATA.find(x => x.name === name);
         const clears = getClears(name);
-        const counts = { GM: clears.filter(l=>l.difficulty.includes("Grandmaster")).length, Master: clears.filter(l=>l.difficulty.includes("Master")).length, Expert: clears.filter(l=>l.difficulty.includes("Expert")).length };
-        
+        const counts = { GM: 0, Master: 0, Expert: 0 };
+        clears.forEach(l => {
+            if(l.difficulty.includes("Grandmaster")) counts.GM++;
+            else if(l.difficulty.includes("Master")) counts.Master++;
+            else if(l.difficulty.includes("Expert")) counts.Expert++;
+        });
         const pCounts = {};
         clears.forEach(l => l.skills.forEach(s => pCounts[s] = (pCounts[s] || 0) + 1));
         const skillProfile = Object.entries(pCounts).map(([s, count]) => ({
             skill: s, ratio: (count / (clears.length || 1)) / (window.GLOBAL_SKILL_RATES[s] || 0.001)
         })).sort((a,b) => b.ratio - a.ratio);
 
-        const hAcro = p.hardest.replace(/\(Top\s*\d+\)/i, "").trim().toLowerCase();
-        const hLvl = window.ALL_LEVELS.find(l => l.name.toLowerCase() === hAcro);
+        const baseName = p.hardest.replace(/\(Top\s*\d+\)/i, "").trim().toLowerCase();
+        const hardestLvl = window.ALL_LEVELS.find(l => l.name.toLowerCase() === baseName);
 
         document.getElementById('player-profile-view').innerHTML = `
             <div style="display:flex; align-items:center; gap:20px;">
-                <img src="assets/players/${p.name}.png" onerror="this.src='assets/players/default.png'" style="width:80px; height:80px; border-radius:12px; border:2px solid var(--border);">
-                <div>
-                    <h1 style="margin:0; font-size:1.8rem; font-weight:800;">${p.country ? `<img src="https://flagcdn.com/w40/${p.country}.png" style="width:30px; vertical-align:middle; margin-right:8px;">` : ''}${p.name}</h1>
-                    <span style="color:var(--accent); font-weight:800;">${p.points.toLocaleString()} TOTAL POINTS</span>
+                <img src="assets/players/${p.name}.png" onerror="this.src='assets/players/default.png'" style="width:80px; height:80px; border-radius:12px; border: 2px solid var(--border); flex-shrink:0;">
+                <div style="min-width:0;">
+                    <h1 style="margin:0; font-size:1.7rem; display:flex; align-items:center; gap:10px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                        ${p.country ? `<img src="https://flagcdn.com/w40/${p.country}.png" style="width:30px; border-radius:3px;">` : ''} ${p.name}
+                    </h1>
+                    <span style="color:var(--accent); font-weight:800; font-size: 1rem; letter-spacing:0.5px;">${p.points.toLocaleString()} TOTAL POINTS</span>
                 </div>
             </div>
 
@@ -288,32 +306,48 @@
 
             <div class="section-title">Hardest Clear</div>
             <div class="hc-card">
-                <img class="hc-thumb" src="assets/thumbs/${hLvl?.acronym || 'default'}.png" onerror="this.src='assets/thumbs/default.png'">
-                <div class="hc-overlay"><div style="font-size:1.5rem; font-weight:900;">${p.hardest}</div></div>
+                <img class="hc-thumb" src="assets/thumbs/${hardestLvl?.acronym || 'default'}.png" onerror="this.src='assets/thumbs/default.png'">
+                <div class="hc-overlay">
+                    <div style="font-size:1.4rem; font-weight:800; text-shadow:0 3px 10px rgba(0,0,0,0.9); color: #fff;">${p.hardest}</div>
+                </div>
             </div>
 
             <div class="section-title">Skillset Profile</div>
             <div id="skills-container">
                 ${skillProfile.slice(0, 5).map(s => `
-                    <div style="display:flex; justify-content:space-between; font-size:0.7rem; font-weight:700; margin-bottom:4px;"><span>${s.skill}</span><span style="color:var(--accent)">${s.ratio.toFixed(1)}x</span></div>
-                    <div class="skill-bar-bg"><div class="skill-bar-fill" style="width:${Math.min(s.ratio*10, 100)}%; background: linear-gradient(90deg, #550eb3, #8b3cf7);"></div></div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.75rem; font-weight:700; color:var(--text-muted); margin-bottom:5px;">
+                        <span>${s.skill}</span>
+                        <span style="color:var(--accent)">${s.ratio.toFixed(1)}x</span>
+                    </div>
+                    <div class="skill-bar-bg">
+                        <div class="skill-bar-fill" style="width:${Math.min(s.ratio*10, 100)}%; background: linear-gradient(90deg, #550eb3, #8b3cf7);"></div>
+                    </div>
                 `).join('')}
             </div>
-            ${skillProfile.length > 5 ? `<button style="background:none; border:none; color:var(--accent); cursor:pointer; font-weight:800; font-size:0.7rem; text-transform:uppercase;" onclick="expandSkills('${p.name.replace(/'/g, "\\'")}')">+ Show More</button>` : ''}
+            ${skillProfile.length > 5 ? `
+                <button id="show-more-skills" style="background:none; border:none; color:var(--accent); cursor:pointer; font-weight:800; font-size:0.7rem; padding:0; text-transform:uppercase;" onclick="expandSkills('${p.name.replace(/'/g, "\\'")}')">
+                    + Show More
+                </button>` : ''}
 
-            <div class="section-title">Clear History</div>
-            <div style="display:flex; gap:10px; margin-bottom:15px;">
+            <div class="section-title">All Clears</div>
+            <div style="display:flex; gap:8px; margin-bottom:20px;">
                 <button class="clears-filter-btn active" onclick="filterC('all', this)">All</button>
                 <button class="clears-filter-btn" onclick="filterC('Grandmaster', this)">GM</button>
                 <button class="clears-filter-btn" onclick="filterC('Master', this)">Master</button>
+                <button class="clears-filter-btn" onclick="filterC('Expert', this)">Expert</button>
             </div>
             <div class="clears-grid" id="history-grid">
-                ${clears.map(l => `<div class="clear-card"><img style="width:100%; height:100%; object-fit:cover;" src="assets/smallthumbs/${l.acronym}.png" onerror="this.src='assets/smallthumbs/default.png'"><div class="cc-label">${l.name}</div></div>`).join('')}
+                ${clears.map(l => `
+                    <div class="clear-card">
+                        <img style="width:100%; height:100%; object-fit:cover;" src="assets/smallthumbs/${l.acronym}.png" onerror="this.src='assets/smallthumbs/default.png'">
+                        <div class="cc-label">${l.name}</div>
+                    </div>`).join('')}
             </div>
         `;
     }
 
-    window.expandSkills = (name) => {
+    window.expandSkills = function(name) {
+        const p = window.PLAYER_DATA.find(x => x.name === name);
         const clears = getClears(name);
         const pCounts = {};
         clears.forEach(l => l.skills.forEach(s => pCounts[s] = (pCounts[s] || 0) + 1));
@@ -322,17 +356,27 @@
         })).sort((a,b) => b.ratio - a.ratio);
 
         document.getElementById('skills-container').innerHTML = skillProfile.map(s => `
-            <div style="display:flex; justify-content:space-between; font-size:0.7rem; font-weight:700; margin-bottom:4px;"><span>${s.skill}</span><span style="color:var(--accent)">${s.ratio.toFixed(1)}x</span></div>
-            <div class="skill-bar-bg"><div class="skill-bar-fill" style="width:${Math.min(s.ratio*10, 100)}%; background: linear-gradient(90deg, #550eb3, #8b3cf7);"></div></div>
+            <div style="display:flex; justify-content:space-between; font-size:0.75rem; font-weight:700; color:var(--text-muted); margin-bottom:5px;">
+                <span>${s.skill}</span>
+                <span style="color:var(--accent)">${s.ratio.toFixed(1)}x</span>
+            </div>
+            <div class="skill-bar-bg">
+                <div class="skill-bar-fill" style="width:${Math.min(s.ratio*10, 100)}%; background: linear-gradient(90deg, #550eb3, #8b3cf7);"></div>
+            </div>
         `).join('');
+        document.getElementById('show-more-skills').style.display = 'none';
     };
 
-    window.filterC = (diff, btn) => {
+    window.filterC = function(diff, btn) {
         document.querySelectorAll('.clears-filter-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         const clears = getClears(selectedPlayerName);
         const filtered = diff === 'all' ? clears : clears.filter(l => l.difficulty.includes(diff));
-        document.getElementById('history-grid').innerHTML = filtered.map(l => `<div class="clear-card"><img style="width:100%; height:100%; object-fit:cover;" src="assets/smallthumbs/${l.acronym}.png" onerror="this.src='assets/smallthumbs/default.png'"><div class="cc-label">${l.name}</div></div>`).join('');
+        document.getElementById('history-grid').innerHTML = filtered.map(l => `
+            <div class="clear-card">
+                <img style="width:100%; height:100%; object-fit:cover;" src="assets/smallthumbs/${l.acronym}.png" onerror="this.src='assets/smallthumbs/default.png'">
+                <div class="cc-label">${l.name}</div>
+            </div>`).join('');
     };
 
     window.onload = init;
