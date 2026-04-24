@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Level Not Found | GMZ</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { 
+            margin: 0; 
+            padding: 0; 
+            overflow: hidden; 
+            background: var(--bg-page); 
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        nav {
+            position: relative;
+            flex-shrink: 0;
+            z-index: 1000;
+        }
+
+        .error-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .error-code {
+            font-size: 8rem;
+            font-weight: 900;
+            color: var(--accent);
+            line-height: 1;
+            margin: 0;
+            text-shadow: 0 0 30px rgba(139, 60, 247, 0.3);
+        }
+
+        .error-msg {
+            font-size: 1.5rem;
+            color: var(--text-main);
+            margin: 10px 0 30px 0;
+            font-weight: 700;
+        }
+
+        .error-desc {
+            color: var(--text-muted);
+            max-width: 500px;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .glitch-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 50px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+        }
+
+        .back-home-btn {
+            background: var(--accent);
+            color: white;
+            text-decoration: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: 800;
+            text-transform: uppercase;
+            transition: 0.3s;
+            display: inline-block;
+        }
+
+        .back-home-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            filter: brightness(1.1);
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-container">
+        <div class="nav-left">
+            <a href="index.html"><img src="assets/logo.webp" class="nav-logo"></a>
+            <div class="nav-links">
+                <a href="/mainlist">Main List</a>
+                <a href="/expert">Extended List</a>
+                <a href="/leaderboard">Leaderboard</a>
+                <div class="nav-dropdown">
+                    <button class="dropbtn">More <i class="fa-solid fa-caret-down"></i></button>
+                    <div class="dropdown-content">
+                        <a href="/legacy">Legacy List</a>
+                        <a href="/submit">Submit Record</a>
+                        <a href="/staff">Our Team</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="nav-right">
+            <div class="nav-socials">
+                <a href="https://discord.gg/yourlink" target="_blank"><i class="fa-brands fa-discord"></i></a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="error-container">
+    <div class="glitch-box">
+        <h1 class="error-code">404</h1>
+        <p class="error-msg">LEVEL NOT FOUND</p>
+        <p class="error-desc">
+            The page you're looking for has either been moved, deleted, 
+            never existed, or is still being worked on.
+        </p>
+        <a href="index.html" class="back-home-btn">Return to Homepage</a>
+    </div>
+</div>
+
+</body>
+</html>
