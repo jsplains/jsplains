@@ -1,211 +1,272 @@
-<link rel="stylesheet" href="style.css">
-<div id="level-modal" class="modal">
-    <div class="modal-content glass-card">
-        <button class="close-btn" onclick="document.getElementById('level-modal').style.display='none'">&times;</button>
-        <h2>Submit <span class="accent-text">Level</span></h2>
-        
-        <form id="level-submission-form">
-            <div class="stat-grid">
-                <div class="stat-box">
-                    <label class="stat-label">Level Name *</label>
-                    <input type="text" name="levelName" required>
-                </div>
-                <div class="stat-box">
-                    <label class="stat-label">Level Code *</label>
-                    <input type="text" name="levelCode" required>
-                </div>
-            </div>
-
-            <div class="stat-grid">
-                <div class="stat-box">
-                    <label class="stat-label">Creator *</label>
-                    <input type="text" name="creator" required>
-                </div>
-                <div class="stat-box">
-                    <label class="stat-label">Acronym</label>
-                    <input type="text" name="acronym" placeholder="e.g. BB">
-                </div>
-            </div>
-
-            <div class="stat-grid">
-                <div class="stat-box">
-                    <label class="stat-label">Is it verified? *</label>
-                    <select name="isVerified" id="verify-toggle" required>
-                        <option value="No">No</option>
-                        <option value="Yes">Yes</option>
-                    </select>
-                </div>
-                <div class="stat-box">
-                    <label class="stat-label">Estimated Difficulty *</label>
-                    <select name="difficulty" required>
-                        <option value="Grandmaster III+">Grandmaster III+</option>
-                        <option value="Grandmaster III">Grandmaster III</option>
-                        <option value="Grandmaster II">Grandmaster II</option>
-                        <option value="Grandmaster I">Grandmaster I</option>
-                        <option value="High Master">High Master</option>
-                        <option value="Medium Master">Medium Master</option>
-                        <option value="Low Master">Low Master</option>
-                        <option value="High Expert">High Expert</option>
-                        <option value="Medium Expert">Medium Expert</option>
-                        <option value="Low Expert">Low Expert</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="stat-box">
-                <label class="stat-label">Thumbnail Link (if applicable)</label>
-                <input type="url" name="thumbnail">
-            </div>
-
-            <div class="stat-box">
-                <label class="stat-label">Description</label>
-                <textarea name="description" rows="2" style="width:100%; background:rgba(0,0,0,0.2); border:1px solid var(--border); color:white; border-radius:6px;"></textarea>
-            </div>
-
-            <div class="stat-grid">
-                <div class="stat-box">
-                    <label class="stat-label">Verifier (If Verified)</label>
-                    <input type="text" name="verifier" placeholder="Username">
-                </div>
-                <div class="stat-box">
-                    <label class="stat-label">Replay Code (If Verified)</label>
-                    <input type="text" name="replayCode" placeholder="Replay/Video Link">
-                </div>
-            </div>
-
-            <div class="stat-grid">
-                <div class="stat-box">
-                    <label class="stat-label">Enjoyment (0-10)</label>
-                    <input type="number" name="enjoyment" min="0" max="10">
-                </div>
-                <div class="stat-box">
-                    <label class="stat-label">Extra Information</label>
-                    <input type="text" name="extraInfo">
-                </div>
-            </div>
-
-            <button type="submit" class="submit-btn" style="width:100%; margin-top:15px;">Submit Level</button>
-        </form>
-    </div>
-</div>
-
-<div id="completion-modal" class="modal">
-    <div class="modal-content glass-card">
-        <button class="close-btn" onclick="document.getElementById('completion-modal').style.display='none'">&times;</button>
-        <h2>Submit <span class="accent-text">Completion</span></h2>
-        
-        <form id="gmz-completion-form">
-            <div class="stat-box">
-                <label class="stat-label">Name (No Spaces) *</label>
-                <input type="text" name="userName" pattern="^\S+$" title="No spaces allowed" required>
-            </div>
-
-            <div class="stat-grid">
-                <div class="stat-box">
-                    <label class="stat-label">Level ID *</label>
-                    <input type="text" name="levelID" placeholder="Use 0 if pending" required>
-                </div>
-                <div class="stat-box">
-                    <label class="stat-label">Level Name (For Verification)</label>
-                    <input type="text" name="levelName">
-                </div>
-            </div>
-
-            <div class="stat-box">
-                <label class="stat-label">Replay Code *</label>
-                <input type="text" name="replayCode" required>
-            </div>
-
-            <div class="stat-box">
-                <label class="stat-label">Other Proof (If applicable)</label>
-                <input type="text" name="otherProof">
-            </div>
-
-            <div class="stat-grid">
-                <div class="stat-box">
-                    <label class="stat-label">Opinions on Difficulty/Quality</label>
-                    <input type="text" name="opinion">
-                </div>
-                <div class="stat-box">
-                    <label class="stat-label">Enjoyment (0-10)</label>
-                    <input type="number" name="enjoyment" min="0" max="10">
-                </div>
-            </div>
-
-            <button type="submit" class="submit-btn" style="width:100%; margin-top:15px;">Submit Record</button>
-        </form>
-    </div>
-</div>
-
-<script>
-    // Google Form Response URLs
-    const URL_LEVEL_FORM = "https://docs.google.com/forms/u/0/d/e/1FAIpQLScT3osZzYudTof9h9aVI5xuy9B0AikyLJssKPpg2R8tZLW-Ug/formResponse";
-    const URL_GMZ_FORM = "https://docs.google.com/forms/u/0/d/e/1FAIpQLSfgjpCE6e8sHa-GcjVrD27Tcymbc0Q7w2MGdxVTtWnKi-uoXg/formResponse";
-
-    // HANDLER: COMPLETION
-    document.getElementById('gmz-completion-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const data = new FormData(e.target);
-        
-        const params = new URLSearchParams();
-        params.append('entry.138865611',  data.get('userName'));
-        params.append('entry.1983053746', data.get('levelID'));
-        params.append('entry.1783510526', data.get('levelName'));
-        params.append('entry.533261642',  data.get('replayCode'));
-        params.append('entry.1382434685', data.get('otherProof'));
-        params.append('entry.331566418',  data.get('opinion'));
-        params.append('entry.1070588665', data.get('enjoyment'));
-
-        try {
-            await fetch(URL_GMZ_FORM, { method: "POST", mode: "no-cors", body: params });
-            alert("Completion record submitted successfully!");
-            e.target.reset();
-            document.getElementById('completion-modal').style.display = 'none';
-        } catch (err) {
-            alert("Error submitting record. Please check your connection.");
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submission Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-page: #0f172a;
+            --bg-card: #1e293b;
+            --accent: #8b5cf6;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
         }
-    });
 
-    // HANDLER:SUBMISSION
-    document.getElementById('level-submission-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const data = new FormData(e.target);
-        
-        // prepare data
-        const levelParams = new URLSearchParams();
-        levelParams.append('entry.2064115160', data.get('levelName'));
-        levelParams.append('entry.1741548680', data.get('creator'));
-        levelParams.append('entry.571408800',  data.get('levelCode'));
-        levelParams.append('entry.1221773094', data.get('isVerified'));
-        levelParams.append('entry.114757608',  data.get('difficulty'));
-        levelParams.append('entry.384819777',  data.get('thumbnail'));
-        levelParams.append('entry.1437151121', data.get('acronym'));
-        levelParams.append('entry.722602758',  data.get('description'));
-        levelParams.append('entry.1121764669', data.get('extraInfo'));
-        levelParams.append('entry.1144889759', data.get('replayCode'));
-        levelParams.append('entry.1044432296', data.get('verifier'));
-        levelParams.append('entry.212555546',  data.get('enjoyment'));
-
-        try {
-            // First: Submit to the Level Form
-            await fetch(URL_LEVEL_FORM, { method: "POST", mode: "no-cors", body: levelParams });
-            // CARRY STUFF OVER!!!!!!!!
-            if (data.get('isVerified') === "Yes") {
-                const ghostParams = new URLSearchParams();
-                ghostParams.append('entry.138865611',  data.get('verifier'));   
-                ghostParams.append('entry.1983053746', "TBD");                    
-                ghostParams.append('entry.1783510526', data.get('levelName')); 
-                ghostParams.append('entry.533261642',  data.get('replayCode')); 
-                ghostParams.append('entry.1070588665', data.get('enjoyment')); 
-
-                await fetch(URL_GMZ_FORM, { method: "POST", mode: "no-cors", body: ghostParams });
-            }
-
-            alert("Level submitted! Verifier record auto-logged to Completion Sheet.");
-            e.target.reset();
-            document.getElementById('level-modal').style.display = 'none';
-        } catch (err) {
-            alert("Error during level submission.");
+        body {
+            background-color: var(--bg-page);
+            font-family: 'Montserrat', sans-serif;
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
         }
-    });
-</script>
+
+        .modal {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .glass-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        h2 { margin-top: 0; font-weight: 800; }
+        .accent-text { color: var(--accent); }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .stat-box { margin-bottom: 15px; }
+        .stat-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-main);
+            font-family: 'Montserrat', sans-serif;
+            box-sizing: border-box;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .submit-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .submit-btn:hover { opacity: 0.9; }
+        .close-btn { float: right; background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div id="level-modal" class="modal">
+        <div class="modal-content glass-card">
+            <h2>Submit <span class="accent-text">Level</span></h2>
+            <form id="level-submission-form">
+                <div class="stat-grid">
+                    <div class="stat-box">
+                        <label class="stat-label">Level Name *</label>
+                        <input type="text" name="levelName" required>
+                    </div>
+                    <div class="stat-box">
+                        <label class="stat-label">Level Code *</label>
+                        <input type="text" name="levelCode" required>
+                    </div>
+                </div>
+                <div class="stat-grid">
+                    <div class="stat-box">
+                        <label class="stat-label">Creator *</label>
+                        <input type="text" name="creator" required>
+                    </div>
+                    <div class="stat-box">
+                        <label class="stat-label">Acronym</label>
+                        <input type="text" name="acronym">
+                    </div>
+                </div>
+                <div class="stat-grid">
+                    <div class="stat-box">
+                        <label class="stat-label">Is it verified? *</label>
+                        <select name="isVerified" required>
+                            <option value="No">No</option>
+                            <option value="Yes">Yes</option>
+                        </select>
+                    </div>
+                    <div class="stat-box">
+                        <label class="stat-label">Estimated Difficulty *</label>
+                        <select name="difficulty" required>
+                            <option value="Grandmaster III+">Grandmaster III+</option>
+                            <option value="Grandmaster III">Grandmaster III</option>
+                            <option value="Grandmaster II">Grandmaster II</option>
+                            <option value="Grandmaster I">Grandmaster I</option>
+                            <option value="High Master">High Master</option>
+                            <option value="Medium Master">Medium Master</option>
+                            <option value="Low Master">Low Master</option>
+                            <option value="High Expert">High Expert</option>
+                            <option value="Medium Expert">Medium Expert</option>
+                            <option value="Low Expert">Low Expert</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="stat-box">
+                    <label class="stat-label">Thumbnail Link</label>
+                    <input type="url" name="thumbnail">
+                </div>
+                <div class="stat-box">
+                    <label class="stat-label">Description</label>
+                    <textarea name="description" rows="2"></textarea>
+                </div>
+                <div class="stat-grid">
+                    <div class="stat-box">
+                        <label class="stat-label">Verifier (If Verified)</label>
+                        <input type="text" name="verifier">
+                    </div>
+                    <div class="stat-box">
+                        <label class="stat-label">Replay Code (If Verified)</label>
+                        <input type="text" name="replayCode">
+                    </div>
+                </div>
+                <div class="stat-grid">
+                    <div class="stat-box">
+                        <label class="stat-label">Enjoyment (0-10)</label>
+                        <input type="number" name="enjoyment" min="0" max="10">
+                    </div>
+                    <div class="stat-box">
+                        <label class="stat-label">Extra Information</label>
+                        <input type="text" name="extraInfo">
+                    </div>
+                </div>
+                <button type="submit" class="submit-btn" style="width:100%; margin-top:15px;">Submit Level</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="completion-modal" class="modal">
+        <div class="modal-content glass-card">
+            <h2>Submit <span class="accent-text">Completion</span></h2>
+            <form id="gmz-completion-form">
+                <div class="stat-box">
+                    <label class="stat-label">Name (No Spaces) *</label>
+                    <input type="text" name="userName" pattern="^\S+$" required>
+                </div>
+                <div class="stat-grid">
+                    <div class="stat-box">
+                        <label class="stat-label">Level ID *</label>
+                        <input type="text" name="levelID" required>
+                    </div>
+                    <div class="stat-box">
+                        <label class="stat-label">Level Name</label>
+                        <input type="text" name="levelName">
+                    </div>
+                </div>
+                <div class="stat-box">
+                    <label class="stat-label">Replay Code *</label>
+                    <input type="text" name="replayCode" required>
+                </div>
+                <div class="stat-box">
+                    <label class="stat-label">Other Proof</label>
+                    <input type="text" name="otherProof">
+                </div>
+                <div class="stat-grid">
+                    <div class="stat-box">
+                        <label class="stat-label">Opinions? (Quality/Difficulty)</label>
+                        <input type="text" name="opinion">
+                    </div>
+                    <div class="stat-box">
+                        <label class="stat-label">Enjoyment (0-10)</label>
+                        <input type="number" name="enjoyment" min="0" max="10">
+                    </div>
+                </div>
+                <button type="submit" class="submit-btn" style="width:100%; margin-top:15px;">Submit Record</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const URL_LEVEL_FORM = "https://docs.google.com/forms/u/0/d/e/1FAIpQLScT3osZzYudTof9h9aVI5xuy9B0AikyLJssKPpg2R8tZLW-Ug/formResponse";
+        const URL_GMZ_FORM = "https://docs.google.com/forms/u/0/d/e/1FAIpQLSfgjpCE6e8sHa-GcjVrD27Tcymbc0Q7w2MGdxVTtWnKi-uoXg/formResponse";
+
+        document.getElementById('gmz-completion-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = new FormData(e.target);
+            const params = new URLSearchParams();
+            params.append('entry.138865611', data.get('userName'));
+            params.append('entry.1983053746', data.get('levelID'));
+            params.append('entry.1783510526', data.get('levelName'));
+            params.append('entry.533261642', data.get('replayCode'));
+            params.append('entry.1382434685', data.get('otherProof'));
+            params.append('entry.331566418', data.get('opinion'));
+            params.append('entry.1070588665', data.get('enjoyment'));
+            try {
+                await fetch(URL_GMZ_FORM, { method: "POST", mode: "no-cors", body: params });
+                alert("Success");
+                e.target.reset();
+            } catch (err) { alert("Error"); }
+        });
+
+        document.getElementById('level-submission-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = new FormData(e.target);
+            const levelParams = new URLSearchParams();
+            levelParams.append('entry.2064115160', data.get('levelName'));
+            levelParams.append('entry.1741548680', data.get('creator'));
+            levelParams.append('entry.571408800', data.get('levelCode'));
+            levelParams.append('entry.1221773094', data.get('isVerified'));
+            levelParams.append('entry.114757608', data.get('difficulty'));
+            levelParams.append('entry.384819777', data.get('thumbnail'));
+            levelParams.append('entry.1437151121', data.get('acronym'));
+            levelParams.append('entry.722602758', data.get('description'));
+            levelParams.append('entry.1121764669', data.get('extraInfo'));
+            levelParams.append('entry.1144889759', data.get('replayCode'));
+            levelParams.append('entry.1044432296', data.get('verifier'));
+            levelParams.append('entry.212555546', data.get('enjoyment'));
+            try {
+                await fetch(URL_LEVEL_FORM, { method: "POST", mode: "no-cors", body: levelParams });
+                if (data.get('isVerified') === "Yes") {
+                    const ghostParams = new URLSearchParams();
+                    ghostParams.append('entry.138865611', data.get('verifier'));
+                    ghostParams.append('entry.1983053746', "TBD");
+                    ghostParams.append('entry.1783510526', data.get('levelName'));
+                    ghostParams.append('entry.533261642', data.get('replayCode'));
+                    ghostParams.append('entry.1070588665', data.get('enjoyment'));
+                    await fetch(URL_GMZ_FORM, { method: "POST", mode: "no-cors", body: ghostParams });
+                }
+                alert("Success");
+                e.target.reset();
+            } catch (err) { alert("Error"); }
+        });
+    </script>
+</body>
+</html>
