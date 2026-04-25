@@ -81,49 +81,52 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-        .submit-btn:hover { opacity: 0.9; }
         textarea { resize: vertical; min-height: 80px; }
+        iframe { display: none; }
     </style>
 </head>
 <body>
 
-    <div id="level-modal" class="modal">
-        <div class="modal-content glass-card">
+    <iframe name="hidden_iframe" id="hidden_iframe" onload="if(window.submitted){alert('Submission Received!'); window.location.reload();}"></iframe>
+
+    <div class="modal">
+        <div class="glass-card">
             <h2>Submit <span class="accent-text">Level</span></h2>
-            <form id="level-submission-form">
+            <form action="https://docs.google.com/forms/u/0/d/e/1FAIpQLScT3osZzYudTof9h9aVI5xuy9B0AikyLJssKPpg2R8tZLW-Ug/formResponse" method="POST" target="hidden_iframe" onsubmit="window.submitted=true;">
+                
                 <div class="stat-grid">
                     <div class="stat-box">
                         <label class="stat-label">Level Name *</label>
-                        <input type="text" name="levelName" required>
+                        <input type="text" name="entry.2064115160" required>
                     </div>
                     <div class="stat-box">
                         <label class="stat-label">Level Code *</label>
-                        <input type="text" name="levelCode" required>
+                        <input type="text" name="entry.571408800" required>
                     </div>
                 </div>
 
                 <div class="stat-grid">
                     <div class="stat-box">
                         <label class="stat-label">Creator *</label>
-                        <input type="text" name="creator" required>
+                        <input type="text" name="entry.1741548680" required>
                     </div>
                     <div class="stat-box">
                         <label class="stat-label">Acronym</label>
-                        <input type="text" name="acronym" placeholder="e.g. BB">
+                        <input type="text" name="entry.1437151121">
                     </div>
                 </div>
 
                 <div class="stat-grid">
                     <div class="stat-box">
                         <label class="stat-label">Is it verified? *</label>
-                        <select name="isVerified" required>
+                        <select name="entry.1221773094" required>
                             <option value="No">No</option>
                             <option value="Yes">Yes</option>
                         </select>
                     </div>
                     <div class="stat-box">
                         <label class="stat-label">Estimated Difficulty *</label>
-                        <select name="difficulty" required>
+                        <select name="entry.114757608" required>
                             <option value="Grandmaster III+">Grandmaster III+</option>
                             <option value="Grandmaster III">Grandmaster III</option>
                             <option value="Grandmaster II">Grandmaster II</option>
@@ -140,33 +143,33 @@
 
                 <div class="stat-box">
                     <label class="stat-label">Thumbnail link (if applicable)</label>
-                    <input type="url" name="thumbnail">
+                    <input type="url" name="entry.384819777">
                 </div>
 
                 <div class="stat-box">
                     <label class="stat-label">Description</label>
-                    <textarea name="description"></textarea>
+                    <textarea name="entry.722602758"></textarea>
                 </div>
 
                 <div class="stat-box">
                     <label class="stat-label">Extra information</label>
-                    <textarea name="extraInfo"></textarea>
+                    <textarea name="entry.1121764669"></textarea>
                 </div>
 
                 <div class="stat-grid">
                     <div class="stat-box">
                         <label class="stat-label">Verifier (If Verified)</label>
-                        <input type="text" name="verifier">
+                        <input type="text" name="entry.1044432296">
                     </div>
                     <div class="stat-box">
                         <label class="stat-label">Replay Code (If Verified)</label>
-                        <input type="text" name="replayCode">
+                        <input type="text" name="entry.1144889759">
                     </div>
                 </div>
 
                 <div class="stat-box">
                     <label class="stat-label">Enjoyment (0-10)</label>
-                    <input type="number" name="enjoyment" min="0" max="10" value="5">
+                    <input type="number" name="entry.212555546" min="0" max="10" value="5">
                 </div>
 
                 <button type="submit" class="submit-btn">Submit Level</button>
@@ -174,44 +177,45 @@
         </div>
     </div>
 
-    <div id="completion-modal" class="modal">
-        <div class="modal-content glass-card">
+    <div class="modal">
+        <div class="glass-card">
             <h2>Submit <span class="accent-text">Completion</span></h2>
-            <form id="gmz-completion-form">
+            <form action="https://docs.google.com/forms/u/0/d/e/1FAIpQLSfgjpCE6e8sHa-GcjVrD27Tcymbc0Q7w2MGdxVTtWnKi-uoXg/formResponse" method="POST" target="hidden_iframe" onsubmit="window.submitted=true;">
+                
                 <div class="stat-box">
                     <label class="stat-label">Name (No Spaces) *</label>
-                    <input type="text" name="userName" pattern="^\S+$" title="No spaces allowed" required>
+                    <input type="text" name="entry.138865611" pattern="^\S+$" title="No spaces allowed" required>
                 </div>
 
                 <div class="stat-grid">
                     <div class="stat-box">
                         <label class="stat-label">Level ID *</label>
-                        <input type="text" name="levelID" placeholder="Use 0 if pending" required>
+                        <input type="text" name="entry.1983053746" placeholder="Use 0 if pending" required>
                     </div>
                     <div class="stat-box">
                         <label class="stat-label">Level Name (For Verification)</label>
-                        <input type="text" name="levelName">
+                        <input type="text" name="entry.1783510526">
                     </div>
                 </div>
 
                 <div class="stat-box">
                     <label class="stat-label">Replay Code *</label>
-                    <input type="text" name="replayCode" required>
+                    <input type="text" name="entry.533261642" required>
                 </div>
 
                 <div class="stat-box">
                     <label class="stat-label">Other proof (If applicable)</label>
-                    <input type="text" name="otherProof">
+                    <input type="text" name="entry.1382434685">
                 </div>
 
                 <div class="stat-box">
                     <label class="stat-label">Opinions on difficulty or quality</label>
-                    <textarea name="opinion"></textarea>
+                    <textarea name="entry.331566418"></textarea>
                 </div>
 
                 <div class="stat-box">
                     <label class="stat-label">Enjoyment (0-10)</label>
-                    <input type="number" name="enjoyment" min="0" max="10" value="5">
+                    <input type="number" name="entry.1070588665" min="0" max="10" value="5">
                 </div>
 
                 <button type="submit" class="submit-btn">Submit Record</button>
@@ -219,71 +223,5 @@
         </div>
     </div>
 
-    <script>
-        const URL_LEVEL_FORM = "https://docs.google.com/forms/u/0/d/e/1FAIpQLScT3osZzYudTof9h9aVI5xuy9B0AikyLJssKPpg2R8tZLW-Ug/formResponse";
-        const URL_GMZ_FORM = "https://docs.google.com/forms/u/0/d/e/1FAIpQLSfgjpCE6e8sHa-GcjVrD27Tcymbc0Q7w2MGdxVTtWnKi-uoXg/formResponse";
-
-        async function postToGoogle(url, params) {
-            await fetch(url, {
-                method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: params.toString()
-            });
-        }
-
-        document.getElementById('gmz-completion-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const data = new FormData(e.target);
-            const p = new URLSearchParams();
-            p.append('entry.138865611',  data.get('userName'));
-            p.append('entry.1983053746', data.get('levelID'));
-            p.append('entry.1783510526', data.get('levelName'));
-            p.append('entry.533261642',  data.get('replayCode'));
-            p.append('entry.1382434685', data.get('otherProof'));
-            p.append('entry.331566418',  data.get('opinion'));
-            p.append('entry.1070588665', data.get('enjoyment'));
-
-            try {
-                await postToGoogle(URL_GMZ_FORM, p);
-                alert("Completion Recorded!");
-                e.target.reset();
-            } catch (err) { alert("Submission failed."); }
-        });
-
-        document.getElementById('level-submission-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const data = new FormData(e.target);
-            const lp = new URLSearchParams();
-            lp.append('entry.2064115160', data.get('levelName'));
-            lp.append('entry.1741548680', data.get('creator'));
-            lp.append('entry.571408800',  data.get('levelCode'));
-            lp.append('entry.1221773094', data.get('isVerified'));
-            lp.append('entry.114757608',  data.get('difficulty'));
-            lp.append('entry.384819777',  data.get('thumbnail'));
-            lp.append('entry.1437151121', data.get('acronym'));
-            lp.append('entry.722602758',  data.get('description'));
-            lp.append('entry.1121764669', data.get('extraInfo'));
-            lp.append('entry.1144889759', data.get('replayCode'));
-            lp.append('entry.1044432296', data.get('verifier'));
-            lp.append('entry.212555546',  data.get('enjoyment'));
-
-            try {
-                await postToGoogle(URL_LEVEL_FORM, lp);
-                if (data.get('isVerified') === "Yes") {
-                    await new Promise(r => setTimeout(r, 700));
-                    const gp = new URLSearchParams();
-                    gp.append('entry.138865611',  data.get('verifier'));
-                    gp.append('entry.1983053746', "TBD");
-                    gp.append('entry.1783510526', data.get('levelName'));
-                    gp.append('entry.533261642',  data.get('replayCode'));
-                    gp.append('entry.1070588665', data.get('enjoyment'));
-                    await postToGoogle(URL_GMZ_FORM, gp);
-                }
-                alert("Level Submitted Successfully!");
-                e.target.reset();
-            } catch (err) { alert("Submission failed."); }
-        });
-    </script>
 </body>
 </html>
