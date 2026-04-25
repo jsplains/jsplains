@@ -3,156 +3,214 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GMZ Submission Portal</title>
+    <title>The Grandmaster Zone | Submit Record</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <style>
-        :root {
-            --bg-page: #0f172a;
-            --bg-card: #1e293b;
-            --accent: #8b5cf6;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border: #334155;
+        :root { 
+            --bg-page: #0f172a; 
+            --bg-card: #1e293b; 
+            --accent: #8b5cf6; 
+            --text-main: #f8fafc; 
+            --text-muted: #94a3b8; 
+            --border: #334155; 
         }
-        body {
-            background-color: var(--bg-page);
-            font-family: 'Montserrat', sans-serif;
-            color: var(--text-main);
-            margin: 0;
-            padding: 20px;
-        }
-        .modal-container {
+
+        body { 
+            background-color: var(--bg-page); 
+            font-family: 'Montserrat', sans-serif; 
+            color: var(--text-main); 
+            margin: 0; 
+            padding: 20px; 
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 50px;
-            padding-bottom: 100px;
+            justify-content: center;
         }
-        .glass-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            padding: 2.5rem;
-            border-radius: 16px;
+
+        .modal-container { 
             width: 100%;
             max-width: 650px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            padding-top: 40px; 
         }
-        h2 { margin-top: 0; font-weight: 800; font-size: 1.8rem; letter-spacing: -0.5px; }
-        .accent-text { color: var(--accent); }
-        .stat-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+
+        .glass-card { 
+            background: var(--bg-card); 
+            border: 1px solid var(--border); 
+            padding: 2.5rem; 
+            border-radius: 16px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4); 
         }
+
+        h2 { 
+            margin-top: 0; 
+            font-weight: 800; 
+            font-size: 1.8rem; 
+            letter-spacing: -0.5px;
+        }
+
         .stat-box { margin-bottom: 20px; }
-        .stat-label {
-            font-size: 0.7rem;
-            font-weight: 800;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            display: block;
-            margin-bottom: 8px;
-            letter-spacing: 1px;
+
+        .stat-label { 
+            font-size: 0.7rem; 
+            font-weight: 800; 
+            color: var(--text-muted); 
+            text-transform: uppercase; 
+            display: block; 
+            margin-bottom: 8px; 
+            letter-spacing: 1px; 
         }
-        input, select, textarea {
-            width: 100%;
-            padding: 12px;
-            background: rgba(15, 23, 42, 0.9);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text-main);
-            font-family: 'Montserrat', sans-serif;
-            box-sizing: border-box;
-            transition: border-color 0.2s;
-        }
-        input:focus, select:focus, textarea:focus {
+
+        input, textarea { 
+            width: 100%; 
+            padding: 12px; 
+            background: rgba(15, 23, 42, 0.9); 
+            border: 1px solid var(--border); 
+            border-radius: 8px; 
+            color: var(--text-main); 
+            font-family: 'Montserrat', sans-serif; 
+            box-sizing: border-box; 
             outline: none;
-            border-color: var(--accent);
         }
-        .submit-btn {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 16px;
-            border-radius: 8px;
-            font-weight: 800;
-            cursor: pointer;
-            width: 100%;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 10px;
+
+        input:focus { border-color: var(--accent); }
+
+        .submit-btn { 
+            background: var(--accent); 
+            color: white; 
+            border: none; 
+            padding: 16px; 
+            border-radius: 8px; 
+            font-weight: 800; 
+            cursor: pointer; 
+            width: 100%; 
+            text-transform: uppercase; 
+            margin-top: 10px; 
+            transition: 0.2s; 
         }
+
         .submit-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .submit-btn:disabled { background: #334155; cursor: not-allowed; color: var(--text-muted); }
+
+        #status-msg { 
+            color: var(--accent); 
+            font-size: 0.8rem; 
+            margin-bottom: 10px; 
+            text-align: center; 
+            font-weight: 600; 
+        }
+
         iframe { display: none; }
-        textarea { resize: vertical; min-height: 80px; }
     </style>
 </head>
 <body>
 
-    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
+    <script type="text/javascript">var submitted=false;</script>
+    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;" 
+            onload="if(submitted) {alert('Submission Received!'); window.location.reload();}"></iframe>
 
     <div class="modal-container">
+        <div class="glass-card">
+            <h2>Submit <span style="color:var(--accent)">Completion</span></h2>
+            <div id="status-msg">Connecting to database...</div>
+            
+            <form action="https://docs.google.com/forms/d/e/1FAIpQLSfgjpCE6e8sHa-GcjVrD27Tcymbc0Q7w2MGdxVTtWnKi-uoXg/formResponse" 
+                  method="POST" 
+                  target="hidden_iframe" 
+                  onsubmit="submitted=true;">
+                
+                <div class="stat-box">
+                    <label class="stat-label">Your Name (No Spaces) *</label>
+                    <input type="text" name="entry.619656823" required placeholder="PlayerName">
+                </div>
 
-<div class="glass-card">
-    <h2>Submit <span class="accent-text">Completion</span></h2>
-    <form action="https://docs.google.com/forms/d/e/1FAIpQLSfgjpCE6e8sHa-GcjVrD27Tcymbc0Q7w2MGdxVTtWnKi-uoXg/formResponse" 
-          method="POST" 
-          target="hidden_iframe" 
-          onsubmit="submitted=true;">
-        
-        <div class="stat-box">
-            <label class="stat-label">Name (No Spaces) *</label>
-            <input type="text" name="entry.619656823" required>
+                <div class="stat-box">
+                    <label class="stat-label">Level Name (Searchable) *</label>
+                    <input list="level-options" id="level-search" name="entry.614428572" placeholder="Start typing to find level..." required oninput="updateHiddenId()">
+                    <datalist id="level-options">
+                        </datalist>
+                </div>
+
+                <input type="hidden" id="hidden-level-id" name="entry.1258302997">
+
+                <div class="stat-box">
+                    <label class="stat-label">Replay Code *</label>
+                    <input type="text" name="entry.868041341" required placeholder="Paste code here">
+                </div>
+
+                <div class="stat-box">
+                    <label class="stat-label">Other proof</label>
+                    <input type="text" name="entry.101583515" placeholder="Optional link">
+                </div>
+
+                <div class="stat-box">
+                    <label class="stat-label">Opinions</label>
+                    <textarea name="entry.531767357" rows="3" placeholder="What did you think of the level?"></textarea>
+                </div>
+
+                <div class="stat-box">
+                    <label class="stat-label">Enjoyment (0-10) | INTEGERS ONLY</label>
+                    <input type="number" name="entry.1652160869" min="0" max="10">
+                </div>
+
+                <button type="submit" class="submit-btn" id="submit-btn" disabled>Loading...</button>
+            </form>
         </div>
-
-        <div class="stat-grid">
-            <div class="stat-box">
-                <label class="stat-label">Level ID *</label>
-                <input type="text" name="entry.1258302997" required>
-            </div>
-            <div class="stat-box">
-                <label class="stat-label">Level Name</label>
-                <input type="text" name="entry.614428572">
-            </div>
-        </div>
-
-        <div class="stat-box">
-            <label class="stat-label">Replay Code *</label>
-            <input type="text" name="entry.868041341" required>
-        </div>
-
-        <div class="stat-box">
-            <label class="stat-label">Other proof</label>
-            <input type="text" name="entry.101583515">
-        </div>
-
-        <div class="stat-box">
-            <label class="stat-label">Opinions</label>
-            <textarea name="entry.531767357"></textarea>
-        </div>
-
-        <div class="stat-box">
-            <label class="stat-label">Enjoyment (0-10)</label>
-            <input type="text" name="entry.1652160869" value="5">
-        </div>
-
-        <button type="submit" class="submit-btn">Submit Record</button>
-    </form>
-</div>
+    </div>
 
     <script>
-        var isSubmitting = false;
+        const spreadsheetId = "10yZLCN80B0ExwiY8E5Y5GB95NV1T5UI69vLYywtg_J0";
+        
 
-        function setIsSubmitting() {
-            isSubmitting = true;
+        const sheetConfigs = [
+            { gid: "0", idCol: 0, nameCol: 2 },          
+            { gid: "1575264256", idCol: 0, nameCol: 1 }  // !!! important !!!! Expert doesn't have rankings which is why the stuff is different
+        ];
+
+        let levelMap = {}; 
+
+        async function init() {
+            const datalist = document.getElementById('level-options');
+            const status = document.getElementById('status-msg');
+            const btn = document.getElementById('submit-btn');
+
+            try {
+                for (let config of sheetConfigs) {
+                    const url = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${config.gid}`;
+                    const response = await fetch(url);
+                    const csvText = await response.text();
+                    
+                    const parsed = Papa.parse(csvText, { header: false, skipEmptyLines: true }).data;
+
+                    for (let i = 1; i < parsed.length; i++) {
+                        const row = parsed[i];
+                        const id = row[config.idCol];   
+                        const name = row[config.nameCol]; 
+
+                        if (name && id && !levelMap[name]) {
+                            levelMap[name] = id;
+                            const opt = document.createElement('option');
+                            opt.value = name; 
+                            datalist.appendChild(opt);
+                        }
+                    }
+                }
+
+                status.style.display = 'none';
+                btn.disabled = false;
+                btn.textContent = "Submit Record";
+
+            } catch (error) {
+                console.error("Database connection error:", error);
+                status.textContent = "Error loading levels. Check if Sheet is 'Published to Web'.";
+            }
         }
 
-        document.getElementById('hidden_iframe').onload = function() {
-            if (isSubmitting) {
-                alert('Submission successful!');
-                window.location.reload();
-            }
-        };
+        function updateHiddenId() {
+            const typedName = document.getElementById('level-search').value;
+            const hiddenInput = document.getElementById('hidden-level-id');
+            hiddenInput.value = levelMap[typedName] || "";
+        }
+
+        window.onload = init;
     </script>
 </body>
 </html>
