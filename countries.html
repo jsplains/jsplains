@@ -17,9 +17,9 @@
             display: flex; 
             gap: 20px; 
             max-width: 1400px; 
-            margin: 80px auto 0 auto; 
+            margin: 90px auto 0 auto; /* Increased margin to prevent navbar overlap */
             padding: 0 20px 20px 20px; 
-            height: calc(100vh - 100px); 
+            height: calc(100vh - 110px); 
             box-sizing: border-box; 
         }
 
@@ -56,22 +56,22 @@
                 <div class="dropdown">
                     <button class="dropbtn">Lists <i class="fas fa-caret-down"></i></button>
                     <div class="dropdown-content">
-                        <a href="/mainlist">Main List</a>
-                        <a href="/expert">Expert List</a>
+                        <a href="mainlist.html">Main List</a>
+                        <a href="expert.html">Expert List</a>
                     </div>
                 </div>
                 <div class="dropdown">
                     <button class="dropbtn" style="color: var(--accent);">Leaderboard <i class="fas fa-caret-down"></i></button>
                     <div class="dropdown-content">
-                        <a href="/leaderboard">Individual</a>
-                        <a href="/countries" class="active">Countries</a>
+                        <a href="leaderboard.html">Individual</a>
+                        <a href="countries.html" class="active">Countries</a>
                     </div>
                 </div>
                 <div class="dropdown dropdown-right">
                     <button class="dropbtn">More <i class="fas fa-caret-down"></i></button>
                     <div class="dropdown-content">
-                        <a href="/guidelines">Guidelines</a>
-                        <a href="/submit">Submit</a>
+                        <a href="guidelines.html">Guidelines</a>
+                        <a href="submit.html">Submit</a>
                     </div>
                 </div>
             </div>
@@ -103,7 +103,7 @@
     const LB_GID = "1908015854";
     const GIDS = { "GM": "0", "Master": "1720349441", "Expert": "1575264256" };
     
-    // Updated Country Map
+    // Comprehensive Country Map
     const isoMap = { 
         "hr": "Croatia", "us": "United States", "gb": "United Kingdom", "ca": "Canada", 
         "de": "Germany", "fr": "France", "ru": "Russia", "jp": "Japan", "kr": "South Korea", 
@@ -128,7 +128,11 @@
             ]);
 
             const playerToCountry = {};
-            lbRaw.forEach(row => playerToCountry[(row["Username"] || "").trim().toLowerCase()] = (row["Country"] || "??").trim().toLowerCase());
+            lbRaw.forEach(row => {
+                const user = (row["Username"] || "").trim().toLowerCase();
+                const country = (row["Country"] || "??").trim().toLowerCase();
+                playerToCountry[user] = country;
+            });
 
             const processList = (list, diff) => list.map(row => ({
                 name: (row["Name"] || "").trim(),
