@@ -89,102 +89,13 @@
 </head>
 <body>
 
-    <iframe name="hidden_iframe" id="hidden_iframe"></iframe>
+    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
 
     <div class="modal-container">
 
         <div class="glass-card">
-            <h2>Submit <span class="accent-text">Level</span></h2>
-            <form action="https://docs.google.com/forms/u/0/d/e/1FAIpQLScT3osZzYudTof9h9aVI5xuy9B0AikyLJssKPpg2R8tZLW-Ug/formResponse" 
-                  method="POST" 
-                  target="hidden_iframe" 
-                  onsubmit="setIsSubmitting();">
-                
-                <div class="stat-grid">
-                    <div class="stat-box">
-                        <label class="stat-label">Level Name *</label>
-                        <input type="text" name="entry.2064115160" required>
-                    </div>
-                    <div class="stat-box">
-                        <label class="stat-label">Level Code *</label>
-                        <input type="text" name="entry.571408800" required>
-                    </div>
-                </div>
-
-                <div class="stat-grid">
-                    <div class="stat-box">
-                        <label class="stat-label">Creator *</label>
-                        <input type="text" name="entry.1741548680" required>
-                    </div>
-                    <div class="stat-box">
-                        <label class="stat-label">Acronym</label>
-                        <input type="text" name="entry.1437151121">
-                    </div>
-                </div>
-
-                <div class="stat-grid">
-                    <div class="stat-box">
-                        <label class="stat-label">Is it verified? *</label>
-                        <select name="entry.1221773094" required>
-                            <option value="No">No</option>
-                            <option value="Yes">Yes</option>
-                        </select>
-                    </div>
-                    <div class="stat-box">
-                        <label class="stat-label">Difficulty *</label>
-                        <select name="entry.114757608" required>
-                            <option value="Grandmaster III+">Grandmaster III+</option>
-                            <option value="Grandmaster III">Grandmaster III</option>
-                            <option value="Grandmaster II">Grandmaster II</option>
-                            <option value="Grandmaster I">Grandmaster I</option>
-                            <option value="High Master">High Master</option>
-                            <option value="Medium Master">Medium Master</option>
-                            <option value="Low Master">Low Master</option>
-                            <option value="High Expert">High Expert</option>
-                            <option value="Medium Expert">Medium Expert</option>
-                            <option value="Low Expert">Low Expert</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="stat-box">
-                    <label class="stat-label">Thumbnail link</label>
-                    <input type="url" name="entry.384819777">
-                </div>
-
-                <div class="stat-box">
-                    <label class="stat-label">Description</label>
-                    <textarea name="entry.722602758"></textarea>
-                </div>
-
-                <div class="stat-box">
-                    <label class="stat-label">Extra information</label>
-                    <textarea name="entry.1121764669"></textarea>
-                </div>
-
-                <div class="stat-grid">
-                    <div class="stat-box">
-                        <label class="stat-label">Verifier</label>
-                        <input type="text" name="entry.1044432296">
-                    </div>
-                    <div class="stat-box">
-                        <label class="stat-label">Replay Code</label>
-                        <input type="text" name="entry.1144889759">
-                    </div>
-                </div>
-
-                <div class="stat-box">
-                    <label class="stat-label">Enjoyment (0-10)</label>
-                    <input type="number" name="entry.212555546" min="0" max="10" value="5">
-                </div>
-
-                <button type="submit" class="submit-btn">Submit Level</button>
-            </form>
-        </div>
-
-        <div class="glass-card">
             <h2>Submit <span class="accent-text">Completion</span></h2>
-            <form action="https://docs.google.com/forms/u/0/d/e/1FAIpQLSfgjpCE6e8sHa-GcjVrD27Tcymbc0Q7w2MGdxVTtWnKi-uoXg/formResponse" 
+            <form action="https://docs.google.com/forms/d/e/1FAIpQLSfgjpCE6e8sHa-GcjVrD27Tcymbc0Q7w2MGdxVTtWnKi-uoXg/formResponse" 
                   method="POST" 
                   target="hidden_iframe" 
                   onsubmit="setIsSubmitting();">
@@ -221,24 +132,23 @@
                 </div>
 
                 <div class="stat-box">
-                    <label class="stat-label">Enjoyment (0-10, INTEGERS)</label>
-                    <input type="number" name="entry.1070588665" min="0" max="10">
+                    <label class="stat-label">Enjoyment (0-10)</label>
+                    <input type="number" name="entry.1070588665" min="0" max="10" value="5">
                 </div>
 
                 <button type="submit" class="submit-btn">Submit Record</button>
             </form>
         </div>
-
     </div>
 
     <script>
-
         var isSubmitting = false;
 
         function setIsSubmitting() {
             isSubmitting = true;
         }
 
+        // Detects when the iframe finishes loading the Google "Thank You" page
         document.getElementById('hidden_iframe').onload = function() {
             if (isSubmitting) {
                 alert('Submission successful!');
