@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Submission Hub</title>
+    <title>GMZ Submission Portal</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -21,22 +21,23 @@
             margin: 0;
             padding: 20px;
         }
-        .modal {
+        .modal-container {
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            margin-bottom: 50px;
+            gap: 50px;
+            padding-bottom: 100px;
         }
         .glass-card {
             background: var(--bg-card);
             border: 1px solid var(--border);
-            padding: 2rem;
-            border-radius: 12px;
+            padding: 2.5rem;
+            border-radius: 16px;
             width: 100%;
             max-width: 650px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
         }
-        h2 { margin-top: 0; font-weight: 800; font-size: 1.8rem; }
+        h2 { margin-top: 0; font-weight: 800; font-size: 1.8rem; letter-spacing: -0.5px; }
         .accent-text { color: var(--accent); }
         .stat-grid {
             display: grid;
@@ -45,24 +46,24 @@
         }
         .stat-box { margin-bottom: 20px; }
         .stat-label {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 800;
             color: var(--text-muted);
             text-transform: uppercase;
             display: block;
             margin-bottom: 8px;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
         }
         input, select, textarea {
             width: 100%;
             padding: 12px;
-            background: rgba(15, 23, 42, 0.8);
+            background: rgba(15, 23, 42, 0.9);
             border: 1px solid var(--border);
-            border-radius: 6px;
+            border-radius: 8px;
             color: var(--text-main);
             font-family: 'Montserrat', sans-serif;
             box-sizing: border-box;
-            font-size: 0.9rem;
+            transition: border-color 0.2s;
         }
         input:focus, select:focus, textarea:focus {
             outline: none;
@@ -72,27 +73,32 @@
             background: var(--accent);
             color: white;
             border: none;
-            padding: 14px;
-            border-radius: 6px;
+            padding: 16px;
+            border-radius: 8px;
             font-weight: 800;
             cursor: pointer;
             width: 100%;
-            font-size: 1rem;
             text-transform: uppercase;
             letter-spacing: 1px;
+            margin-top: 10px;
         }
-        textarea { resize: vertical; min-height: 80px; }
+        .submit-btn:hover { opacity: 0.9; transform: translateY(-1px); }
         iframe { display: none; }
+        textarea { resize: vertical; min-height: 80px; }
     </style>
 </head>
 <body>
 
-    <iframe name="hidden_iframe" id="hidden_iframe" onload="if(window.submitted){alert('Submission Received!'); window.location.reload();}"></iframe>
+    <iframe name="hidden_iframe" id="hidden_iframe" onload="if(window.submitted){alert('Submission successful!'); window.location.reload();}"></iframe>
 
-    <div class="modal">
+    <div class="modal-container">
+
         <div class="glass-card">
             <h2>Submit <span class="accent-text">Level</span></h2>
-            <form action="https://docs.google.com/forms/u/0/d/e/1FAIpQLScT3osZzYudTof9h9aVI5xuy9B0AikyLJssKPpg2R8tZLW-Ug/formResponse" method="POST" target="hidden_iframe" onsubmit="window.submitted=true;">
+            <form action="https://docs.google.com/forms/u/0/d/e/1FAIpQLScT3osZzYudTof9h9aVI5xuy9B0AikyLJssKPpg2R8tZLW-Ug/formResponse" 
+                  method="POST" 
+                  target="hidden_iframe" 
+                  onsubmit="window.submitted=true;">
                 
                 <div class="stat-grid">
                     <div class="stat-box">
@@ -125,7 +131,7 @@
                         </select>
                     </div>
                     <div class="stat-box">
-                        <label class="stat-label">Estimated Difficulty *</label>
+                        <label class="stat-label">Difficulty *</label>
                         <select name="entry.114757608" required>
                             <option value="Grandmaster III+">Grandmaster III+</option>
                             <option value="Grandmaster III">Grandmaster III</option>
@@ -142,7 +148,7 @@
                 </div>
 
                 <div class="stat-box">
-                    <label class="stat-label">Thumbnail link (if applicable)</label>
+                    <label class="stat-label">Thumbnail link</label>
                     <input type="url" name="entry.384819777">
                 </div>
 
@@ -158,11 +164,11 @@
 
                 <div class="stat-grid">
                     <div class="stat-box">
-                        <label class="stat-label">Verifier (If Verified)</label>
+                        <label class="stat-label">Verifier</label>
                         <input type="text" name="entry.1044432296">
                     </div>
                     <div class="stat-box">
-                        <label class="stat-label">Replay Code (If Verified)</label>
+                        <label class="stat-label">Replay Code</label>
                         <input type="text" name="entry.1144889759">
                     </div>
                 </div>
@@ -175,12 +181,13 @@
                 <button type="submit" class="submit-btn">Submit Level</button>
             </form>
         </div>
-    </div>
 
-    <div class="modal">
         <div class="glass-card">
             <h2>Submit <span class="accent-text">Completion</span></h2>
-            <form action="https://docs.google.com/forms/u/0/d/e/1FAIpQLSfgjpCE6e8sHa-GcjVrD27Tcymbc0Q7w2MGdxVTtWnKi-uoXg/formResponse" method="POST" target="hidden_iframe" onsubmit="window.submitted=true;">
+            <form action="https://docs.google.com/forms/u/0/d/e/1FAIpQLSfgjpCE6e8sHa-GcjVrD27Tcymbc0Q7w2MGdxVTtWnKi-uoXg/formResponse" 
+                  method="POST" 
+                  target="hidden_iframe" 
+                  onsubmit="window.submitted=true;">
                 
                 <div class="stat-box">
                     <label class="stat-label">Name (No Spaces) *</label>
@@ -193,7 +200,7 @@
                         <input type="text" name="entry.1983053746" placeholder="Use 0 if pending" required>
                     </div>
                     <div class="stat-box">
-                        <label class="stat-label">Level Name (For Verification)</label>
+                        <label class="stat-label">Level Name</label>
                         <input type="text" name="entry.1783510526">
                     </div>
                 </div>
@@ -204,12 +211,12 @@
                 </div>
 
                 <div class="stat-box">
-                    <label class="stat-label">Other proof (If applicable)</label>
+                    <label class="stat-label">Other proof</label>
                     <input type="text" name="entry.1382434685">
                 </div>
 
                 <div class="stat-box">
-                    <label class="stat-label">Opinions on difficulty or quality</label>
+                    <label class="stat-label">Opinions</label>
                     <textarea name="entry.331566418"></textarea>
                 </div>
 
@@ -221,7 +228,11 @@
                 <button type="submit" class="submit-btn">Submit Record</button>
             </form>
         </div>
+
     </div>
 
+    <script>
+        window.submitted = false;
+    </script>
 </body>
 </html>
