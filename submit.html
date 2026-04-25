@@ -147,7 +147,6 @@
             isSubmitting = true;
         }
 
-        // Detects when the iframe finishes loading the Google "Thank You" page
         document.getElementById('hidden_iframe').onload = function() {
             if (isSubmitting) {
                 alert('Submission successful!');
