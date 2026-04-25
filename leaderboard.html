@@ -135,10 +135,19 @@
 
         .section-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); margin: 40px 0 20px 0; border-bottom: 1px solid var(--border); padding-bottom: 10px; font-weight: 800; }
         
-        .clears-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; }
-        .clear-card { position: relative; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); aspect-ratio: 1; background: var(--bg-page); transition: 0.2s; }
-        .clear-card:hover { transform: scale(1.05); border-color: var(--accent); z-index: 2; }
-        .cc-label { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.85); font-size: 0.65rem; padding: 7px 4px; text-align: center; color: #fff; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        /* New Clears Grid Styling (Text Tags) */
+        .clears-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+        .clear-tag { 
+            font-size: 0.8rem; 
+            color: var(--text-main); 
+            background: rgba(255,255,255,0.05); 
+            padding: 6px 12px; 
+            border-radius: 6px; 
+            border: 1px solid var(--border); 
+            font-weight: 600; 
+            transition: 0.2s;
+        }
+        .clear-tag:hover { border-color: var(--accent); background: rgba(255,255,255,0.1); }
 
         .clears-filter-btn {
             background: var(--bg-page); border: 1px solid var(--border); color: var(--text-muted); 
@@ -179,7 +188,6 @@
                 <div class="dropdown-content">
                     <a href="https://github.com/ProgramminguyFromScratch/GMZ" target="_blank"><i class="fab fa-github"></i> GitHub Repo</a>
                     <a href="/guidelines"><i class="fas fa-file-alt"></i> Submission Guidelines</a>
-                    <a href="/submit"><i class="fa-solid fa-trophy"></i> Submit a Record</a>
                 </div>
             </div>
         </div>
@@ -209,7 +217,6 @@
 </div>
 
 <script>
-    // JS Logic stays exactly as you had it
     const SPREADSHEET_ID = "10yZLCN80B0ExwiY8E5Y5GB95NV1T5UI69vLYywtg_J0";
     const LB_GID = "1908015854";
     const LEVEL_GIDS = ["0", "1720349441", "1575264256"];
@@ -295,7 +302,7 @@
         selectedPlayerName = name;
         renderLeaderboard();
         const p = window.PLAYER_DATA.find(x => x.name === name);
-        const clears = getClears(name);
+        const clears = getClears(name).sort((a,b) => b.points - a.points); // Sort by points
         const counts = { GM: 0, Master: 0, Expert: 0 };
         clears.forEach(l => {
             if(l.difficulty.includes("Grandmaster")) counts.GM++;
@@ -354,7 +361,7 @@
                     + Show More
                 </button>` : ''}
 
-            <div class="section-title">All Clears</div>
+            <div class="section-title">Clearlist</div>
             <div style="display:flex; gap:8px; margin-bottom:20px;">
                 <button class="clears-filter-btn active" onclick="filterC('all', this)">All</button>
                 <button class="clears-filter-btn" onclick="filterC('Grandmaster', this)">GM</button>
@@ -362,11 +369,7 @@
                 <button class="clears-filter-btn" onclick="filterC('Expert', this)">Expert</button>
             </div>
             <div class="clears-grid" id="history-grid">
-                ${clears.map(l => `
-                    <div class="clear-card">
-                        <img style="width:100%; height:100%; object-fit:cover;" src="assets/smallthumbs/${l.acronym}.png" onerror="this.src='assets/smallthumbs/default.png'">
-                        <div class="cc-label">${l.name}</div>
-                    </div>`).join('')}
+                ${clears.map(l => `<span class="clear-tag">${l.name}</span>`).join('')}
             </div>
         `;
     }
@@ -395,13 +398,9 @@
     window.filterC = function(diff, btn) {
         document.querySelectorAll('.clears-filter-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        const clears = getClears(selectedPlayerName);
+        const clears = getClears(selectedPlayerName).sort((a,b) => b.points - a.points);
         const filtered = diff === 'all' ? clears : clears.filter(l => l.difficulty.includes(diff));
-        document.getElementById('history-grid').innerHTML = filtered.map(l => `
-            <div class="clear-card">
-                <img style="width:100%; height:100%; object-fit:cover;" src="assets/smallthumbs/${l.acronym}.png" onerror="this.src='assets/smallthumbs/default.png'">
-                <div class="cc-label">${l.name}</div>
-            </div>`).join('');
+        document.getElementById('history-grid').innerHTML = filtered.map(l => `<span class="clear-tag">${l.name}</span>`).join('');
     };
 
     window.onload = init;
