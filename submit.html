@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Grandmaster Zone | Submit Record</title>
+    <title>GMZ | Submit Record</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <style>
+        /* --- SUBMISSION PORTAL SPECIFIC STYLES --- */
         :root { 
             --bg-page: #0f172a; 
             --bg-card: #1e293b; 
@@ -25,29 +27,10 @@
             padding: 0;
         }
 
-        /* --- NAVBAR STYLES --- */
-        .navbar {
-            background: rgba(30, 41, 59, 0.8);
-            backdrop-filter: blur(10px);
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-        .nav-logo { font-weight: 800; font-size: 1.5rem; text-decoration: none; color: var(--text-main); }
-        .nav-links { display: flex; gap: 20px; align-items: center; }
-        .nav-links a { text-decoration: none; color: var(--text-muted); font-weight: 600; transition: 0.3s; }
-        .nav-links a:hover { color: var(--accent); }
-
-        /* --- FORM CONTAINER --- */
         .page-content {
             display: flex;
             justify-content: center;
-            padding: 40px 20px;
+            padding: 60px 20px;
         }
 
         .modal-container { width: 100%; max-width: 650px; }
@@ -59,8 +42,6 @@
             border-radius: 16px; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.4); 
         }
-
-        h2 { margin-top: 0; font-weight: 800; font-size: 1.8rem; letter-spacing: -0.5px; }
 
         .stat-box { margin-bottom: 20px; position: relative; }
 
@@ -77,44 +58,58 @@
         }
         input:focus { border-color: var(--accent); }
 
-        /* --- CUSTOM DROPDOWN SYSTEM --- */
-        .custom-select-container { position: relative; }
-        
+        /* --- CUSTOM DROPDOWN LIST STYLES --- */
         .dropdown-list {
             position: absolute;
             top: 100%; left: 0; right: 0;
-            background: var(--bg-card);
+            background: #161e2e;
             border: 1px solid var(--border);
             border-radius: 8px;
-            max-height: 300px;
+            max-height: 350px;
             overflow-y: auto;
-            display: none;
-            z-index: 100;
+            display: none; /* Controlled by JS */
+            z-index: 9999;
             margin-top: 5px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
         }
 
         .dropdown-item {
-            padding: 10px 15px;
+            padding: 12px 15px;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 12px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            transition: 0.2s;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            transition: background 0.2s;
         }
-        .dropdown-item:hover { background: rgba(139, 92, 246, 0.2); }
-        .dropdown-item img { width: 24px; height: 24px; object-fit: contain; }
-        .dropdown-item .level-info { display: flex; flex-direction: column; }
-        .dropdown-item .rank-tag { font-size: 0.7rem; color: var(--accent); font-weight: 800; }
 
-        .submit-btn { 
+        .dropdown-item:hover { background: rgba(139, 92, 246, 0.15); }
+
+        .dropdown-item img {
+            width: 28px;
+            height: 28px;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+        }
+
+        .dropdown-item .level-name-text {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .dropdown-item .rank-prefix {
+            color: var(--accent);
+            font-weight: 800;
+            margin-right: 4px;
+        }
+
+        .portal-submit-btn { 
             background: var(--accent); color: white; border: none; padding: 16px; 
             border-radius: 8px; font-weight: 800; cursor: pointer; width: 100%; 
             text-transform: uppercase; margin-top: 10px; transition: 0.2s; 
         }
-        .submit-btn:hover { opacity: 0.9; transform: translateY(-1px); }
-        .submit-btn:disabled { background: #334155; cursor: not-allowed; color: var(--text-muted); }
+        .portal-submit-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .portal-submit-btn:disabled { background: #334155; cursor: not-allowed; color: var(--text-muted); }
 
         #status-msg { color: var(--accent); font-size: 0.8rem; margin-bottom: 10px; text-align: center; font-weight: 600; }
         iframe { display: none; }
@@ -122,12 +117,40 @@
 </head>
 <body>
 
-    <nav class="navbar">
-        <a href="/" class="nav-logo">GMZ</a>
+    <nav>
+        <a href="index.html"><img src="assets/logo.webp" class="nav-logo" alt="Logo"></a>
+    
         <div class="nav-links">
-            <a href="/mainlist.html">Main List</a>
-            <a href="/expertlist.html">Expert Zone</a>
-            <a href="/submit.html" style="color: var(--accent);">Submit</a>
+            <div class="dropdown">
+                <button class="dropbtn">Lists <i class="fas fa-caret-down"></i></button>
+                <div class="dropdown-content">
+                    <a href="/mainlist"><i class="fas fa-list-ol"></i> Main List</a>
+                    <a href="/expert"><i class="fas fa-expand-arrows-alt"></i> Extended List</a>
+                </div>
+            </div>
+
+            <div class="dropdown">
+                <button class="dropbtn">Leaderboard <i class="fas fa-caret-down"></i></button>
+                <div class="dropdown-content">
+                    <a href="/leaderboard"><i class="fas fa-user"></i> Individual</a>
+                    <a href="/countries"><i class="fas fa-globe-americas"></i> Countries</a>
+                </div>
+            </div>
+
+            <div class="dropdown dropdown-right">
+                <button class="dropbtn">Socials <i class="fas fa-caret-down"></i></button>
+                <div class="dropdown-content">
+                    <a href="https://dsc.gg/appelcord" target="_blank"><i class="fab fa-discord"></i> Discord</a>
+                </div>
+            </div>
+
+            <div class="dropdown dropdown-right">
+                <button class="dropbtn">More <i class="fas fa-caret-down"></i></button>
+                <div class="dropdown-content">
+                    <a href="https://github.com/ProgramminguyFromScratch/GMZ" target="_blank"><i class="fab fa-github"></i> GitHub Repo</a>
+                    <a href="/guidelines"><i class="fas fa-file-alt"></i> Submission Guidelines</a>
+                </div>
+            </div>
         </div>
     </nav>
 
@@ -138,8 +161,8 @@
     <div class="page-content">
         <div class="modal-container">
             <div class="glass-card">
-                <h2>Submit <span style="color:var(--accent)">Completion</span></h2>
-                <div id="status-msg">Syncing with GMZ Database...</div>
+                <h2 style="margin-top:0; font-weight:800;">Submit <span style="color:var(--accent)">Completion</span></h2>
+                <div id="status-msg">Connecting to database...</div>
                 
                 <form action="https://docs.google.com/forms/d/e/1FAIpQLSfgjpCE6e8sHa-GcjVrD27Tcymbc0Q7w2MGdxVTtWnKi-uoXg/formResponse" 
                       method="POST" target="hidden_iframe" onsubmit="submitted=true;">
@@ -151,11 +174,9 @@
 
                     <div class="stat-box">
                         <label class="stat-label">Level Name (Searchable) *</label>
-                        <div class="custom-select-container">
-                            <input type="text" id="level-search" autocomplete="off" placeholder="Start typing level name..." required>
-                            <input type="hidden" name="entry.614428572" id="real-level-name">
-                            <div id="dropdown-list" class="dropdown-list"></div>
-                        </div>
+                        <input type="text" id="level-search-input" autocomplete="off" placeholder="Start typing level name..." required>
+                        <input type="hidden" name="entry.614428572" id="form-level-name">
+                        <div id="custom-dropdown-list" class="dropdown-list"></div>
                     </div>
 
                     <input type="hidden" id="hidden-level-id" name="entry.1258302997">
@@ -172,7 +193,7 @@
 
                     <div class="stat-box">
                         <label class="stat-label">Opinions</label>
-                        <textarea name="entry.531767357" rows="3" placeholder="What did you think of the level?"></textarea>
+                        <textarea name="entry.531767357" rows="3" placeholder="What did you think?"></textarea>
                     </div>
 
                     <div class="stat-box">
@@ -180,7 +201,7 @@
                         <input type="number" name="entry.1652160869" min="0" max="10">
                     </div>
 
-                    <button type="submit" class="submit-btn" id="submit-btn" disabled>Loading...</button>
+                    <button type="submit" class="portal-submit-btn" id="portal-btn" disabled>Loading levels...</button>
                 </form>
             </div>
         </div>
@@ -189,91 +210,85 @@
     <script>
         const spreadsheetId = "10yZLCN80B0ExwiY8E5Y5GB95NV1T5UI69vLYywtg_J0";
         
-        const sheetConfigs = [
-            { gid: "0", idCol: 0, rankCol: 1, nameCol: 2, diffCol: 7, type: 'ranked' },          
-            { gid: "1720349441", idCol: 0, rankCol: 1, nameCol: 2, diffCol: 7, type: 'ranked' },
-            { gid: "1575264256", idCol: 0, rankCol: null, nameCol: 2, diffCol: 7, type: 'expert' }
+        const configs = [
+            { gid: "0", idCol: 0, rankCol: 1, nameCol: 2, diffCol: 7, isRanked: true },          
+            { gid: "1720349441", idCol: 0, rankCol: 1, nameCol: 2, diffCol: 7, isRanked: true },
+            { gid: "1575264256", idCol: 0, rankCol: null, nameCol: 2, diffCol: 7, isRanked: false }
         ];
 
-        let allLevels = []; 
+        let database = [];
 
         async function init() {
+            const btn = document.getElementById('portal-btn');
             const status = document.getElementById('status-msg');
-            const btn = document.getElementById('submit-btn');
 
             try {
-                for (let config of sheetConfigs) {
-                    const url = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${config.gid}`;
+                for (let cfg of configs) {
+                    const url = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${cfg.gid}`;
                     const response = await fetch(url);
-                    const csvText = await response.text();
-                    const parsed = Papa.parse(csvText, { header: false, skipEmptyLines: true }).data;
+                    const text = await response.text();
+                    const parsed = Papa.parse(text, { header: false, skipEmptyLines: true }).data;
 
+                    // Skip header row
                     for (let i = 1; i < parsed.length; i++) {
                         const row = parsed[i];
-                        if (!row[config.nameCol]) continue;
-
-                        allLevels.push({
-                            id: row[config.idCol],
-                            name: row[config.nameCol],
-                            rank: config.rankCol !== null ? row[config.rankCol] : null,
-                            difficulty: row[config.diffCol] ? row[config.diffCol].trim() : "unknown",
-                            type: config.type
-                        });
+                        if (row[cfg.nameCol]) {
+                            database.push({
+                                id: row[cfg.idCol],
+                                name: row[cfg.nameCol],
+                                rank: cfg.isRanked ? row[cfg.rankCol] : null,
+                                difficulty: row[cfg.diffCol] ? row[cfg.diffCol].trim() : "unknown",
+                                isRanked: cfg.isRanked
+                            });
+                        }
                     }
                 }
-
                 status.style.display = 'none';
                 btn.disabled = false;
                 btn.textContent = "Submit Record";
-                setupSearch();
-
-            } catch (error) {
-                console.error("Database error:", error);
+                setupDropdownLogic();
+            } catch (e) {
                 status.textContent = "Error loading database.";
             }
         }
 
-        function setupSearch() {
-            const input = document.getElementById('level-search');
-            const list = document.getElementById('dropdown-list');
-            const realNameInput = document.getElementById('real-level-name');
-            const hiddenIdInput = document.getElementById('hidden-level-id');
+        function setupDropdownLogic() {
+            const searchInput = document.getElementById('level-search-input');
+            const list = document.getElementById('custom-dropdown-list');
+            const formLevelName = document.getElementById('form-level-name');
+            const hiddenId = document.getElementById('hidden-level-id');
 
-            input.addEventListener('input', () => {
-                const val = input.value.toLowerCase();
+            searchInput.addEventListener('input', () => {
+                const query = searchInput.value.toLowerCase();
                 list.innerHTML = '';
-                if (!val) { list.style.display = 'none'; return; }
+                if (!query) { list.style.display = 'none'; return; }
 
-                const filtered = allLevels.filter(l => l.name.toLowerCase().includes(val)).slice(0, 15);
+                const matches = database.filter(l => l.name.toLowerCase().includes(query)).slice(0, 15);
 
-                if (filtered.length > 0) {
-                    filtered.forEach(level => {
-                        const div = document.createElement('div');
-                        div.className = 'dropdown-item';
+                if (matches.length > 0) {
+                    matches.forEach(lvl => {
+                        const item = document.createElement('div');
+                        item.className = 'dropdown-item';
                         
-                        // Icon
-                        const img = document.createElement('img');
-                        img.src = `assets/difficulty/${level.difficulty}.svg`;
-                        img.onerror = () => img.src = 'assets/difficulty/unknown.svg';
+                        // Icon mapping
+                        const icon = document.createElement('img');
+                        icon.src = `assets/diffs/${lvl.difficulty}.svg`;
+                        icon.onerror = () => icon.src = 'assets/diffs/unknown.svg';
                         
-                        const info = document.createElement('div');
-                        info.className = 'level-info';
+                        const textContainer = document.createElement('div');
+                        const displayName = lvl.isRanked ? `<span class="rank-prefix">#${lvl.rank}</span> ${lvl.name}` : lvl.name;
+                        textContainer.innerHTML = `<span class="level-name-text">${displayName}</span>`;
                         
-                        // Format: (#Rank) | Name OR just Name
-                        const displayName = level.type === 'ranked' ? `(#${level.rank}) | ${level.name}` : level.name;
-                        
-                        info.innerHTML = `<span>${displayName}</span>`;
-                        
-                        div.appendChild(img);
-                        div.appendChild(info);
+                        item.appendChild(icon);
+                        item.appendChild(textContainer);
 
-                        div.onclick = () => {
-                            input.value = displayName;
-                            realNameInput.value = level.name;
-                            hiddenIdInput.value = level.id;
+                        item.onclick = () => {
+                            searchInput.value = lvl.isRanked ? `(#${lvl.rank}) ${lvl.name}` : lvl.name;
+                            formLevelName.value = lvl.name;
+                            hiddenId.value = lvl.id;
                             list.style.display = 'none';
                         };
-                        list.appendChild(div);
+                        list.appendChild(item);
                     });
                     list.style.display = 'block';
                 } else {
@@ -281,10 +296,9 @@
                 }
             });
 
+            // Close when clicking away
             document.addEventListener('click', (e) => {
-                if (!input.contains(e.target) && !list.contains(e.target)) {
-                    list.style.display = 'none';
-                }
+                if (!searchInput.contains(e.target)) list.style.display = 'none';
             });
         }
 
