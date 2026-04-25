@@ -89,7 +89,7 @@
 </head>
 <body>
 
-    <iframe name="hidden_iframe" id="hidden_iframe" onload="if(window.submitted){alert('Submission successful!'); window.location.reload();}"></iframe>
+    <iframe name="hidden_iframe" id="hidden_iframe"></iframe>
 
     <div class="modal-container">
 
@@ -98,7 +98,7 @@
             <form action="https://docs.google.com/forms/u/0/d/e/1FAIpQLScT3osZzYudTof9h9aVI5xuy9B0AikyLJssKPpg2R8tZLW-Ug/formResponse" 
                   method="POST" 
                   target="hidden_iframe" 
-                  onsubmit="window.submitted=true;">
+                  onsubmit="setIsSubmitting();">
                 
                 <div class="stat-grid">
                     <div class="stat-box">
@@ -187,7 +187,7 @@
             <form action="https://docs.google.com/forms/u/0/d/e/1FAIpQLSfgjpCE6e8sHa-GcjVrD27Tcymbc0Q7w2MGdxVTtWnKi-uoXg/formResponse" 
                   method="POST" 
                   target="hidden_iframe" 
-                  onsubmit="window.submitted=true;">
+                  onsubmit="setIsSubmitting();">
                 
                 <div class="stat-box">
                     <label class="stat-label">Name (No Spaces) *</label>
@@ -221,8 +221,8 @@
                 </div>
 
                 <div class="stat-box">
-                    <label class="stat-label">Enjoyment (0-10)</label>
-                    <input type="number" name="entry.1070588665" min="0" max="10" value="5">
+                    <label class="stat-label">Enjoyment (0-10, INTEGERS)</label>
+                    <input type="number" name="entry.1070588665" min="0" max="10">
                 </div>
 
                 <button type="submit" class="submit-btn">Submit Record</button>
@@ -232,7 +232,19 @@
     </div>
 
     <script>
-        window.submitted = false;
+
+        var isSubmitting = false;
+
+        function setIsSubmitting() {
+            isSubmitting = true;
+        }
+
+        document.getElementById('hidden_iframe').onload = function() {
+            if (isSubmitting) {
+                alert('Submission successful!');
+                window.location.reload();
+            }
+        };
     </script>
 </body>
 </html>
