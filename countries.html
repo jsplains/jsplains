@@ -219,7 +219,7 @@
             </div>
             <p style="color:var(--accent); font-weight:800; margin:0 0 35px 0;">Total Points: ${c.totalPoints.toLocaleString()}</p>
 
-            <div class="section-title">National Contributors</div>
+            <div class="section-title">Players from this country</div>
             <div>
                 ${c.players.map((p, i) => `
                     <div class="player-rank-item">
@@ -228,9 +228,9 @@
                     </div>
                 `).join('')}
             </div>
-            ${section("Grandmaster Clearlist", gm)}
-            ${section("Master Clearlist", ms)}
-            ${section("Expert Clearlist", ex)}
+            ${section("Grandmaster Clears", gm)}
+            ${section("Master Clears", ms)}
+            ${section("Expert Clears", ex)}
         `;
     }
 
