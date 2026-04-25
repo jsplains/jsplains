@@ -12,18 +12,17 @@
     <style>
         body { margin: 0; padding: 0; overflow: hidden; background: var(--bg-page); font-family: 'Montserrat', sans-serif; }
         
-        /* Layout Wrapper */
         .main-wrapper { 
             display: flex; 
             gap: 20px; 
             max-width: 1400px; 
-            margin: 90px auto 0 auto; /* Increased margin to prevent navbar overlap */
+            margin: 80px auto 0 auto; 
             padding: 0 20px 20px 20px; 
-            height: calc(100vh - 110px); 
+            height: calc(100vh - 100px); 
             box-sizing: border-box; 
         }
 
-        /* Sidebar */
+        /* Sidebar Styles */
         .leaderboard-column { flex: 0 0 380px; display: flex; flex-direction: column; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow); }
         .controls { padding: 15px; background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border); }
         select { width: 100%; background: var(--bg-page); color: white; border: 1px solid var(--border); padding: 10px; border-radius: 6px; font-family: 'Montserrat'; cursor: pointer; font-weight: 600; outline: none; }
@@ -34,15 +33,13 @@
         .country-entry.selected { border-left-color: #fff; background: var(--accent-light); }
         .flag-sidebar { width: 28px; border-radius: 3px; margin-right: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
 
-        /* Detail View */
+        /* Detail View Styles */
         .details-column { flex: 1; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border); padding: 30px; overflow-y: auto; box-shadow: var(--shadow); }
         .section-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: var(--accent); margin: 35px 0 15px 0; border-bottom: 1px solid var(--border); padding-bottom: 8px; font-weight: 800; }
         
-        /* Player Rankings Style */
         .player-rank-item { display: flex; justify-content: space-between; padding: 10px 15px; background: rgba(0,0,0,0.15); border-radius: 8px; margin-bottom: 6px; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.02); }
         .rank-num { font-weight: 800; color: var(--text-muted); margin-right: 12px; width: 25px; display: inline-block; }
 
-        /* Clear Tags */
         .clear-container { display: flex; flex-wrap: wrap; gap: 8px; }
         .clear-tag { font-size: 0.8rem; color: var(--text-main); background: rgba(255,255,255,0.05); padding: 5px 12px; border-radius: 5px; border: 1px solid var(--border); font-weight: 600; }
     </style>
@@ -50,29 +47,37 @@
 <body>
 
     <nav>
-        <div class="nav-container">
-            <a href="index.html"><img src="assets/logo.webp" class="nav-logo" alt="Logo"></a>
-            <div class="nav-links">
-                <div class="dropdown">
-                    <button class="dropbtn">Lists <i class="fas fa-caret-down"></i></button>
-                    <div class="dropdown-content">
-                        <a href="mainlist.html">Main List</a>
-                        <a href="expert.html">Expert List</a>
-                    </div>
+        <a href="index.html"><img src="assets/logo.webp" class="nav-logo" alt="Logo"></a>
+    
+        <div class="nav-links">
+            <div class="dropdown">
+                <button class="dropbtn">Lists <i class="fas fa-caret-down"></i></button>
+                <div class="dropdown-content">
+                    <a href="/mainlist"><i class="fas fa-list-ol"></i> Main List</a>
+                    <a href="/expert"><i class="fas fa-expand-arrows-alt"></i> Extended List</a>
                 </div>
-                <div class="dropdown">
-                    <button class="dropbtn" style="color: var(--accent);">Leaderboard <i class="fas fa-caret-down"></i></button>
-                    <div class="dropdown-content">
-                        <a href="leaderboard.html">Individual</a>
-                        <a href="countries.html" class="active">Countries</a>
-                    </div>
+            </div>
+
+            <div class="dropdown">
+                <button class="dropbtn">Leaderboard <i class="fas fa-caret-down"></i></button>
+                <div class="dropdown-content">
+                    <a href="/leaderboard"><i class="fas fa-user"></i> Individual</a>
+                    <a href="/countries"><i class="fas fa-globe-americas"></i> Countries</a>
                 </div>
-                <div class="dropdown dropdown-right">
-                    <button class="dropbtn">More <i class="fas fa-caret-down"></i></button>
-                    <div class="dropdown-content">
-                        <a href="guidelines.html">Guidelines</a>
-                        <a href="submit.html">Submit</a>
-                    </div>
+            </div>
+
+            <div class="dropdown dropdown-right">
+                <button class="dropbtn">Socials <i class="fas fa-caret-down"></i></button>
+                <div class="dropdown-content">
+                    <a href="https://dsc.gg/appelcord" target="_blank"><i class="fab fa-discord"></i> Discord</a>
+                </div>
+            </div>
+
+            <div class="dropdown dropdown-right">
+                <button class="dropbtn">More <i class="fas fa-caret-down"></i></button>
+                <div class="dropdown-content">
+                    <a href="https://github.com/ProgramminguyFromScratch/GMZ" target="_blank"><i class="fab fa-github"></i> GitHub Repo</a>
+                    <a href="/guidelines"><i class="fas fa-file-alt"></i> Submission Guidelines</a>
                 </div>
             </div>
         </div>
@@ -82,9 +87,9 @@
         <div class="leaderboard-column">
             <div class="controls">
                 <select id="sort-selector" onchange="renderCountryList()">
-                    <option value="points">Sort: Weighted Points</option>
-                    <option value="hardest">Sort: Peak Completion</option>
-                    <option value="clears">Sort: Clear Count</option>
+                    <option value="points">POINTS</option>
+                    <option value="hardest">HARDEST</option>
+                    <option value="clears">CLEARS</option>
                 </select>
             </div>
             <div id="country-list"></div>
@@ -92,8 +97,8 @@
 
         <div class="details-column" id="country-detail-view">
             <div style="height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; opacity:0.2; text-align:center;">
-                <i class="fa-solid fa-earth-asia" style="font-size:4rem; margin-bottom:15px;"></i>
-                <h3>Select a country to view national rankings</h3>
+                <i class="fa-solid fa-globe-americas" style="font-size:4rem; margin-bottom:15px;"></i>
+                <h3>Select a country to view stats</h3>
             </div>
         </div>
     </div>
@@ -103,7 +108,6 @@
     const LB_GID = "1908015854";
     const GIDS = { "GM": "0", "Master": "1720349441", "Expert": "1575264256" };
     
-    // Comprehensive Country Map
     const isoMap = { 
         "hr": "Croatia", "us": "United States", "gb": "United Kingdom", "ca": "Canada", 
         "de": "Germany", "fr": "France", "ru": "Russia", "jp": "Japan", "kr": "South Korea", 
@@ -130,8 +134,7 @@
             const playerToCountry = {};
             lbRaw.forEach(row => {
                 const user = (row["Username"] || "").trim().toLowerCase();
-                const country = (row["Country"] || "??").trim().toLowerCase();
-                playerToCountry[user] = country;
+                playerToCountry[user] = (row["Country"] || "??").trim().toLowerCase();
             });
 
             const processList = (list, diff) => list.map(row => ({
@@ -145,35 +148,34 @@
 
             const countryClears = {};
             allLevels.forEach(level => {
-                const uniqueNations = new Set();
+                const nationsSet = new Set();
                 level.victors.forEach(v => {
                     const code = playerToCountry[v.toLowerCase()];
-                    if (code && code !== "??") uniqueNations.add(code);
+                    if (code && code !== "??") nationsSet.add(code);
                 });
-                uniqueNations.forEach(code => {
+                nationsSet.forEach(code => {
                     if (!countryClears[code]) countryClears[code] = [];
                     countryClears[code].push(level);
                 });
             });
 
-            countryData = {};
             Object.keys(countryClears).forEach(code => {
-                const sortedClears = countryClears[code].sort((a, b) => b.points - a.points);
+                const sorted = countryClears[code].sort((a, b) => b.points - a.points);
                 let total = 0;
-                sortedClears.forEach((l, i) => total += l.points * Math.pow(0.9, i));
+                sorted.forEach((l, i) => total += l.points * Math.pow(0.9, i));
 
                 countryData[code] = {
                     code,
                     name: isoMap[code] || code.toUpperCase(),
                     totalPoints: Math.round(total),
-                    clears: sortedClears,
+                    clears: sorted,
                     players: lbRaw.filter(r => (r.Country || "").toLowerCase().trim() === code)
                                  .sort((a, b) => (parseInt(b.Points) || 0) - (parseInt(a.Points) || 0))
                 };
             });
 
             renderCountryList();
-        } catch (err) { console.error("Initialization Failed:", err); }
+        } catch (err) { console.error(err); }
     }
 
     function renderCountryList() {
@@ -189,9 +191,7 @@
             <div class="country-entry ${selectedCountry === c.code ? 'selected' : ''}" onclick="showCountry('${c.code}')">
                 <span class="rank-num">#${i+1}</span>
                 <img class="flag-sidebar" src="https://flagcdn.com/w40/${c.code}.png">
-                <div style="flex:1">
-                    <span style="font-weight:700; display:block; font-size:0.95rem;">${c.name}</span>
-                </div>
+                <div style="flex:1"><span style="font-weight:700; font-size:0.95rem;">${c.name}</span></div>
                 <div style="font-weight:800; color:var(--accent);">${c.totalPoints.toLocaleString()}</div>
             </div>
         `).join('');
@@ -201,38 +201,36 @@
         selectedCountry = code;
         renderCountryList();
         const c = countryData[code];
-
         const gm = c.clears.filter(l => l.difficulty === "GM");
         const ms = c.clears.filter(l => l.difficulty === "Master");
         const ex = c.clears.filter(l => l.difficulty === "Expert");
 
-        const renderSection = (title, list) => `
+        const section = (title, list) => `
             <div class="section-title">${title} (${list.length})</div>
             <div class="clear-container">
-                ${list.length ? list.map(l => `<span class="clear-tag">${l.name}</span>`).join('') : '<span style="opacity:0.3; font-size:0.8rem;">No completions found.</span>'}
+                ${list.length ? list.map(l => `<span class="clear-tag">${l.name}</span>`).join('') : '<span style="opacity:0.3">None</span>'}
             </div>
         `;
 
         document.getElementById('country-detail-view').innerHTML = `
             <div style="display:flex; align-items:center; gap:20px; margin-bottom:5px;">
                 <img src="https://flagcdn.com/w160/${code}.png" style="width:80px; border-radius:6px; border:1px solid var(--border);">
-                <h1 style="margin:0; font-size:2.2rem; font-weight:800; letter-spacing:-1px;">${c.name}</h1>
+                <h1 style="margin:0; font-size:2.2rem; font-weight:800;">${c.name}</h1>
             </div>
-            <p style="color:var(--accent); font-weight:800; margin:0 0 35px 0; letter-spacing:1px;">NATIONAL SCORE: ${c.totalPoints.toLocaleString()}</p>
+            <p style="color:var(--accent); font-weight:800; margin:0 0 35px 0;">Total Points: ${c.totalPoints.toLocaleString()}</p>
 
-            <div class="section-title">Top Contributors</div>
-            <div style="margin-bottom:20px;">
+            <div class="section-title">National Contributors</div>
+            <div>
                 ${c.players.map((p, i) => `
                     <div class="player-rank-item">
                         <span><span class="rank-num">#${i+1}</span> <strong>${p.Username}</strong></span>
-                        <span style="opacity:0.6; font-weight:700;">${parseInt(p.Points).toLocaleString()} PTS</span>
+                        <span style="opacity:0.7; font-weight:700;">${parseInt(p.Points).toLocaleString()} PTS</span>
                     </div>
                 `).join('')}
             </div>
-
-            ${renderSection("Grandmaster Clearlist", gm)}
-            ${renderSection("Master Clearlist", ms)}
-            ${renderSection("Expert Clearlist", ex)}
+            ${section("Grandmaster Clearlist", gm)}
+            ${section("Master Clearlist", ms)}
+            ${section("Expert Clearlist", ex)}
         `;
     }
 
