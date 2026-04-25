@@ -93,53 +93,52 @@
 
     <div class="modal-container">
 
-        <div class="glass-card">
-            <h2>Submit <span class="accent-text">Completion</span></h2>
-            <form action="https://docs.google.com/forms/d/e/1FAIpQLSfgjpCE6e8sHa-GcjVrD27Tcymbc0Q7w2MGdxVTtWnKi-uoXg/formResponse" 
-                  method="POST" 
-                  target="hidden_iframe" 
-                  onsubmit="setIsSubmitting();">
-                
-                <div class="stat-box">
-                    <label class="stat-label">Name (No Spaces) *</label>
-                    <input type="text" name="entry.138865611" pattern="^\S+$" title="No spaces allowed" required>
-                </div>
-
-                <div class="stat-grid">
-                    <div class="stat-box">
-                        <label class="stat-label">Level ID *</label>
-                        <input type="text" name="entry.1983053746" placeholder="Use 0 if pending" required>
-                    </div>
-                    <div class="stat-box">
-                        <label class="stat-label">Level Name</label>
-                        <input type="text" name="entry.1783510526">
-                    </div>
-                </div>
-
-                <div class="stat-box">
-                    <label class="stat-label">Replay Code *</label>
-                    <input type="text" name="entry.533261642" required>
-                </div>
-
-                <div class="stat-box">
-                    <label class="stat-label">Other proof</label>
-                    <input type="text" name="entry.1382434685">
-                </div>
-
-                <div class="stat-box">
-                    <label class="stat-label">Opinions</label>
-                    <textarea name="entry.331566418"></textarea>
-                </div>
-
-                <div class="stat-box">
-                    <label class="stat-label">Enjoyment (0-10)</label>
-                    <input type="number" name="entry.1070588665" min="0" max="10" value="5">
-                </div>
-
-                <button type="submit" class="submit-btn">Submit Record</button>
-            </form>
+<div class="glass-card">
+    <h2>Submit <span class="accent-text">Completion</span></h2>
+    <form action="https://docs.google.com/forms/d/e/1FAIpQLSfgjpCE6e8sHa-GcjVrD27Tcymbc0Q7w2MGdxVTtWnKi-uoXg/formResponse" 
+          method="POST" 
+          target="hidden_iframe" 
+          onsubmit="submitted=true;">
+        
+        <div class="stat-box">
+            <label class="stat-label">Name (No Spaces) *</label>
+            <input type="text" name="entry.619656823" required>
         </div>
-    </div>
+
+        <div class="stat-grid">
+            <div class="stat-box">
+                <label class="stat-label">Level ID *</label>
+                <input type="text" name="entry.1258302997" required>
+            </div>
+            <div class="stat-box">
+                <label class="stat-label">Level Name</label>
+                <input type="text" name="entry.614428572">
+            </div>
+        </div>
+
+        <div class="stat-box">
+            <label class="stat-label">Replay Code *</label>
+            <input type="text" name="entry.868041341" required>
+        </div>
+
+        <div class="stat-box">
+            <label class="stat-label">Other proof</label>
+            <input type="text" name="entry.101583515">
+        </div>
+
+        <div class="stat-box">
+            <label class="stat-label">Opinions</label>
+            <textarea name="entry.531767357"></textarea>
+        </div>
+
+        <div class="stat-box">
+            <label class="stat-label">Enjoyment (0-10)</label>
+            <input type="text" name="entry.1652160869" value="5">
+        </div>
+
+        <button type="submit" class="submit-btn">Submit Record</button>
+    </form>
+</div>
 
     <script>
         var isSubmitting = false;
