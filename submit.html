@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Grandmaster Zone | Submit Record</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <style>
         :root { 
@@ -21,16 +22,35 @@
             font-family: 'Montserrat', sans-serif; 
             color: var(--text-main); 
             margin: 0; 
-            padding: 20px; 
-            display: flex;
-            justify-content: center;
+            padding: 0;
         }
 
-        .modal-container { 
-            width: 100%;
-            max-width: 650px;
-            padding-top: 40px; 
+        /* --- NAVBAR STYLES --- */
+        .navbar {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
+        .nav-logo { font-weight: 800; font-size: 1.5rem; text-decoration: none; color: var(--text-main); }
+        .nav-links { display: flex; gap: 20px; align-items: center; }
+        .nav-links a { text-decoration: none; color: var(--text-muted); font-weight: 600; transition: 0.3s; }
+        .nav-links a:hover { color: var(--accent); }
+
+        /* --- FORM CONTAINER --- */
+        .page-content {
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .modal-container { width: 100%; max-width: 650px; }
 
         .glass-card { 
             background: var(--bg-card); 
@@ -40,136 +60,144 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.4); 
         }
 
-        h2 { 
-            margin-top: 0; 
-            font-weight: 800; 
-            font-size: 1.8rem; 
-            letter-spacing: -0.5px;
-        }
+        h2 { margin-top: 0; font-weight: 800; font-size: 1.8rem; letter-spacing: -0.5px; }
 
-        .stat-box { margin-bottom: 20px; }
+        .stat-box { margin-bottom: 20px; position: relative; }
 
         .stat-label { 
-            font-size: 0.7rem; 
-            font-weight: 800; 
-            color: var(--text-muted); 
-            text-transform: uppercase; 
-            display: block; 
-            margin-bottom: 8px; 
-            letter-spacing: 1px; 
+            font-size: 0.7rem; font-weight: 800; color: var(--text-muted); 
+            text-transform: uppercase; display: block; margin-bottom: 8px; letter-spacing: 1px; 
         }
 
         input, textarea { 
-            width: 100%; 
-            padding: 12px; 
-            background: rgba(15, 23, 42, 0.9); 
-            border: 1px solid var(--border); 
-            border-radius: 8px; 
-            color: var(--text-main); 
-            font-family: 'Montserrat', sans-serif; 
-            box-sizing: border-box; 
-            outline: none;
+            width: 100%; padding: 12px; background: rgba(15, 23, 42, 0.9); 
+            border: 1px solid var(--border); border-radius: 8px; 
+            color: var(--text-main); font-family: 'Montserrat', sans-serif; 
+            box-sizing: border-box; outline: none;
         }
-
         input:focus { border-color: var(--accent); }
 
-        .submit-btn { 
-            background: var(--accent); 
-            color: white; 
-            border: none; 
-            padding: 16px; 
-            border-radius: 8px; 
-            font-weight: 800; 
-            cursor: pointer; 
-            width: 100%; 
-            text-transform: uppercase; 
-            margin-top: 10px; 
-            transition: 0.2s; 
+        /* --- CUSTOM DROPDOWN SYSTEM --- */
+        .custom-select-container { position: relative; }
+        
+        .dropdown-list {
+            position: absolute;
+            top: 100%; left: 0; right: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+            z-index: 100;
+            margin-top: 5px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
         }
 
+        .dropdown-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: 0.2s;
+        }
+        .dropdown-item:hover { background: rgba(139, 92, 246, 0.2); }
+        .dropdown-item img { width: 24px; height: 24px; object-fit: contain; }
+        .dropdown-item .level-info { display: flex; flex-direction: column; }
+        .dropdown-item .rank-tag { font-size: 0.7rem; color: var(--accent); font-weight: 800; }
+
+        .submit-btn { 
+            background: var(--accent); color: white; border: none; padding: 16px; 
+            border-radius: 8px; font-weight: 800; cursor: pointer; width: 100%; 
+            text-transform: uppercase; margin-top: 10px; transition: 0.2s; 
+        }
         .submit-btn:hover { opacity: 0.9; transform: translateY(-1px); }
         .submit-btn:disabled { background: #334155; cursor: not-allowed; color: var(--text-muted); }
 
-        #status-msg { 
-            color: var(--accent); 
-            font-size: 0.8rem; 
-            margin-bottom: 10px; 
-            text-align: center; 
-            font-weight: 600; 
-        }
-
+        #status-msg { color: var(--accent); font-size: 0.8rem; margin-bottom: 10px; text-align: center; font-weight: 600; }
         iframe { display: none; }
     </style>
 </head>
 <body>
 
+    <nav class="navbar">
+        <a href="/" class="nav-logo">GMZ</a>
+        <div class="nav-links">
+            <a href="/mainlist.html">Main List</a>
+            <a href="/expertlist.html">Expert Zone</a>
+            <a href="/submit.html" style="color: var(--accent);">Submit</a>
+        </div>
+    </nav>
+
     <script type="text/javascript">var submitted=false;</script>
     <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;" 
             onload="if(submitted) {alert('Submission Received!'); window.location.reload();}"></iframe>
 
-    <div class="modal-container">
-        <div class="glass-card">
-            <h2>Submit <span style="color:var(--accent)">Completion</span></h2>
-            <div id="status-msg">Connecting to database...</div>
-            
-            <form action="https://docs.google.com/forms/d/e/1FAIpQLSfgjpCE6e8sHa-GcjVrD27Tcymbc0Q7w2MGdxVTtWnKi-uoXg/formResponse" 
-                  method="POST" 
-                  target="hidden_iframe" 
-                  onsubmit="submitted=true;">
+    <div class="page-content">
+        <div class="modal-container">
+            <div class="glass-card">
+                <h2>Submit <span style="color:var(--accent)">Completion</span></h2>
+                <div id="status-msg">Syncing with GMZ Database...</div>
                 
-                <div class="stat-box">
-                    <label class="stat-label">Your Name (No Spaces) *</label>
-                    <input type="text" name="entry.619656823" required placeholder="PlayerName">
-                </div>
+                <form action="https://docs.google.com/forms/d/e/1FAIpQLSfgjpCE6e8sHa-GcjVrD27Tcymbc0Q7w2MGdxVTtWnKi-uoXg/formResponse" 
+                      method="POST" target="hidden_iframe" onsubmit="submitted=true;">
+                    
+                    <div class="stat-box">
+                        <label class="stat-label">Your Name (No Spaces) *</label>
+                        <input type="text" name="entry.619656823" required placeholder="PlayerName">
+                    </div>
 
-                <div class="stat-box">
-                    <label class="stat-label">Level Name (Searchable) *</label>
-                    <input list="level-options" id="level-search" name="entry.614428572" placeholder="Start typing to find level..." required oninput="updateHiddenId()">
-                    <datalist id="level-options">
-                        </datalist>
-                </div>
+                    <div class="stat-box">
+                        <label class="stat-label">Level Name (Searchable) *</label>
+                        <div class="custom-select-container">
+                            <input type="text" id="level-search" autocomplete="off" placeholder="Start typing level name..." required>
+                            <input type="hidden" name="entry.614428572" id="real-level-name">
+                            <div id="dropdown-list" class="dropdown-list"></div>
+                        </div>
+                    </div>
 
-                <input type="hidden" id="hidden-level-id" name="entry.1258302997">
+                    <input type="hidden" id="hidden-level-id" name="entry.1258302997">
 
-                <div class="stat-box">
-                    <label class="stat-label">Replay Code *</label>
-                    <input type="text" name="entry.868041341" required placeholder="Paste code here">
-                </div>
+                    <div class="stat-box">
+                        <label class="stat-label">Replay Code *</label>
+                        <input type="text" name="entry.868041341" required placeholder="Paste code here">
+                    </div>
 
-                <div class="stat-box">
-                    <label class="stat-label">Other proof</label>
-                    <input type="text" name="entry.101583515" placeholder="Optional link">
-                </div>
+                    <div class="stat-box">
+                        <label class="stat-label">Other proof</label>
+                        <input type="text" name="entry.101583515" placeholder="Optional link">
+                    </div>
 
-                <div class="stat-box">
-                    <label class="stat-label">Opinions</label>
-                    <textarea name="entry.531767357" rows="3" placeholder="What did you think of the level?"></textarea>
-                </div>
+                    <div class="stat-box">
+                        <label class="stat-label">Opinions</label>
+                        <textarea name="entry.531767357" rows="3" placeholder="What did you think of the level?"></textarea>
+                    </div>
 
-                <div class="stat-box">
-                    <label class="stat-label">Enjoyment (0-10) | INTEGERS ONLY</label>
-                    <input type="number" name="entry.1652160869" min="0" max="10">
-                </div>
+                    <div class="stat-box">
+                        <label class="stat-label">Enjoyment (0-10) | INTEGERS ONLY</label>
+                        <input type="number" name="entry.1652160869" min="0" max="10">
+                    </div>
 
-                <button type="submit" class="submit-btn" id="submit-btn" disabled>Loading...</button>
-            </form>
+                    <button type="submit" class="submit-btn" id="submit-btn" disabled>Loading...</button>
+                </form>
+            </div>
         </div>
     </div>
 
     <script>
         const spreadsheetId = "10yZLCN80B0ExwiY8E5Y5GB95NV1T5UI69vLYywtg_J0";
         
-
         const sheetConfigs = [
-            { gid: "0", idCol: 0, nameCol: 2 },          
-            { gid: "1720349441", idCol: 0, nameCol: 2},
-            { gid: "1575264256", idCol: 0, nameCol: 2 }  // NEVERMIND : !!! important !!!! Expert doesn't have rankings which is why the stuff is different
+            { gid: "0", idCol: 0, rankCol: 1, nameCol: 2, diffCol: 7, type: 'ranked' },          
+            { gid: "1720349441", idCol: 0, rankCol: 1, nameCol: 2, diffCol: 7, type: 'ranked' },
+            { gid: "1575264256", idCol: 0, rankCol: null, nameCol: 2, diffCol: 7, type: 'expert' }
         ];
 
-        let levelMap = {}; 
+        let allLevels = []; 
 
         async function init() {
-            const datalist = document.getElementById('level-options');
             const status = document.getElementById('status-msg');
             const btn = document.getElementById('submit-btn');
 
@@ -178,37 +206,86 @@
                     const url = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${config.gid}`;
                     const response = await fetch(url);
                     const csvText = await response.text();
-                    
                     const parsed = Papa.parse(csvText, { header: false, skipEmptyLines: true }).data;
 
                     for (let i = 1; i < parsed.length; i++) {
                         const row = parsed[i];
-                        const id = row[config.idCol];   
-                        const name = row[config.nameCol]; 
+                        if (!row[config.nameCol]) continue;
 
-                        if (name && id && !levelMap[name]) {
-                            levelMap[name] = id;
-                            const opt = document.createElement('option');
-                            opt.value = name; 
-                            datalist.appendChild(opt);
-                        }
+                        allLevels.push({
+                            id: row[config.idCol],
+                            name: row[config.nameCol],
+                            rank: config.rankCol !== null ? row[config.rankCol] : null,
+                            difficulty: row[config.diffCol] ? row[config.diffCol].trim() : "unknown",
+                            type: config.type
+                        });
                     }
                 }
 
                 status.style.display = 'none';
                 btn.disabled = false;
                 btn.textContent = "Submit Record";
+                setupSearch();
 
             } catch (error) {
-                console.error("Database connection error:", error);
-                status.textContent = "Error loading levels. Check if Sheet is 'Published to Web'.";
+                console.error("Database error:", error);
+                status.textContent = "Error loading database.";
             }
         }
 
-        function updateHiddenId() {
-            const typedName = document.getElementById('level-search').value;
-            const hiddenInput = document.getElementById('hidden-level-id');
-            hiddenInput.value = levelMap[typedName] || "";
+        function setupSearch() {
+            const input = document.getElementById('level-search');
+            const list = document.getElementById('dropdown-list');
+            const realNameInput = document.getElementById('real-level-name');
+            const hiddenIdInput = document.getElementById('hidden-level-id');
+
+            input.addEventListener('input', () => {
+                const val = input.value.toLowerCase();
+                list.innerHTML = '';
+                if (!val) { list.style.display = 'none'; return; }
+
+                const filtered = allLevels.filter(l => l.name.toLowerCase().includes(val)).slice(0, 15);
+
+                if (filtered.length > 0) {
+                    filtered.forEach(level => {
+                        const div = document.createElement('div');
+                        div.className = 'dropdown-item';
+                        
+                        // Icon
+                        const img = document.createElement('img');
+                        img.src = `assets/difficulty/${level.difficulty}.svg`;
+                        img.onerror = () => img.src = 'assets/difficulty/unknown.svg';
+                        
+                        const info = document.createElement('div');
+                        info.className = 'level-info';
+                        
+                        // Format: (#Rank) | Name OR just Name
+                        const displayName = level.type === 'ranked' ? `(#${level.rank}) | ${level.name}` : level.name;
+                        
+                        info.innerHTML = `<span>${displayName}</span>`;
+                        
+                        div.appendChild(img);
+                        div.appendChild(info);
+
+                        div.onclick = () => {
+                            input.value = displayName;
+                            realNameInput.value = level.name;
+                            hiddenIdInput.value = level.id;
+                            list.style.display = 'none';
+                        };
+                        list.appendChild(div);
+                    });
+                    list.style.display = 'block';
+                } else {
+                    list.style.display = 'none';
+                }
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!input.contains(e.target) && !list.contains(e.target)) {
+                    list.style.display = 'none';
+                }
+            });
         }
 
         window.onload = init;
