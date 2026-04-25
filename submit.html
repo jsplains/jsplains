@@ -231,7 +231,7 @@
                 const item = document.createElement('div');
                 item.className = 'dropdown-item';
                 const label = l.isRanked ? `#${l.rank} | ${l.name}` : l.name;
-                item.innerHTML = `<img src="assets/diffs/${l.diff}.svg" onerror="this.src='assets/diffs/unknown.svg'"> <span>${label}</span>`;
+                item.innerHTML = `<img src="assets/diffs/${l.diff}.png" onerror="this.src='assets/diffs/unknown.png'"> <span>${label}</span>`;
                 item.onclick = () => {
                     input.value = label;
                     document.getElementById('lvl-name-final').value = l.name;
